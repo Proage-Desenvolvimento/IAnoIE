@@ -15,7 +15,6 @@ env:
   REGISTRY: ghcr.io
   API_IMAGE: ghcr.io/${{ github.repository_owner }}/ianoie-api
   FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/ianoie-frontend
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-backend:
@@ -26,7 +25,7 @@ jobs:
       actions: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -50,7 +49,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
 
       - name: Build and push backend image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./backend
           file: ./backend/Dockerfile
@@ -68,7 +67,7 @@ jobs:
       actions: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -92,7 +91,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
 
       - name: Build and push frontend image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
