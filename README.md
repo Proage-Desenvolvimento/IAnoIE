@@ -63,7 +63,7 @@ Edit `.env` and change at minimum:
 docker compose -f docker/docker-compose.yml up -d
 ```
 
-**4. Open in browser**: `http://<dgx-ip>`
+**4. Open in browser**: `http://<dgx-ip>:8888`
 
 Default login: `admin@ianoie.local` / `admin` (change the password after first login)
 
@@ -96,7 +96,7 @@ Edit `.env` and change at minimum:
 docker compose -f docker/docker-compose.yml up -d
 ```
 
-**4. Open in browser**: `http://localhost`
+**4. Open in browser**: `http://localhost:8888`
 
 Default login: `admin@ianoie.local` / `admin` (change the password after first login)
 
@@ -305,7 +305,7 @@ Edite o `.env` e altere no mínimo:
 docker compose -f docker/docker-compose.yml up -d
 ```
 
-**4. Abrir no navegador**: `http://<ip-da-dgx>`
+**4. Abrir no navegador**: `http://<ip-da-dgx>:8888`
 
 Login padrão: `admin@ianoie.local` / `admin` (altere a senha após o primeiro login)
 
@@ -338,7 +338,7 @@ Edite o `.env` e altere no mínimo:
 docker compose -f docker/docker-compose.yml up -d
 ```
 
-**4. Abrir no navegador**: `http://localhost`
+**4. Abrir no navegador**: `http://localhost:8888`
 
 Login padrão: `admin@ianoie.local` / `admin` (altere a senha após o primeiro login)
 
