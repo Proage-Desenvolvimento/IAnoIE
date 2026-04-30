@@ -29,7 +29,9 @@ Browser (React) → Traefik (:80) → FastAPI (:8000) → PostgreSQL
 
 Every push to `main` triggers a [GitHub Actions](./.github/workflows/build.yml) pipeline that builds and publishes Docker images to GHCR. You don't need to build anything — just clone, configure, and run.
 
-**1. Clone the repository and run setup** (first time only):
+#### Linux (NVIDIA DGX)
+
+**1. Clone and run setup** (first time only):
 
 ```bash
 git clone https://github.com/Proage-Desenvolvimento/IAnoIE.git
@@ -39,7 +41,7 @@ sudo bash scripts/setup-dgx.sh
 
 This installs Docker, NVIDIA Container Toolkit, and creates the `ianoie-proxy` network.
 
-> **No git?** You can run the setup directly from the URL:
+> **No git?** Run the setup directly:
 > ```bash
 > curl -fsSL https://raw.githubusercontent.com/Proage-Desenvolvimento/IAnoIE/main/scripts/setup-dgx.sh | sudo bash
 > ```
@@ -61,13 +63,44 @@ Edit `.env` and change at minimum:
 docker compose -f docker/docker-compose.yml up -d
 ```
 
-**4. Open in browser**:
-
-```
-http://<dgx-ip>
-```
+**4. Open in browser**: `http://<dgx-ip>`
 
 Default login: `admin@ianoie.local` / `admin` (change the password after first login)
+
+#### Windows (Docker Desktop)
+
+Make sure [Docker Desktop](https://www.docker.com/products/docker-desktop/) is installed and running with WSL 2 backend.
+
+**1. Clone and create the network** (first time only):
+
+```powershell
+git clone https://github.com/Proage-Desenvolvimento/IAnoIE.git
+cd IAnoIE
+docker network create ianoie-proxy
+```
+
+**2. Configure environment**:
+
+```powershell
+copy .env.example .env
+```
+
+Edit `.env` and change at minimum:
+- `POSTGRES_PASSWORD` — database password
+- `JWT_SECRET` — generate with `openssl rand -hex 32`
+- `DEFAULT_ADMIN_PASSWORD` — admin user password
+
+**3. Start the platform**:
+
+```powershell
+docker compose -f docker/docker-compose.yml up -d
+```
+
+**4. Open in browser**: `http://localhost`
+
+Default login: `admin@ianoie.local` / `admin` (change the password after first login)
+
+> **GPU support on Windows**: requires [NVIDIA CUDA on WSL](https://docs.nvidia.com/cuda/wsl-user-guide/index.html). Without it, apps install but won't have GPU access.
 
 ### Available Apps
 
@@ -238,7 +271,9 @@ Browser (React) → Traefik (:80) → FastAPI (:8000) → PostgreSQL
 
 A cada push na `main`, uma [GitHub Actions](./.github/workflows/build.yml) compila e publica as imagens Docker no GHCR. Não precisa compilar nada — só clonar, configurar e rodar.
 
-**1. Clonar o repositório e rodar o setup** (só na primeira vez):
+#### Linux (NVIDIA DGX)
+
+**1. Clonar e rodar o setup** (só na primeira vez):
 
 ```bash
 git clone https://github.com/Proage-Desenvolvimento/IAnoIE.git
@@ -248,7 +283,7 @@ sudo bash scripts/setup-dgx.sh
 
 Este script instala o Docker, o NVIDIA Container Toolkit e cria a rede `ianoie-proxy`.
 
-> **Sem git?** Pode rodar o setup direto da URL:
+> **Sem git?** Rode o setup direto da URL:
 > ```bash
 > curl -fsSL https://raw.githubusercontent.com/Proage-Desenvolvimento/IAnoIE/main/scripts/setup-dgx.sh | sudo bash
 > ```
@@ -270,13 +305,44 @@ Edite o `.env` e altere no mínimo:
 docker compose -f docker/docker-compose.yml up -d
 ```
 
-**4. Abrir no navegador**:
-
-```
-http://<ip-da-dgx>
-```
+**4. Abrir no navegador**: `http://<ip-da-dgx>`
 
 Login padrão: `admin@ianoie.local` / `admin` (altere a senha após o primeiro login)
+
+#### Windows (Docker Desktop)
+
+Certifique-se de que o [Docker Desktop](https://www.docker.com/products/docker-desktop/) está instalado e rodando com backend WSL 2.
+
+**1. Clonar e criar a rede** (só na primeira vez):
+
+```powershell
+git clone https://github.com/Proage-Desenvolvimento/IAnoIE.git
+cd IAnoIE
+docker network create ianoie-proxy
+```
+
+**2. Configurar o ambiente**:
+
+```powershell
+copy .env.example .env
+```
+
+Edite o `.env` e altere no mínimo:
+- `POSTGRES_PASSWORD` — senha do banco de dados
+- `JWT_SECRET` — gere com `openssl rand -hex 32`
+- `DEFAULT_ADMIN_PASSWORD` — senha do usuário admin
+
+**3. Iniciar a plataforma**:
+
+```powershell
+docker compose -f docker/docker-compose.yml up -d
+```
+
+**4. Abrir no navegador**: `http://localhost`
+
+Login padrão: `admin@ianoie.local` / `admin` (altere a senha após o primeiro login)
+
+> **Suporte a GPU no Windows**: requer [NVIDIA CUDA on WSL](https://docs.nvidia.com/cuda/wsl-user-guide/index.html). Sem isso, os apps instalam mas não terão acesso à GPU.
 
 ### Aplicativos Disponíveis
 
