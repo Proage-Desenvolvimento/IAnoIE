@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useInstallations, useUninstallApp, useAppAction } from "@/hooks/useInstallations";
-import { useJobPolling } from "@/hooks/useJobPolling";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
@@ -15,14 +14,12 @@ import {
   Trash2,
   ExternalLink,
   ScrollText,
-  ChevronDown,
-  ChevronUp,
   Box,
 } from "lucide-react";
 import type { Installation } from "@/lib/types";
 
 export function MyAppsPage() {
-  const { data, isLoading, refetch } = useInstallations();
+  const { data, isLoading } = useInstallations();
   const uninstall = useUninstallApp();
   const action = useAppAction();
   const [expandedId, setExpandedId] = useState<number | null>(null);

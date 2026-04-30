@@ -151,12 +151,12 @@ export function CatalogPage() {
                     <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-medium ${colorClass}`}>
                       {app.category}
                     </span>
-                    {needsGpu && (
+                    {needsGpu ? (
                       <Badge variant="info">
                         <Cpu className="h-3 w-3 mr-0.5" />
                         GPU
                       </Badge>
-                    )}
+                    ) : null}
                   </div>
                 </CardContent>
                 <CardFooter>

@@ -1,5 +1,4 @@
-import { cn } from "@/lib/utils";
-import type { Badge } from "@/components/ui/Badge";
+import { Badge as BadgeComponent } from "@/components/ui/Badge";
 
 type InstallationStatus = "pending" | "installing" | "running" | "stopped" | "error" | "uninstalling";
 
@@ -11,8 +10,6 @@ const statusConfig: Record<InstallationStatus, { variant: "default" | "secondary
   error: { variant: "danger", label: "Error" },
   uninstalling: { variant: "warning", label: "Uninstalling" },
 };
-
-import { Badge as BadgeComponent } from "@/components/ui/Badge";
 
 interface StatusBadgeProps {
   status: string;

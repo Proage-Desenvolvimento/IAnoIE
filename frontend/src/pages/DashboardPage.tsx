@@ -4,7 +4,6 @@ import { useGpuMetrics } from "@/hooks/useGpuMetrics";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { formatBytes } from "@/lib/utils";
 import { Box, Monitor, Activity, ArrowRight, Store } from "lucide-react";
 
 export function DashboardPage() {
@@ -14,8 +13,9 @@ export function DashboardPage() {
   const installations = installationsData?.items || [];
   const runningApps = installations.filter((i) => i.status === "running");
   const totalGpus = gpuData?.count || 0;
-  const avgUtil = gpuData?.gpus.reduce((sum, g) => sum + g.utilization_gpu, 0) / (totalGpus || 1) || 0;
-  const avgTemp = gpuData?.gpus.reduce((sum, g) => sum + g.temperature, 0) / (totalGpus || 1) || 0;
+  const gpus = gpuData?.gpus || [];
+  const avgUtil = gpus.length > 0 ? gpus.reduce((sum, g) => sum + g.utilization_gpu, 0) / gpus.length : 0;
+  const avgTemp = gpus.length > 0 ? gpus.reduce((sum, g) => sum + g.temperature, 0) / gpus.length : 0;
 
   return (
     <div className="space-y-8">
