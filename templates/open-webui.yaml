@@ -1,0 +1,52 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "Open WebUI"
+  slug: "open-webui"
+  version: "1.0.0"
+  description: "ChatGPT-style web interface for local LLMs"
+  category: "llm"
+  icon: "MessageSquare"
+  tags: ["chat", "webui", "llm"]
+
+gpu:
+  required: false
+
+config:
+  - key: "ollama_base_url"
+    label: "Ollama API URL"
+    type: "string"
+    default: "http://ollama:11434"
+    required: true
+    description: "URL of your Ollama instance"
+
+services:
+  open-webui:
+    image: "ghcr.io/open-webui/open-webui"
+    tag: "latest"
+    internal: false
+
+    environment:
+      OLLAMA_BASE_URL: "{{config.ollama_base_url}}"
+      WEBUI_AUTH: "false"
+      ENV: "prod"
+
+    ports:
+      - container_port: 8080
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    volumes:
+      - name: "openwebui-data"
+        mount_path: "/app/backend/data"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health | grep -q ok || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 5
+      start_period: 60
+
+    restart: "unless-stopped"

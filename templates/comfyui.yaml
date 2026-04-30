@@ -1,0 +1,61 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "ComfyUI"
+  slug: "comfyui"
+  version: "1.0.0"
+  description: "Node-based Stable Diffusion UI for image generation"
+  category: "imaging"
+  icon: "Image"
+  tags: ["stable-diffusion", "image-generation", "ai-art"]
+
+gpu:
+  required: true
+  min_count: 1
+  max_count: 1
+  min_vram_gb: 8
+
+config:
+  - key: "gpu_index"
+    label: "GPU Assignment"
+    type: "select"
+    default: 0
+    required: true
+    options: [0, 1, 2, 3, 4, 5, 6, 7]
+    description: "Which GPU to use for image generation"
+
+services:
+  comfyui:
+    image: "ghcr.io/ai-dock/comfyui"
+    tag: "latest"
+    internal: false
+
+    environment:
+      CLI_ARGS: "--listen 0.0.0.0"
+
+    ports:
+      - container_port: 8188
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    volumes:
+      - name: "comfyui-models"
+        mount_path: "/opt/ComfyUI/models"
+        mode: "rw"
+      - name: "comfyui-output"
+        mount_path: "/opt/ComfyUI/output"
+        mode: "rw"
+
+    gpu:
+      enabled: true
+      count: 1
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8188"]
+      interval: 30
+      timeout: 10
+      retries: 5
+      start_period: 60
+
+    restart: "unless-stopped"

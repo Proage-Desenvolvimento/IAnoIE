@@ -1,0 +1,126 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "Open WebUI + Ollama"
+  slug: "open-webui-ollama"
+  version: "1.0.0"
+  description: "Complete LLM stack with Ollama backend and Open WebUI frontend"
+  long_description: |
+    Open WebUI provides a ChatGPT-like interface connected to Ollama,
+    which runs LLMs locally on your DGX GPUs. Includes model management,
+    conversation history, and document upload (RAG).
+  category: "llm"
+  icon: "MessageSquare"
+  tags: ["chat", "llm", "ollama", "rag"]
+
+gpu:
+  required: true
+  min_count: 1
+  max_count: 4
+  min_vram_gb: 16
+
+config:
+  - key: "gpu_index"
+    label: "GPU Assignment"
+    type: "select"
+    default: 0
+    required: true
+    options: [0, 1, 2, 3, 4, 5, 6, 7]
+    description: "Which GPU to use for model inference"
+
+  - key: "auto_pull_model"
+    label: "Auto-pull default model"
+    type: "boolean"
+    default: true
+    description: "Automatically pull llama3.1:8b after installation"
+
+  - key: "default_model"
+    label: "Default model"
+    type: "select"
+    default: "llama3.1:8b"
+    options:
+      - "llama3.1:8b"
+      - "llama3.1:70b"
+      - "mistral:7b"
+      - "codellama:13b"
+      - "deepseek-coder-v2:16b"
+      - "qwen2.5:32b"
+    description: "Model to download after first start"
+
+services:
+  ollama:
+    image: "ollama/ollama"
+    tag: "latest"
+    internal: true
+
+    environment:
+      OLLAMA_HOST: "0.0.0.0"
+      OLLAMA_ORIGINS: "*"
+      OLLAMA_KEEP_ALIVE: "24h"
+      OLLAMA_NUM_PARALLEL: "4"
+
+    ports:
+      - container_port: 11434
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    volumes:
+      - name: "ollama-models"
+        mount_path: "/root/.ollama"
+        mode: "rw"
+
+    gpu:
+      enabled: true
+      count: 1
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/version"]
+      interval: 15
+      timeout: 5
+      retries: 5
+      start_period: 30
+
+    restart: "unless-stopped"
+
+  open-webui:
+    image: "ghcr.io/open-webui/open-webui"
+    tag: "latest"
+    internal: false
+
+    environment:
+      OLLAMA_BASE_URL: "http://ollama:11434"
+      WEBUI_AUTH: "false"
+      ENABLE_RAG_WEB_SEARCH: "true"
+      RAG_EMBEDDING_ENGINE: "ollama"
+      ENV: "prod"
+
+    ports:
+      - container_port: 8080
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    volumes:
+      - name: "openwebui-data"
+        mount_path: "/app/backend/data"
+        mode: "rw"
+
+    gpu:
+      enabled: false
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health | grep -q ok || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 5
+      start_period: 60
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "ollama"
+
+    resource_limits:
+      memory: "4g"
+      cpus: 2.0

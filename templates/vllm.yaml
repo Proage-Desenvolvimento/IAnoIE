@@ -1,0 +1,66 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "vLLM"
+  slug: "vllm"
+  version: "1.0.0"
+  description: "High-throughput LLM inference with PagedAttention"
+  category: "inference"
+  icon: "Zap"
+  tags: ["vllm", "llm", "inference", "serving"]
+
+gpu:
+  required: true
+  min_count: 1
+  max_count: 4
+  min_vram_gb: 16
+
+config:
+  - key: "gpu_index"
+    label: "GPU Assignment"
+    type: "select"
+    default: 0
+    required: true
+    options: [0, 1, 2, 3, 4, 5, 6, 7]
+    description: "Which GPU to use"
+
+  - key: "model_name"
+    label: "HuggingFace Model"
+    type: "string"
+    default: "meta-llama/Llama-3.1-8B-Instruct"
+    required: true
+    description: "HuggingFace model ID to serve"
+
+services:
+  vllm:
+    image: "vllm/vllm-openai"
+    tag: "latest"
+    internal: false
+
+    environment:
+      MODEL: "{{config.model_name}}"
+      NVIDIA_VISIBLE_DEVICES: "all"
+
+    ports:
+      - container_port: 8000
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    volumes:
+      - name: "vllm-cache"
+        mount_path: "/root/.cache/huggingface"
+        mode: "rw"
+
+    gpu:
+      enabled: true
+      count: 1
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30
+      timeout: 10
+      retries: 5
+      start_period: 120
+
+    restart: "unless-stopped"

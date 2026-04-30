@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  --animate-in: animate-in 0.2s ease-out;
+}
+
+@keyframes animate-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-in {
+  animation: animate-in 0.2s ease-out;
+}
+
+/* Scrollbar styling for log viewer */
+.overflow-auto::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.overflow-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+  border-radius: 3px;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa;
+}

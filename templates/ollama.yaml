@@ -1,0 +1,59 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "Ollama"
+  slug: "ollama"
+  version: "1.0.0"
+  description: "Run LLMs locally with a simple API"
+  category: "llm"
+  icon: "Brain"
+  tags: ["llm", "ollama", "inference"]
+
+gpu:
+  required: true
+  min_count: 1
+  max_count: 4
+  min_vram_gb: 8
+
+config:
+  - key: "gpu_index"
+    label: "GPU Assignment"
+    type: "select"
+    default: 0
+    required: true
+    options: [0, 1, 2, 3, 4, 5, 6, 7]
+    description: "Which GPU to use for model inference"
+
+services:
+  ollama:
+    image: "ollama/ollama"
+    tag: "latest"
+    internal: false
+
+    environment:
+      OLLAMA_HOST: "0.0.0.0"
+      OLLAMA_ORIGINS: "*"
+
+    ports:
+      - container_port: 11434
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    volumes:
+      - name: "ollama-models"
+        mount_path: "/root/.ollama"
+        mode: "rw"
+
+    gpu:
+      enabled: true
+      count: 1
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/version"]
+      interval: 15
+      timeout: 5
+      retries: 5
+      start_period: 30
+
+    restart: "unless-stopped"

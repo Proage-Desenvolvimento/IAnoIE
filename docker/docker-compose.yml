@@ -1,0 +1,172 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ianoie-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ianoie
+      POSTGRES_PASSWORD: ianoie
+      POSTGRES_DB: ianoie
+    volumes:
+      - ianoie-postgres:/var/lib/postgresql/data
+    networks:
+      - ianoie-proxy
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ianoie"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: ianoie-redis
+    restart: unless-stopped
+    volumes:
+      - ianoie-redis:/data
+    networks:
+      - ianoie-proxy
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: ianoie-api
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../templates:/app/templates:ro
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://ianoie:ianoie@postgres:5432/ianoie
+      - DATABASE_URL_SYNC=postgresql+psycopg2://ianoie:ianoie@postgres:5432/ianoie
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - TEMPLATES_DIR=/app/templates
+    env_file:
+      - ../.env
+    networks:
+      - ianoie-proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ianoie-api.rule=PathPrefix(`/api/`)"
+      - "traefik.http.routers.ianoie-api.entrypoints=web"
+      - "traefik.http.services.ianoie-api.loadbalancer.server.port=8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: ianoie-worker
+    restart: unless-stopped
+    command:
+      [
+        "celery",
+        "-A",
+        "ianoie.workers.celery_app:celery_app",
+        "worker",
+        "--loglevel=info",
+        "--concurrency=2",
+      ]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../templates:/app/templates:ro
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://ianoie:ianoie@postgres:5432/ianoie
+      - DATABASE_URL_SYNC=postgresql+psycopg2://ianoie:ianoie@postgres:5432/ianoie
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - TEMPLATES_DIR=/app/templates
+    env_file:
+      - ../.env
+    networks:
+      - ianoie-proxy
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  beat:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: ianoie-beat
+    restart: unless-stopped
+    command:
+      [
+        "celery",
+        "-A",
+        "ianoie.workers.celery_app:celery_app",
+        "beat",
+        "--loglevel=info",
+      ]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://ianoie:ianoie@postgres:5432/ianoie
+      - DATABASE_URL_SYNC=postgresql+psycopg2://ianoie:ianoie@postgres:5432/ianoie
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    env_file:
+      - ../.env
+    networks:
+      - ianoie-proxy
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: ianoie-frontend
+    restart: unless-stopped
+    networks:
+      - ianoie-proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ianoie-frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.ianoie-frontend.entrypoints=web"
+      - "traefik.http.routers.ianoie-frontend.priority=1"
+      - "traefik.http.services.ianoie-frontend.loadbalancer.server.port=80"
+
+  traefik:
+    image: traefik:v3.6
+    container_name: ianoie-traefik
+    restart: unless-stopped
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.network=ianoie-proxy"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - ianoie-proxy
+
+volumes:
+  ianoie-postgres:
+  ianoie-redis:
+
+networks:
+  ianoie-proxy:
+    external: true
