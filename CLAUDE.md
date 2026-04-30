@@ -41,7 +41,7 @@ IAnoIE/
 │       ├── templates/        # Template engine: loader.py (YAML), renderer.py (-> ContainerConfig)
 │       ├── workers/          # Celery: celery_app.py, tasks/install.py, tasks/uninstall.py, tasks/gpu_monitor.py
 │       ├── core/             # security.py (JWT+bcrypt), exceptions.py, middleware.py
-│       └── seed/             # seed_apps.py (7 apps + admin user)
+│       └── seed/             # seed_apps.py (8 apps + admin user)
 ├── frontend/                 # React 19 + TypeScript + Tailwind 4
 │   ├── package.json          # deps: react, react-router-dom, @tanstack/react-query, recharts, lucide-react, ky, zod
 │   ├── vite.config.ts        # proxy /api -> localhost:8000
@@ -54,7 +54,7 @@ IAnoIE/
 │       │   └── logs/         # LogViewer (terminal-style, WebSocket streaming, filter, auto-scroll)
 │       ├── pages/            # Login, Dashboard, Catalog, MyApps, AppDetail, GpuMonitor
 │       └── lib/              # types.ts, utils.ts (cn, formatBytes), constants.ts
-├── templates/                # 7 YAML app templates: ollama, open-webui, ollama-openwebui, jupyterlab, comfyui, triton, vllm
+├── templates/                # 8 YAML app templates: ollama, open-webui, ollama-openwebui, jupyterlab, comfyui, triton, vllm, n8n
 ├── docker/
 │   ├── docker-compose.yml    # postgres, redis, api, worker, beat, frontend, traefik
 │   └── docker-compose.dev.yml
@@ -80,8 +80,8 @@ IAnoIE/
 - [x] Docker ops: ContainerManager (create/start/stop/remove/wait_healthy), ImageManager, NetworkManager, VolumeManager
 - [x] GPUDetector via pynvml (util, vram, temp, power, uuid)
 - [x] WebSocket endpoint para stream de logs de container
-- [x] Seed de 7 apps + admin user padrão (admin@ianoie.local / admin)
-- [x] 7 templates YAML de apps prontos
+- [x] Seed de 8 apps + admin user padrão (admin@ianoie.local / admin)
+- [x] 8 templates YAML de apps prontos
 
 ### Frontend (completo)
 - [x] 8 componentes UI reutilizáveis (Button, Badge, Card, Dialog, Progress, Spinner, EmptyState, StatusBadge)

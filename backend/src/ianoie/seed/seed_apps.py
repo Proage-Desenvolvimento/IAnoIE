@@ -77,6 +77,16 @@ APPS = [
         "version": "latest",
         "gpu_requirements": '{"min_gpu_count": 1, "min_vram_gb": 16, "gpu_required": true}',
     },
+    {
+        "name": "n8n",
+        "slug": "n8n",
+        "description": "Workflow automation platform. Connect apps and automate tasks with a visual node-based editor.",
+        "category": "automation",
+        "template_path": "n8n.yaml",
+        "icon_url": None,
+        "version": "latest",
+        "gpu_requirements": '{"min_gpu_count": 0, "min_vram_gb": 0, "gpu_required": false}',
+    },
 ]
 
 

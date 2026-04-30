@@ -1,0 +1,58 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "n8n"
+  slug: "n8n"
+  version: "1.0.0"
+  description: "Workflow automation platform with a visual node-based editor"
+  category: "automation"
+  icon: "Workflow"
+  tags: ["automation", "workflow", "integration", "no-code"]
+  long_description: |
+    n8n is a powerful workflow automation tool that lets you connect various apps
+    and services together without writing code. Build complex automations with a
+    visual drag-and-drop interface, supporting 400+ integrations.
+
+gpu:
+  required: false
+
+config:
+  - key: "timezone"
+    label: "Timezone"
+    type: "string"
+    default: "America/Sao_Paulo"
+    required: false
+    description: "Timezone for scheduled workflows (e.g. America/Sao_Paulo)"
+
+services:
+  n8n:
+    image: "n8nio/n8n"
+    tag: "latest"
+    internal: false
+
+    environment:
+      N8N_HOST: "localhost"
+      N8N_PORT: "5678"
+      N8N_PROTOCOL: "http"
+      GENERIC_TIMEZONE: "{{config.timezone}}"
+      TZ: "{{config.timezone}}"
+
+    ports:
+      - container_port: 5678
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    volumes:
+      - name: "n8n-data"
+        mount_path: "/home/node/.n8n"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5678/healthz || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 5
+      start_period: 60
+
+    restart: "unless-stopped"
