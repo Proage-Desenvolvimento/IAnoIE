@@ -5,7 +5,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { formatBytes } from "@/lib/utils";
-import { Box, MonitorCpu, Activity, ArrowRight, Store } from "lucide-react";
+import { Box, Monitor, Activity, ArrowRight, Store } from "lucide-react";
 
 export function DashboardPage() {
   const { data: installationsData } = useInstallations();
@@ -48,7 +48,7 @@ export function DashboardPage() {
                 <p className="mt-1 text-2xl font-bold text-zinc-900">{totalGpus}</p>
               </div>
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
-                <MonitorCpu className="h-5 w-5 text-blue-600" />
+                <Monitor className="h-5 w-5 text-blue-600" />
               </div>
             </div>
           </CardContent>

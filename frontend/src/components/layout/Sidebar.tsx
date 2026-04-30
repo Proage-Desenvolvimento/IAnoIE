@@ -3,7 +3,7 @@ import {
   LayoutDashboard,
   Store,
   Box,
-  MonitorCpu,
+  Monitor,
   LogOut,
   Cpu,
 } from "lucide-react";
@@ -13,7 +13,7 @@ const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/catalog", icon: Store, label: "App Catalog" },
   { to: "/my-apps", icon: Box, label: "Installed Apps" },
-  { to: "/gpu", icon: MonitorCpu, label: "GPU Monitor" },
+  { to: "/gpu", icon: Monitor, label: "GPU Monitor" },
 ];
 
 export function Sidebar() {

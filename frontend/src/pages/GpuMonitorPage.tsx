@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatBytes } from "@/lib/utils";
-import { MonitorCpu, Thermometer, Zap, HardDrive } from "lucide-react";
+import { Monitor, Thermometer, Zap, HardDrive } from "lucide-react";
 
 export function GpuMonitorPage() {
   const { data, isLoading } = useGpuMetrics();
@@ -25,7 +25,7 @@ export function GpuMonitorPage() {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-zinc-900">GPU Monitor</h1>
-        <EmptyState icon={<MonitorCpu className="h-6 w-6" />} title="No GPUs detected" description="Make sure NVIDIA drivers are installed" />
+        <EmptyState icon={<Monitor className="h-6 w-6" />} title="No GPUs detected" description="Make sure NVIDIA drivers are installed" />
       </div>
     );
   }
