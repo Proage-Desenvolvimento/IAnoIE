@@ -15,6 +15,7 @@ env:
   REGISTRY: ghcr.io
   API_IMAGE: ghcr.io/${{ github.repository_owner }}/ianoie-api
   FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/ianoie-frontend
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-backend:
