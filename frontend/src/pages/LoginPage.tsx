@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useLogin } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
-import { Cpu } from "lucide-react";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
@@ -26,11 +25,9 @@ export function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-900 shadow-lg">
-            <Cpu className="h-6 w-6 text-white" />
-          </div>
-          <h1 className="mt-4 text-xl font-bold text-zinc-900">IAnoIE</h1>
-          <p className="text-sm text-zinc-500">GPU AI App Platform</p>
+          <a href="https://aimization.com/" target="_blank" rel="noopener noreferrer">
+            <img src="/logo-aimization.png" alt="IAnoIE" className="h-[200px] w-auto object-contain" />
+          </a>
         </div>
 
         {/* Form */}
@@ -44,7 +41,7 @@ export function LoginPage() {
             <label className="text-sm font-medium text-zinc-700">Email</label>
             <input
               type="email"
-              placeholder="admin@ianoie.local"
+              placeholder="admin@aimization.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-300"

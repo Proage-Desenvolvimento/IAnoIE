@@ -80,7 +80,7 @@ IAnoIE/
 - [x] Docker ops: ContainerManager (create/start/stop/remove/wait_healthy), ImageManager, NetworkManager, VolumeManager
 - [x] GPUDetector via pynvml (util, vram, temp, power, uuid)
 - [x] WebSocket endpoint para stream de logs de container
-- [x] Seed de 8 apps + admin user padrão (admin@ianoie.local / admin)
+- [x] Seed de 8 apps + admin user padrão (admin@aimization.com / admin)
 - [x] 8 templates YAML de apps prontos
 
 ### Frontend (completo)
@@ -185,7 +185,7 @@ cp .env.example .env  # editar senhas/secret
 docker compose -f docker/docker-compose.yml up -d
 
 # Acessar: http://<dgx-ip>
-# Login: admin@ianoie.local / admin
+# Login: admin@aimization.com / admin
 ```
 
 ---
@@ -241,7 +241,7 @@ docker run --rm --gpus all ubuntu nvidia-smi -L
 | `JWT_SECRET` | `CHANGE-ME` | Secret do JWT |
 | `DOCKER_HOST` | `unix:///var/run/docker.sock` | Docker socket |
 | `TEMPLATES_DIR` | `/app/templates` | Diretório dos YAML templates |
-| `DEFAULT_ADMIN_EMAIL` | `admin@ianoie.local` | Email do admin inicial |
+| `DEFAULT_ADMIN_EMAIL` | `admin@aimization.com` | Email do admin inicial |
 | `DEFAULT_ADMIN_PASSWORD` | `admin` | Senha do admin inicial |
 | `GPU_POLL_INTERVAL_SECONDS` | `60` | Intervalo do beat de GPU metrics |
 | `GPU_METRICS_RETENTION_DAYS` | `7` | Dias de retenção de métricas GPU |

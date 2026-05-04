@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     templates_dir: str = "/app/templates"
 
     # Default admin
-    default_admin_email: str = "admin@ianoie.local"
+    default_admin_email: str = "admin@aimization.com"
     default_admin_password: str = "admin"
 
 

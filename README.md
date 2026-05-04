@@ -65,7 +65,7 @@ docker compose -f docker/docker-compose.yml up -d
 
 **4. Open in browser**: `http://<dgx-ip>:8888`
 
-Default login: `admin@ianoie.local` / `admin` (change the password after first login)
+Default login: `admin@aimization.com` / `admin` (change the password after first login)
 
 #### Windows (Docker Desktop)
 
@@ -98,9 +98,18 @@ docker compose -f docker/docker-compose.yml up -d
 
 **4. Open in browser**: `http://localhost:8888`
 
-Default login: `admin@ianoie.local` / `admin` (change the password after first login)
+Default login: `admin@aimization.com` / `admin` (change the password after first login)
 
 > **GPU support on Windows**: requires [NVIDIA CUDA on WSL](https://docs.nvidia.com/cuda/wsl-user-guide/index.html). Without it, apps install but won't have GPU access.
+
+#### Updating an existing installation
+
+```bash
+git pull
+docker compose -f docker/docker-compose.yml up -d --build
+```
+
+This rebuilds the custom images (api, frontend) with the latest code and pulls any updated external images (postgres, redis, traefik). Data in PostgreSQL and Redis is preserved in named volumes.
 
 ### Available Apps
 
@@ -219,7 +228,7 @@ npm run dev    # http://localhost:5173, proxies /api → localhost:8000
 | `CELERY_RESULT_BACKEND` | `redis://localhost:6379/2` | Celery results |
 | `DOCKER_HOST` | `unix:///var/run/docker.sock` | Docker socket |
 | `TEMPLATES_DIR` | `/app/templates` | YAML templates path |
-| `DEFAULT_ADMIN_EMAIL` | `admin@ianoie.local` | Initial admin email |
+| `DEFAULT_ADMIN_EMAIL` | `admin@aimization.com` | Initial admin email |
 | `DEFAULT_ADMIN_PASSWORD` | `change-me-in-production` | Initial admin password |
 | `GPU_POLL_INTERVAL_SECONDS` | `60` | GPU metrics interval |
 | `GPU_METRICS_RETENTION_DAYS` | `7` | Metrics retention |
@@ -307,7 +316,7 @@ docker compose -f docker/docker-compose.yml up -d
 
 **4. Abrir no navegador**: `http://<ip-da-dgx>:8888`
 
-Login padrão: `admin@ianoie.local` / `admin` (altere a senha após o primeiro login)
+Login padrão: `admin@aimization.com` / `admin` (altere a senha após o primeiro login)
 
 #### Windows (Docker Desktop)
 
@@ -340,9 +349,18 @@ docker compose -f docker/docker-compose.yml up -d
 
 **4. Abrir no navegador**: `http://localhost:8888`
 
-Login padrão: `admin@ianoie.local` / `admin` (altere a senha após o primeiro login)
+Login padrão: `admin@aimization.com` / `admin` (altere a senha após o primeiro login)
 
 > **Suporte a GPU no Windows**: requer [NVIDIA CUDA on WSL](https://docs.nvidia.com/cuda/wsl-user-guide/index.html). Sem isso, os apps instalam mas não terão acesso à GPU.
+
+#### Atualizando uma instalação existente
+
+```bash
+git pull
+docker compose -f docker/docker-compose.yml up -d --build
+```
+
+Isso reconstrói as imagens customizadas (api, frontend) com o código mais recente e faz pull de imagens externas atualizadas (postgres, redis, traefik). Os dados do PostgreSQL e Redis são preservados nos volumes nomeados.
 
 ### Aplicativos Disponíveis
 
@@ -461,7 +479,7 @@ npm run dev    # http://localhost:5173, proxy /api → localhost:8000
 | `CELERY_RESULT_BACKEND` | `redis://localhost:6379/2` | Resultados do Celery |
 | `DOCKER_HOST` | `unix:///var/run/docker.sock` | Socket Docker |
 | `TEMPLATES_DIR` | `/app/templates` | Caminho dos templates YAML |
-| `DEFAULT_ADMIN_EMAIL` | `admin@ianoie.local` | Email do admin inicial |
+| `DEFAULT_ADMIN_EMAIL` | `admin@aimization.com` | Email do admin inicial |
 | `DEFAULT_ADMIN_PASSWORD` | `change-me-in-production` | Senha do admin inicial |
 | `GPU_POLL_INTERVAL_SECONDS` | `60` | Intervalo de métricas GPU |
 | `GPU_METRICS_RETENTION_DAYS` | `7` | Retenção de métricas |
