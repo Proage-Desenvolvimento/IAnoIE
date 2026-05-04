@@ -24,8 +24,8 @@ export function Sidebar() {
   return (
     <aside className="flex h-screen w-[240px] flex-col border-r border-zinc-200 bg-zinc-50">
       {/* Logo */}
-      <div className="flex h-14 items-center border-b border-zinc-200 px-5">
-        <img src="/logo-aimization.png" alt="Aimization" className="h-8 w-auto" />
+      <div className="flex h-16 items-center justify-center border-b border-zinc-200 px-5">
+        <img src="/logo-aimization.png" alt="Aimization" className="h-auto w-[100px]" />
       </div>
 
       {/* Nav */}
@@ -65,7 +65,6 @@ export function Sidebar() {
           rel="noopener noreferrer"
           className="flex items-center gap-1.5 px-3 py-2 text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
         >
-          <img src="/logo-aimization.png" alt="Aimization" className="h-4 w-4 rounded" />
           Powered by Aimization
         </a>
       </div>
