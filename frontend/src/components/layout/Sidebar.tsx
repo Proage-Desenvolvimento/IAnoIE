@@ -5,7 +5,6 @@ import {
   Box,
   Monitor,
   LogOut,
-  Cpu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -25,11 +24,8 @@ export function Sidebar() {
   return (
     <aside className="flex h-screen w-[240px] flex-col border-r border-zinc-200 bg-zinc-50">
       {/* Logo */}
-      <div className="flex h-14 items-center gap-2.5 border-b border-zinc-200 px-5">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-900">
-          <Cpu className="h-4 w-4 text-white" />
-        </div>
-        <span className="font-bold text-zinc-900 tracking-tight">IAnoIE</span>
+      <div className="flex h-14 items-center border-b border-zinc-200 px-5">
+        <img src="/logo-aimization.png" alt="Aimization" className="h-8 w-auto" />
       </div>
 
       {/* Nav */}
