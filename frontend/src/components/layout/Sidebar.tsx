@@ -63,6 +63,15 @@ export function Sidebar() {
           <LogOut className="h-4 w-4" />
           Sign out
         </button>
+        <a
+          href="https://aimization.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 px-3 py-2 text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
+        >
+          <img src="/logo-aimization.png" alt="Aimization" className="h-4 w-4 rounded" />
+          Powered by Aimization
+        </a>
       </div>
     </aside>
   );
