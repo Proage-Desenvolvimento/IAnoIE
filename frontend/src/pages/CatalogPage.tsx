@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useApps } from "@/hooks/useApps";
 import { useInstallApp } from "@/hooks/useInstallations";
+import { useGpuMetrics } from "@/hooks/useGpuMetrics";
 import { useJobPolling } from "@/hooks/useJobPolling";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -46,10 +47,11 @@ export function CatalogPage() {
   const [category, setCategory] = useState<string | undefined>();
   const [search, setSearch] = useState("");
   const [selectedApp, setSelectedApp] = useState<App | null>(null);
-  const [gpuIndex, setGpuIndex] = useState(0);
+  const [gpuIndices, setGpuIndices] = useState<number[]>([0]);
   const [activeJobId, setActiveJobId] = useState<number | null>(null);
 
   const { data, isLoading } = useApps({ category, search: search || undefined });
+  const { data: gpuStatus } = useGpuMetrics();
   const installApp = useInstallApp();
 
   const jobQuery = useJobPolling(activeJobId, (job) => {
@@ -64,8 +66,14 @@ export function CatalogPage() {
   const handleInstall = () => {
     if (!selectedApp) return;
     installApp.mutate(
-      { appId: selectedApp.id, config: { gpu_index: gpuIndex } },
+      { appId: selectedApp.id, config: { gpu_indices: gpuIndices } },
       { onSuccess: (res) => setActiveJobId(res.job_id) },
+    );
+  };
+
+  const toggleGpu = (index: number) => {
+    setGpuIndices((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
     );
   };
 
@@ -160,7 +168,7 @@ export function CatalogPage() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button onClick={() => { setSelectedApp(app); setGpuIndex(0); setActiveJobId(null); }} className="w-full" size="sm">
+                  <Button onClick={() => { setSelectedApp(app); setGpuIndices([0]); setActiveJobId(null); }} className="w-full" size="sm">
                     <Download className="h-3.5 w-3.5" />
                     Install
                   </Button>
@@ -183,16 +191,39 @@ export function CatalogPage() {
           {!isInstalling ? (
             <div>
               <label className="text-sm font-medium text-zinc-700">GPU Assignment</label>
-              <select
-                value={gpuIndex}
-                onChange={(e) => setGpuIndex(Number(e.target.value))}
-                className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-300"
-              >
-                {Array.from({ length: 8 }, (_, i) => (
-                  <option key={i} value={i}>GPU {i}</option>
+              <p className="mt-1 text-xs text-zinc-400">Select one or more GPUs for this application</p>
+              <div className="mt-2 max-h-48 space-y-1 overflow-y-auto rounded-lg border border-zinc-200 p-2">
+                {(gpuStatus?.gpus ?? []).map((gpu) => (
+                  <label
+                    key={gpu.index}
+                    className={`flex cursor-pointer items-center gap-3 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-zinc-50 ${
+                      gpuIndices.includes(gpu.index) ? "bg-zinc-100" : ""
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={gpuIndices.includes(gpu.index)}
+                      onChange={() => toggleGpu(gpu.index)}
+                      className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-zinc-900">GPU {gpu.index}</div>
+                      <div className="text-[11px] text-zinc-400 truncate">{gpu.name}</div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="text-[11px] text-zinc-500">
+                        {gpu.utilization_gpu.toFixed(0)}% util
+                      </div>
+                      <div className="text-[11px] text-zinc-400">
+                        {((gpu.vram_total_mb - gpu.vram_free_mb) / 1024).toFixed(1)}/{(gpu.vram_total_mb / 1024).toFixed(0)} GB
+                      </div>
+                    </div>
+                  </label>
                 ))}
-              </select>
-              <p className="mt-1 text-xs text-zinc-400">Select which GPU to use for this application</p>
+                {gpuStatus && gpuStatus.count === 0 && (
+                  <p className="px-2 py-1.5 text-xs text-zinc-400">No GPUs detected</p>
+                )}
+              </div>
             </div>
           ) : (
             <div className="space-y-4">

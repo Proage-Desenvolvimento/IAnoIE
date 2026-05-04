@@ -1,7 +1,8 @@
-# IAnoIE — GPU AI App Platform for NVIDIA DGX
+# IAnoIE — GPU AI App Platform for NVIDIA DGX Spark
 
-Plataforma web tipo Softaculous para instalar e gerenciar aplicações de IA em máquinas DGX da NVIDIA com um clique. Usuário não precisa entender Docker, CUDA ou Linux.
+Plataforma web tipo Softaculous para instalar e gerenciar aplicações de IA na NVIDIA DGX Spark com um clique. Usuário não precisa entender Docker, CUDA ou Linux.
 
+**Hardware alvo:** NVIDIA DGX Spark (1x GB10 Grace Blackwell SoC, 128 GB unified memory, desktop)
 **Organização:** Proage-Desenvolvimento (Brasil)
 **Stack:** Python 3.11+ / FastAPI / PostgreSQL / Celery + Redis / React 19 + TypeScript / Tailwind CSS / Traefik
 
@@ -136,7 +137,6 @@ IAnoIE/
 
 ### Funcionalidades — Fase 2
 - [ ] Multi-user com roles (admin/user/viewer)
-- [ ] GPU quotas por usuário
 - [ ] Backup/restore de volumes
 - [ ] App update flow (pull new image, recreate container)
 - [ ] Custom domain por app
@@ -147,8 +147,6 @@ IAnoIE/
 - [ ] Kubernetes (Helm chart, pod-based lifecycle)
 - [ ] NVIDIA NGC integration (browse/pull NGC containers)
 - [ ] Marketplace (templates comunitários com upload)
-- [ ] Multi-node DGX
-- [ ] MIG support (partition GPUs)
 - [ ] SSO/SAML
 - [ ] Audit logging
 - [ ] Billing/quotas
@@ -176,7 +174,7 @@ npm run dev   # http://localhost:5173, proxy /api -> localhost:8000
 ### Docker Compose (produção)
 
 ```bash
-# Primeira vez na DGX
+# Primeira vez na DGX Spark
 sudo bash scripts/setup-dgx.sh
 
 # Subir tudo
@@ -184,7 +182,7 @@ docker network create ianoie-proxy
 cp .env.example .env  # editar senhas/secret
 docker compose -f docker/docker-compose.yml up -d
 
-# Acessar: http://<dgx-ip>
+# Acessar: http://<dgx-spark-ip>
 # Login: admin@aimization.com / admin
 ```
 
@@ -196,7 +194,7 @@ docker compose -f docker/docker-compose.yml up -d
 - **Frontend:** componentes em `components/ui/` são primitivos genéricos; componentes de domínio ficam em `components/{domain}/`; páginas em `pages/`
 - **Templates YAML:** schema `ianoie-template/v1` com metadata, gpu, config, services; renderer resolve dependências e gera labels Traefik
 - **Docker:** todos containers gerenciados têm label `ianoie.managed=true` e `ianoie.installation_id`
-- **GPU:** pynvml para detecção/monitoring; Docker DeviceRequest com `capabilities=[["gpu"]]` e `device_ids=[uuids]` para passthrough
+- **GPU:** DGX Spark tem 1x GB10 Grace Blackwell (detecção dinâmica via pynvml); Docker DeviceRequest com `capabilities=[["gpu"]]` e `device_ids=[uuids]` para passthrough; suporte a seleção de múltiplas GPUs para compatibilidade com DGX maiores
 - **Auth:** JWT no header `Authorization: Bearer <token>`, armazenado em `localStorage` no frontend
 - **Rotas API:** tudo sob `/api/v1/`; WebSocket em `/api/v1/ws/logs/{id}?token=`
 - **Frontend API client:** ky com interceptor JWT e redirect 401 -> /login

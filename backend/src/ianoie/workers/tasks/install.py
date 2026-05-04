@@ -69,9 +69,11 @@ def install_app(self, installation_id: int, job_id: int):
         gpu_uuids = []
         if template.get("gpu", {}).get("required"):
             detector = GPUDetector()
-            gpu_index = user_config.get("gpu_index")
-            if gpu_index is not None:
-                gpu_uuids = [detector.get_gpu_uuid(gpu_index)]
+            gpu_indices = user_config.get("gpu_indices")
+            if gpu_indices is None and user_config.get("gpu_index") is not None:
+                gpu_indices = [user_config["gpu_index"]]
+            if gpu_indices:
+                gpu_uuids = [detector.get_gpu_uuid(i) for i in gpu_indices]
             else:
                 all_gpus = detector.get_all_gpus()
                 if all_gpus:
