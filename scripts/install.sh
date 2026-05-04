@@ -235,7 +235,7 @@ JWT_ALGORITHM=HS256
 JWT_EXPIRE_HOURS=24
 
 # Default Admin User
-DEFAULT_ADMIN_EMAIL=admin@ianoie.local
+DEFAULT_ADMIN_EMAIL=admin@aimization.com
 DEFAULT_ADMIN_PASSWORD=${ADMIN_PASSWORD}
 
 # GPU Monitoring
@@ -294,7 +294,7 @@ echo ""
 SERVER_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || echo "<dgx-ip>")
 
 echo -e "  ${BLUE}URL:${NC}      http://${SERVER_IP}"
-echo -e "  ${BLUE}Login:${NC}    admin@ianoie.local"
+echo -e "  ${BLUE}Login:${NC}    admin@aimization.com"
 if [ -z "$CUSTOM_ENV" ] && [ -f "$ENV_FILE" ]; then
   echo -e "  ${BLUE}Password:${NC} $(grep DEFAULT_ADMIN_PASSWORD "$ENV_FILE" | cut -d= -f2)"
 fi

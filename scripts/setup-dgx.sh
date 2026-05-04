@@ -49,11 +49,6 @@ echo ""
 echo "Creating ianoie-proxy network..."
 docker network create ianoie-proxy 2>/dev/null || echo "Network already exists"
 
-# Create Docker network
-echo ""
-echo "Creating ianoie-proxy network..."
-docker network create ianoie-proxy 2>/dev/null || echo "Network already exists"
-
 echo ""
 echo "=== Setup Complete ==="
 echo "Next steps:"
@@ -61,4 +56,4 @@ echo "  1. Copy .env.example to .env and configure"
 echo "  2. Run: docker compose -f docker/docker-compose.yml up -d"
 echo "  3. PostgreSQL will auto-create the ianoie database"
 echo "  4. Access: http://<dgx-ip>"
-echo "  5. Login: admin@ianoie.local / admin"
+echo "  5. Login: admin@aimization.com / admin"
