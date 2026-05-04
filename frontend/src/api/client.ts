@@ -17,8 +17,10 @@ export const api = ky.create({
       },
     ],
     afterResponse: [
-      (_request, _options, response) => {
+      (request, _options, response) => {
         if (response.status === 401) {
+          const url = new URL(request.url);
+          if (url.pathname.startsWith("/api/v1/auth/")) return;
           localStorage.removeItem("ianoie_token");
           window.location.href = "/login";
         }
