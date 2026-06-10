@@ -151,6 +151,30 @@ class InstallationService:
 
         return {"installation_id": inst.id, "job_id": job.id}
 
+    async def update_config(
+        self, installation_id: int, user: User, config: dict
+    ) -> dict:
+        inst = await self._get_owned(installation_id, user.id)
+
+        # Merge new config into existing config
+        existing_config = json.loads(inst.config) if inst.config else {}
+        existing_config.update(config)
+        inst.config = json.dumps(existing_config)
+
+        job = Job(
+            type=JobType.reconfigure,
+            installation_id=inst.id,
+            status=JobStatus.pending,
+        )
+        self.db.add(job)
+        await self.db.commit()
+        await self.db.refresh(job)
+
+        from ianoie.workers.tasks.reconfigure import reconfigure_app
+        reconfigure_app.delay(inst.id, job.id)
+
+        return {"installation_id": inst.id, "job_id": job.id}
+
     # --- private helpers ---
 
     async def _get_app(self, app_id: int) -> App:

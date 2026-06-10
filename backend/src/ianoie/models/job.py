@@ -16,6 +16,7 @@ class JobType(str, enum.Enum):
     restart = "restart"
     backup = "backup"
     update = "update"
+    reconfigure = "reconfigure"
 
 
 class JobStatus(str, enum.Enum):

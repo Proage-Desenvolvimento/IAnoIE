@@ -65,6 +65,16 @@ export interface PaginatedResponse<T> {
   per_page: number;
 }
 
+export interface TemplateConfigField {
+  key: string;
+  label: string;
+  type: "string" | "select" | "boolean" | "number";
+  default?: unknown;
+  required?: boolean;
+  options?: unknown[];
+  description?: string;
+}
+
 export interface LogEntry {
   container_id: string;
   container_name: string;

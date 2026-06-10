@@ -4,6 +4,7 @@ import {
   createInstallation,
   deleteInstallation,
   actionInstallation,
+  updateInstallationConfig,
 } from "@/api/installations";
 
 export function useInstallations(page = 1) {
@@ -39,6 +40,17 @@ export function useAppAction() {
   return useMutation({
     mutationFn: ({ id, action }: { id: number; action: "start" | "stop" | "restart" }) =>
       actionInstallation(id, action),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["installations"] });
+    },
+  });
+}
+
+export function useUpdateConfig() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, config }: { id: number; config: Record<string, unknown> }) =>
+      updateInstallationConfig(id, config),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["installations"] });
     },

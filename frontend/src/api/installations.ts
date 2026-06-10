@@ -16,3 +16,7 @@ export async function deleteInstallation(id: number) {
 export async function actionInstallation(id: number, action: "start" | "stop" | "restart") {
   return api.post(`api/v1/installations/${id}/${action}`).json<{ installation_id: number; job_id: number }>();
 }
+
+export async function updateInstallationConfig(id: number, config: Record<string, unknown>) {
+  return api.patch(`api/v1/installations/${id}/config`, { json: { config } }).json<{ installation_id: number; job_id: number }>();
+}

@@ -7,7 +7,8 @@ export const APP_CATEGORIES = [
   { value: "notebook", label: "Notebooks" },
   { value: "imaging", label: "Image Generation" },
   { value: "data", label: "Data & Analytics" },
-  { value: "utility", label: "Utilities" },
+  { value: "automation", label: "Automation" },
+  { value: "productivity", label: "Productivity" },
 ] as const;
 
 export const STATUS_COLORS: Record<string, string> = {

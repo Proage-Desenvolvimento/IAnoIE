@@ -10,6 +10,7 @@ from ianoie.models.user import User
 from ianoie.api.deps import get_current_user
 from ianoie.schemas.app import AppResponse, AppDetailResponse
 from ianoie.schemas.common import PaginatedResponse
+from ianoie.templates.loader import TemplateLoader
 
 router = APIRouter()
 
@@ -57,3 +58,19 @@ async def get_app(
         from ianoie.core.exceptions import AppNotFound
         raise AppNotFound(slug)
     return app
+
+
+@router.get("/{slug}/template-config")
+async def get_template_config(
+    slug: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    _: Annotated[User, Depends(get_current_user)],
+):
+    result = await db.execute(select(App).where(App.slug == slug))
+    app = result.scalar_one_or_none()
+    if not app:
+        from ianoie.core.exceptions import AppNotFound
+        raise AppNotFound(slug)
+
+    template = TemplateLoader().load(app.template_path)
+    return {"config": template.get("config", [])}

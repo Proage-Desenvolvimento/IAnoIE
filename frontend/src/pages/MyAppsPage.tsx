@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useInstallations, useUninstallApp, useAppAction } from "@/hooks/useInstallations";
+import { useInstallations, useUninstallApp, useAppAction, useUpdateConfig } from "@/hooks/useInstallations";
+import { useJobPolling } from "@/hooks/useJobPolling";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LogViewer } from "@/components/logs/LogViewer";
+import { ConfigForm } from "@/components/config/ConfigForm";
 import { Card, CardContent } from "@/components/ui/Card";
+import { Dialog, DialogHeader, DialogTitle, DialogClose, DialogBody, DialogFooter } from "@/components/ui/Dialog";
+import { getTemplateConfig } from "@/api/apps";
 import {
   Play,
   Square,
@@ -15,8 +19,11 @@ import {
   ExternalLink,
   ScrollText,
   Box,
+  Settings,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
-import type { Installation } from "@/lib/types";
+import type { Installation, TemplateConfigField } from "@/lib/types";
 
 export function MyAppsPage() {
   const { data, isLoading } = useInstallations();
@@ -24,10 +31,53 @@ export function MyAppsPage() {
   const action = useAppAction();
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [pendingActionId, setPendingActionId] = useState<number | null>(null);
+  const [settingsInst, setSettingsInst] = useState<Installation | null>(null);
+  const [configFields, setConfigFields] = useState<TemplateConfigField[]>([]);
+  const [configValues, setConfigValues] = useState<Record<string, unknown>>({});
+  const [configJobId, setConfigJobId] = useState<number | null>(null);
+  const updateConfig = useUpdateConfig();
+
+  const jobQuery = useJobPolling(configJobId, (job) => {
+    if (job.status === "completed" || job.status === "failed") {
+      setTimeout(() => {
+        setConfigJobId(null);
+        if (job.status === "completed") setSettingsInst(null);
+      }, 2000);
+    }
+  });
 
   const toggleLogs = (id: number) => {
     setExpandedId(expandedId === id ? null : id);
   };
+
+  const handleOpenSettings = async (inst: Installation) => {
+    setSettingsInst(inst);
+    setConfigJobId(null);
+    setConfigValues(inst.config ?? {});
+    setConfigFields([]);
+    try {
+      const res = await getTemplateConfig(inst.app_slug);
+      setConfigFields(res.config ?? []);
+    } catch {
+      // No config fields for this app
+    }
+  };
+
+  const handleSaveConfig = () => {
+    if (!settingsInst) return;
+    updateConfig.mutate(
+      { id: settingsInst.id, config: configValues },
+      {
+        onSuccess: (res) => {
+          setConfigJobId(res.job_id);
+        },
+      },
+    );
+  };
+
+  const configJobDone = jobQuery.data?.status === "completed";
+  const configJobFailed = jobQuery.data?.status === "failed";
+  const isSaving = configJobId !== null;
 
   return (
     <div className="space-y-6">
@@ -71,6 +121,7 @@ export function MyAppsPage() {
               installation={inst}
               expanded={expandedId === inst.id}
               onToggleLogs={() => toggleLogs(inst.id)}
+              onSettings={() => handleOpenSettings(inst)}
               onStart={() => {
                 setPendingActionId(inst.id);
                 action.mutate({ id: inst.id, action: "start" }, { onSettled: () => setPendingActionId(null) });
@@ -93,6 +144,90 @@ export function MyAppsPage() {
           ))}
         </div>
       )}
+
+      {/* Settings / Reconfigure Dialog */}
+      <Dialog
+        open={!!settingsInst}
+        onClose={() => {
+          if (!isSaving) {
+            setSettingsInst(null);
+            setConfigJobId(null);
+          }
+        }}
+      >
+        <DialogHeader>
+          <DialogTitle>Settings — {settingsInst?.app_name}</DialogTitle>
+          <DialogClose
+            onClose={() => {
+              if (!isSaving) {
+                setSettingsInst(null);
+                setConfigJobId(null);
+              }
+            }}
+          />
+        </DialogHeader>
+        <DialogBody className="space-y-4">
+          {!isSaving ? (
+            configFields.length > 0 ? (
+              <ConfigForm
+                fields={configFields}
+                values={configValues}
+                onChange={setConfigValues}
+              />
+            ) : (
+              <p className="text-sm text-zinc-500">No configurable options for this app.</p>
+            )
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-zinc-600">
+                  {configJobDone ? "Configuration updated" : configJobFailed ? "Update failed" : "Applying new configuration..."}
+                </span>
+              </div>
+              {configJobDone && (
+                <div className="flex items-center gap-2 text-emerald-600">
+                  <CheckCircle2 className="h-5 w-5" />
+                  <span className="text-sm font-medium">Containers recreated with new settings</span>
+                </div>
+              )}
+              {configJobFailed && (
+                <>
+                  <div className="flex items-center gap-2 text-red-600">
+                    <XCircle className="h-5 w-5" />
+                    <span className="text-sm font-medium">Failed to apply configuration</span>
+                  </div>
+                  {jobQuery.data?.error && (
+                    <p className="text-xs text-red-600 bg-red-50 rounded-lg p-2">{jobQuery.data.error}</p>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </DialogBody>
+        <DialogFooter>
+          {isSaving ? (
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSettingsInst(null);
+                setConfigJobId(null);
+              }}
+            >
+              {configJobDone || configJobFailed ? "Close" : "Hide"}
+            </Button>
+          ) : (
+            <>
+              <Button variant="outline" onClick={() => setSettingsInst(null)}>Cancel</Button>
+              <Button
+                onClick={handleSaveConfig}
+                disabled={configFields.length === 0 || updateConfig.isPending}
+              >
+                {updateConfig.isPending ? <><Spinner size="sm" /> Saving...</> : <><Settings className="h-3.5 w-3.5" /> Apply Changes</>}
+              </Button>
+            </>
+          )}
+        </DialogFooter>
+      </Dialog>
     </div>
   );
 }
@@ -101,6 +236,7 @@ interface InstallationRowProps {
   installation: Installation;
   expanded: boolean;
   onToggleLogs: () => void;
+  onSettings: () => void;
   onStart: () => void;
   onStop: () => void;
   onRestart: () => void;
@@ -112,6 +248,7 @@ function InstallationRow({
   installation: inst,
   expanded,
   onToggleLogs,
+  onSettings,
   onStart,
   onStop,
   onRestart,
@@ -121,6 +258,7 @@ function InstallationRow({
   const isRunning = inst.status === "running";
   const isStopped = inst.status === "stopped";
   const isTransitioning = inst.status === "installing" || inst.status === "uninstalling" || inst.status === "pending";
+  const hasConfig = inst.config && Object.keys(inst.config).length > 0;
   const dateStr = new Date(inst.created_at).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
@@ -147,6 +285,12 @@ function InstallationRow({
                   GPU assigned
                 </span>
               )}
+              {hasConfig && inst.config && "transcription_mode" in (inst.config as Record<string, unknown>) && (
+                <span className="flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+                  {(inst.config as Record<string, unknown>).transcription_mode === "local" ? "Local GPU" : "OpenAI API"}
+                </span>
+              )}
             </div>
           </div>
 
@@ -170,6 +314,18 @@ function InstallationRow({
                 onClick={onToggleLogs}
               >
                 <ScrollText className="h-4 w-4" />
+              </Button>
+            )}
+
+            {/* Settings — show when app has config or is running/stopped */}
+            {(isRunning || isStopped) && (
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Settings"
+                onClick={onSettings}
+              >
+                <Settings className="h-4 w-4" />
               </Button>
             )}
 

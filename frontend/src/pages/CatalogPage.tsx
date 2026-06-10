@@ -10,8 +10,10 @@ import { Dialog, DialogHeader, DialogTitle, DialogClose, DialogBody, DialogFoote
 import { Progress } from "@/components/ui/Progress";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ConfigForm } from "@/components/config/ConfigForm";
 import { APP_CATEGORIES } from "@/lib/constants";
-import type { App } from "@/lib/types";
+import type { App, TemplateConfigField } from "@/lib/types";
+import { getTemplateConfig } from "@/api/apps";
 import {
   Search,
   Download,
@@ -23,6 +25,7 @@ import {
   Wrench,
   CheckCircle2,
   XCircle,
+  Mic,
 } from "lucide-react";
 
 const CATEGORY_ICONS: Record<string, typeof Cpu> = {
@@ -32,6 +35,8 @@ const CATEGORY_ICONS: Record<string, typeof Cpu> = {
   imaging: Image,
   data: Database,
   utility: Wrench,
+  automation: Wrench,
+  productivity: Mic,
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -41,6 +46,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   imaging: "bg-pink-50 text-pink-700 border-pink-200",
   data: "bg-emerald-50 text-emerald-700 border-emerald-200",
   utility: "bg-zinc-50 text-zinc-700 border-zinc-200",
+  automation: "bg-orange-50 text-orange-700 border-orange-200",
+  productivity: "bg-indigo-50 text-indigo-700 border-indigo-200",
 };
 
 export function CatalogPage() {
@@ -49,6 +56,8 @@ export function CatalogPage() {
   const [selectedApp, setSelectedApp] = useState<App | null>(null);
   const [gpuIndices, setGpuIndices] = useState<number[]>([0]);
   const [activeJobId, setActiveJobId] = useState<number | null>(null);
+  const [templateConfigFields, setTemplateConfigFields] = useState<TemplateConfigField[]>([]);
+  const [configValues, setConfigValues] = useState<Record<string, unknown>>({});
 
   const { data, isLoading } = useApps({ category, search: search || undefined });
   const { data: gpuStatus } = useGpuMetrics();
@@ -65,10 +74,25 @@ export function CatalogPage() {
 
   const handleInstall = () => {
     if (!selectedApp) return;
+    const config = { gpu_indices: gpuIndices, ...configValues };
     installApp.mutate(
-      { appId: selectedApp.id, config: { gpu_indices: gpuIndices } },
+      { appId: selectedApp.id, config },
       { onSuccess: (res) => setActiveJobId(res.job_id) },
     );
+  };
+
+  const handleSelectApp = async (app: App) => {
+    setSelectedApp(app);
+    setGpuIndices([0]);
+    setActiveJobId(null);
+    setConfigValues({});
+    setTemplateConfigFields([]);
+    try {
+      const res = await getTemplateConfig(app.slug);
+      setTemplateConfigFields(res.config ?? []);
+    } catch {
+      // No config fields available for this app
+    }
   };
 
   const toggleGpu = (index: number) => {
@@ -168,7 +192,7 @@ export function CatalogPage() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button onClick={() => { setSelectedApp(app); setGpuIndices([0]); setActiveJobId(null); }} className="w-full" size="sm">
+                  <Button onClick={() => handleSelectApp(app)} className="w-full" size="sm">
                     <Download className="h-3.5 w-3.5" />
                     Install
                   </Button>
@@ -189,7 +213,8 @@ export function CatalogPage() {
           <p className="text-sm text-zinc-500">{selectedApp?.description}</p>
 
           {!isInstalling ? (
-            <div>
+            <>
+              <div>
               <label className="text-sm font-medium text-zinc-700">GPU Assignment</label>
               <p className="mt-1 text-xs text-zinc-400">Select one or more GPUs for this application</p>
               <div className="mt-2 max-h-48 space-y-1 overflow-y-auto rounded-lg border border-zinc-200 p-2">
@@ -225,6 +250,21 @@ export function CatalogPage() {
                 )}
               </div>
             </div>
+
+            {/* Template Config Fields */}
+            {templateConfigFields.length > 0 && (
+              <div className="border-t border-zinc-200 pt-4">
+                <label className="text-sm font-medium text-zinc-700">Configuration</label>
+                <div className="mt-2">
+                  <ConfigForm
+                    fields={templateConfigFields}
+                    values={configValues}
+                    onChange={setConfigValues}
+                  />
+                </div>
+              </div>
+            )}
+          </>
           ) : (
             <div className="space-y-4">
               <div className="space-y-2">

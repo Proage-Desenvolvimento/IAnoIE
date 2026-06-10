@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ianoie.database import get_db
 from ianoie.models.user import User
 from ianoie.api.deps import get_current_user
-from ianoie.schemas.installation import InstallationCreate, InstallationResponse
+from ianoie.schemas.installation import InstallationCreate, InstallationConfigUpdate, InstallationResponse
 from ianoie.schemas.common import PaginatedResponse
 from ianoie.services.installation_service import InstallationService
 
@@ -82,3 +82,14 @@ async def restart_installation(
 ):
     svc = InstallationService(db)
     return await svc.restart(installation_id, current_user)
+
+
+@router.patch("/{installation_id}/config", status_code=202)
+async def update_installation_config(
+    installation_id: int,
+    body: InstallationConfigUpdate,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    svc = InstallationService(db)
+    return await svc.update_config(installation_id, current_user, body.config)

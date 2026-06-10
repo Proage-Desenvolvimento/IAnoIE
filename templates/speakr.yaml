@@ -1,0 +1,138 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "Speakr"
+  slug: "speakr"
+  version: "1.0.0"
+  description: "AI-powered transcription and note-taking platform with speaker identification"
+  long_description: |
+    Transform audio recordings into organized, searchable notes.
+    Supports OpenAI API (cloud) or local WhisperX (GPU) for transcription.
+    Features: smart recording, AI transcription, voice profiles, semantic search, REST API.
+  category: "productivity"
+  icon: "Mic"
+  tags: ["transcription", "audio", "notes", "ai"]
+
+gpu:
+  required: false
+  min_count: 0
+  max_count: 1
+  min_vram_gb: 0
+
+config:
+  - key: "transcription_mode"
+    label: "Transcription Mode"
+    type: "select"
+    default: "openai"
+    required: true
+    options: ["openai", "local"]
+    description: "OpenAI = cloud API (needs API key). Local = WhisperX on your GPU (best quality + voice profiles)"
+
+  - key: "openai_api_key"
+    label: "OpenAI API Key"
+    type: "string"
+    default: ""
+    required: false
+    description: "Required for OpenAI transcription mode. Also used for text generation if no separate key."
+
+  - key: "text_model_api_key"
+    label: "Text Model API Key"
+    type: "string"
+    default: ""
+    required: true
+    description: "API key for summaries, titles, and chat (OpenAI or OpenRouter)"
+
+  - key: "text_model_provider"
+    label: "Text Model Provider"
+    type: "select"
+    default: "openai"
+    options: ["openai", "openrouter"]
+    description: "Provider for text generation features"
+
+services:
+  speakr:
+    image: "learnedmachine/speakr"
+    tag: "latest"
+    internal: false
+
+    environment:
+      TRANSCRIPTION_CONNECTOR: "{{config.transcription_mode}}"
+      TRANSCRIPTION_API_KEY: "{{config.openai_api_key}}"
+      TRANSCRIPTION_MODEL: "gpt-4o-transcribe-diarize"
+      ASR_BASE_URL: "http://whisperx-asr:9000"
+      ASR_RETURN_SPEAKER_EMBEDDINGS: "true"
+      TEXT_MODEL_API_KEY: "{{config.text_model_api_key}}"
+      TEXT_MODEL_NAME: "gpt-4o-mini"
+      ADMIN_USERNAME: "admin"
+      ADMIN_PASSWORD: "admin"
+      ALLOW_REGISTRATION: "false"
+      ENABLE_INQUIRE_MODE: "true"
+      LOG_LEVEL: "ERROR"
+      SQLALCHEMY_DATABASE_URI: "sqlite:////data/instance/transcriptions.db"
+
+    ports:
+      - container_port: 8899
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    volumes:
+      - name: "speakr-uploads"
+        mount_path: "/data/uploads"
+        mode: "rw"
+      - name: "speakr-instance"
+        mount_path: "/data/instance"
+        mode: "rw"
+
+    gpu:
+      enabled: false
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8899/health || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 5
+      start_period: 60
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "whisperx-asr"
+
+    resource_limits:
+      memory: "4g"
+      cpus: 2.0
+
+  whisperx-asr:
+    image: "fedirka/whisperx-asr"
+    tag: "latest"
+    internal: true
+
+    environment:
+      ASR_MODEL: "large-v3"
+      ASR_DEVICE: "cuda"
+      ASR_COMPUTE_TYPE: "float16"
+
+    ports:
+      - container_port: 9000
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    volumes:
+      - name: "whisperx-models"
+        mount_path: "/root/.cache/huggingface"
+        mode: "rw"
+
+    gpu:
+      enabled: true
+      count: 1
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9000/health || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 5
+      start_period: 120
+
+    restart: "unless-stopped"

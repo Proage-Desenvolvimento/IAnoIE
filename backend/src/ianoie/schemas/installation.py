@@ -9,6 +9,10 @@ class InstallationCreate(BaseModel):
     config: Optional[dict[str, Any]] = None
 
 
+class InstallationConfigUpdate(BaseModel):
+    config: dict[str, Any]
+
+
 class InstallationResponse(BaseModel):
     id: int
     app_id: int
