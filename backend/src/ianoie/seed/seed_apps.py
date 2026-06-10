@@ -88,6 +88,16 @@ APPS = [
         "gpu_requirements": '{"min_gpu_count": 0, "min_vram_gb": 0, "gpu_required": false}',
     },
     {
+        "name": "OmniVoice",
+        "slug": "omnivoice",
+        "description": "Zero-shot TTS with voice cloning and voice design for 600+ languages.",
+        "category": "productivity",
+        "template_path": "omnivoice.yaml",
+        "icon_url": None,
+        "version": "0.1.2",
+        "gpu_requirements": '{"min_gpu_count": 1, "min_vram_gb": 8, "gpu_required": true}',
+    },
+    {
         "name": "n8n",
         "slug": "n8n",
         "description": "Workflow automation platform. Connect apps and automate tasks with a visual node-based editor.",
