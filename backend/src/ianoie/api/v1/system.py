@@ -1,8 +1,9 @@
+import datetime
 import json
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ianoie.api.deps import get_current_user
@@ -57,7 +58,7 @@ async def get_system_metrics(
             memory_total=0, memory_used=0, memory_percent=0,
             disk_total=0, disk_used=0, disk_percent=0,
             net_bytes_sent=0, net_bytes_recv=0,
-            gpus=[], timestamp=func.now(),
+            gpus=[], timestamp=datetime.datetime.now(datetime.timezone.utc),
         )
 
     gpus = json.loads(metric.gpu_metrics) if metric.gpu_metrics else []
@@ -84,7 +85,6 @@ async def get_system_metrics_history(
     _: Annotated[User, Depends(get_current_user)],
     hours: int = Query(24, ge=1, le=168),
 ):
-    import datetime
     cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=hours)
 
     result = await db.execute(
