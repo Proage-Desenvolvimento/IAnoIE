@@ -71,7 +71,22 @@ install_deps
 # --- Install Docker ---
 if ! command -v docker &> /dev/null; then
   info "Installing Docker..."
-  curl -fsSL https://get.docker.com | sh
+  case "$OS_ID" in
+    ubuntu|debian)
+      curl -fsSL https://get.docker.com | sh
+      ;;
+    almalinux|rocky|centos|rhel)
+      # get.docker.com rejects some RHEL-family forks ("Unsupported distribution 'almalinux'"),
+      # so use Docker's official CE repo — the centos channel is RHEL/AlmaLinux/Rocky compatible.
+      dnf install -y dnf-plugins-core
+      dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+      dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+      ;;
+    *)
+      warn "Unsupported OS '$OS_ID' for Docker install — falling back to get.docker.com"
+      curl -fsSL https://get.docker.com | sh
+      ;;
+  esac
   systemctl enable docker
   systemctl start docker
   ok "Docker installed: $(docker --version)"
