@@ -133,6 +133,21 @@ else
   info "Apps will run in CPU mode. GPU-enabled apps will show a warning."
 fi
 
+# --- SELinux (RHEL-family only) ---
+# AlmaLinux/Rocky/CentOS/RHEL ship with SELinux enforcing. The bind mounts in
+# docker-compose use the :z flag (shared container label) so containers can
+# access /var/run/docker.sock and the templates dir without AVC denials.
+case "$OS_ID" in
+  almalinux|rocky|centos|rhel)
+    if command -v getenforce &>/dev/null && [ "$(getenforce)" != "Disabled" ]; then
+      info "SELinux: $(getenforce) — bind mounts in docker-compose use :z for compatibility"
+      if ! rpm -q container-selinux &>/dev/null; then
+        warn "container-selinux not found — install it: dnf install -y container-selinux"
+      fi
+    fi
+    ;;
+esac
+
 # --- Create Docker network ---
 echo ""
 info "Creating ianoie-proxy network..."

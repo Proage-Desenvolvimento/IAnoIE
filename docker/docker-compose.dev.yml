@@ -12,9 +12,9 @@ services:
       context: ../backend
       dockerfile: Dockerfile
     volumes:
-      - ../backend/src/ianoie:/app/src/ianoie
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ../templates:/app/templates:ro
+      - ../backend/src/ianoie:/app/src/ianoie:z
+      - /var/run/docker.sock:/var/run/docker.sock:z
+      - ../templates:/app/templates:ro,z
     environment:
       - DEBUG=true
       - DATABASE_URL=postgresql+asyncpg://ianoie:ianoie@postgres:5432/ianoie
@@ -31,9 +31,9 @@ services:
 
   worker:
     volumes:
-      - ../backend/src/ianoie:/app/src/ianoie
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ../templates:/app/templates:ro
+      - ../backend/src/ianoie:/app/src/ianoie:z
+      - /var/run/docker.sock:/var/run/docker.sock:z
+      - ../templates:/app/templates:ro,z
     environment:
       - DEBUG=true
       - DATABASE_URL=postgresql+asyncpg://ianoie:ianoie@postgres:5432/ianoie

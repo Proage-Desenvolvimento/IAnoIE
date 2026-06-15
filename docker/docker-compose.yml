@@ -39,9 +39,8 @@ services:
     restart: unless-stopped
     pid: "host"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ../templates:/app/templates:ro
-      - /proc:/host_proc:ro
+      - /var/run/docker.sock:/var/run/docker.sock:z
+      - ../templates:/app/templates:ro,z
     environment:
       - DATABASE_URL=postgresql+asyncpg://ianoie:ianoie@postgres:5432/ianoie
       - DATABASE_URL_SYNC=postgresql+psycopg2://ianoie:ianoie@postgres:5432/ianoie
@@ -82,8 +81,8 @@ services:
         "--concurrency=2",
       ]
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ../templates:/app/templates:ro
+      - /var/run/docker.sock:/var/run/docker.sock:z
+      - ../templates:/app/templates:ro,z
     environment:
       - DATABASE_URL=postgresql+asyncpg://ianoie:ianoie@postgres:5432/ianoie
       - DATABASE_URL_SYNC=postgresql+psycopg2://ianoie:ianoie@postgres:5432/ianoie
@@ -117,7 +116,7 @@ services:
         "--loglevel=info",
       ]
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:z
     environment:
       - DATABASE_URL=postgresql+asyncpg://ianoie:ianoie@postgres:5432/ianoie
       - DATABASE_URL_SYNC=postgresql+psycopg2://ianoie:ianoie@postgres:5432/ianoie
@@ -162,7 +161,7 @@ services:
       - "8888:80"
       - "8080:8080"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro,z
     networks:
       - ianoie-proxy
 
