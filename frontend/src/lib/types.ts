@@ -27,6 +27,10 @@ export interface Installation {
   domain: string | null;
   config: Record<string, unknown> | null;
   runtime_info: Record<string, unknown> | null;
+  llm_provider_id: number | null;
+  llm_provider_name: string | null;
+  llm_provider_type: string | null;
+  llm_model: string | null;
   created_at: string;
 }
 
@@ -58,6 +62,39 @@ export interface GPUStatus {
   count: number;
 }
 
+export interface SystemMetrics {
+  cpu_percent: number;
+  cpu_count: number;
+  memory_total: number;
+  memory_used: number;
+  memory_percent: number;
+  disk_total: number;
+  disk_used: number;
+  disk_percent: number;
+  net_bytes_sent: number;
+  net_bytes_recv: number;
+  gpus: GPUInfo[];
+  timestamp: string;
+}
+
+export interface LLMProvider {
+  id: number;
+  name: string;
+  provider_type: "openai" | "gemini" | "anthropic" | "ollama";
+  base_url: string | null;
+  models: string[];
+  is_default: boolean;
+  enabled: boolean;
+  has_api_key: boolean;
+  created_at: string;
+}
+
+export interface LLMProviderTestResult {
+  success: boolean;
+  message: string;
+  models: string[];
+}
+
 export interface PaginatedResponse<T> {
   items: T[];
   total: number;
@@ -73,6 +110,19 @@ export interface TemplateConfigField {
   required?: boolean;
   options?: unknown[];
   description?: string;
+}
+
+export interface TemplateConfig {
+  config: TemplateConfigField[];
+  llm?: {
+    supported_providers: string[];
+    connection_env?: Record<string, Record<string, string>>;
+  };
+  gpu?: {
+    required: boolean;
+    min_count?: number;
+    max_count?: number;
+  };
 }
 
 export interface LogEntry {

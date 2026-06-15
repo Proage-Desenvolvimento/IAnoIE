@@ -1,14 +1,14 @@
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ianoie.api.deps import get_current_user
 from ianoie.database import get_db
 from ianoie.models.app import App
 from ianoie.models.user import User
-from ianoie.api.deps import get_current_user
-from ianoie.schemas.app import AppResponse, AppDetailResponse
+from ianoie.schemas.app import AppDetailResponse, AppResponse
 from ianoie.schemas.common import PaginatedResponse
 from ianoie.templates.loader import TemplateLoader
 
@@ -73,4 +73,8 @@ async def get_template_config(
         raise AppNotFound(slug)
 
     template = TemplateLoader().load(app.template_path)
-    return {"config": template.get("config", [])}
+    return {
+        "config": template.get("config", []),
+        "llm": template.get("llm"),
+        "gpu": template.get("gpu"),
+    }

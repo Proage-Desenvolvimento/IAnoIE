@@ -1,16 +1,16 @@
 import json
 from typing import Optional
 
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ianoie.core.exceptions import AppNotFound, InstallationConflict, InstallationNotFound
 from ianoie.models.app import App
 from ianoie.models.installation import Installation, InstallationStatus
-from ianoie.models.job import Job, JobType, JobStatus
+from ianoie.models.job import Job, JobStatus, JobType
 from ianoie.models.user import User
-from ianoie.core.exceptions import AppNotFound, InstallationNotFound, InstallationConflict
-from ianoie.schemas.installation import InstallationResponse
 from ianoie.schemas.common import PaginatedResponse
+from ianoie.schemas.installation import InstallationResponse
 
 
 class InstallationService:
@@ -43,9 +43,14 @@ class InstallationService:
         return await self._to_response(inst)
 
     async def create_installation(
-        self, user: User, app_id: int, config: Optional[dict] = None
+        self,
+        user: User,
+        app_id: int,
+        config: Optional[dict] = None,
+        llm_provider_id: Optional[int] = None,
+        llm_model: Optional[str] = None,
     ) -> dict:
-        app = await self._get_app(app_id)
+        await self._get_app(app_id)
 
         existing = await self.db.execute(
             select(Installation).where(
@@ -62,6 +67,8 @@ class InstallationService:
             user_id=user.id,
             status=InstallationStatus.pending,
             config=json.dumps(config) if config else None,
+            llm_provider_id=llm_provider_id,
+            llm_model=llm_model,
         )
         self.db.add(installation)
         await self.db.flush()
@@ -152,7 +159,9 @@ class InstallationService:
         return {"installation_id": inst.id, "job_id": job.id}
 
     async def update_config(
-        self, installation_id: int, user: User, config: dict
+        self, installation_id: int, user: User, config: dict,
+        llm_provider_id: Optional[int] = None,
+        llm_model: Optional[str] = None,
     ) -> dict:
         inst = await self._get_owned(installation_id, user.id)
 
@@ -160,6 +169,12 @@ class InstallationService:
         existing_config = json.loads(inst.config) if inst.config else {}
         existing_config.update(config)
         inst.config = json.dumps(existing_config)
+
+        # Update LLM fields if provided
+        if llm_provider_id is not None:
+            inst.llm_provider_id = llm_provider_id
+        if llm_model is not None:
+            inst.llm_model = llm_model
 
         job = Job(
             type=JobType.reconfigure,
@@ -200,6 +215,19 @@ class InstallationService:
         app_result = await self.db.execute(select(App).where(App.id == inst.app_id))
         app = app_result.scalar_one()
 
+        # Resolve LLM provider info
+        llm_provider_name = None
+        llm_provider_type = None
+        if inst.llm_provider_id:
+            from ianoie.models.llm_provider import LLMProvider
+            prov_result = await self.db.execute(
+                select(LLMProvider).where(LLMProvider.id == inst.llm_provider_id)
+            )
+            provider = prov_result.scalar_one_or_none()
+            if provider:
+                llm_provider_name = provider.name
+                llm_provider_type = provider.provider_type.value
+
         return InstallationResponse(
             id=inst.id,
             app_id=inst.app_id,
@@ -212,5 +240,9 @@ class InstallationService:
             domain=inst.domain,
             config=json.loads(inst.config) if inst.config else None,
             runtime_info=json.loads(inst.runtime_info) if inst.runtime_info else None,
+            llm_provider_id=inst.llm_provider_id,
+            llm_provider_name=llm_provider_name,
+            llm_provider_type=llm_provider_type,
+            llm_model=inst.llm_model,
             created_at=inst.created_at,
         )

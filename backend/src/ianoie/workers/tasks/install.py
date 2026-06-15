@@ -1,8 +1,6 @@
 import json
-import time
 
 import structlog
-from celery import shared_task, current_task
 
 from ianoie.workers.celery_app import celery_app
 
@@ -42,17 +40,43 @@ def _update_installation_status(db, installation_id: int, status):
     return installation
 
 
+def _resolve_llm_config(installation) -> dict | None:
+    """Load LLM provider config for container injection."""
+    if not installation.llm_provider_id:
+        return None
+
+    from ianoie.core.crypto import decrypt_api_key
+    from ianoie.models.llm_provider import LLMProvider
+
+    db = _get_sync_db()
+    try:
+        provider = db.get(LLMProvider, installation.llm_provider_id)
+        if not provider:
+            logger.warning("llm_provider_not_found", provider_id=installation.llm_provider_id)
+            return None
+
+        api_key = decrypt_api_key(provider.api_key_encrypted) if provider.api_key_encrypted else ""
+        return {
+            "provider_type": provider.provider_type.value,
+            "api_key": api_key,
+            "base_url": provider.base_url or "",
+            "model": installation.llm_model or "",
+        }
+    finally:
+        db.close()
+
+
 @celery_app.task(bind=True, max_retries=3, default_retry_delay=10)
 def install_app(self, installation_id: int, job_id: int):
-    from ianoie.models.job import JobStatus
-    from ianoie.models.installation import Installation, InstallationStatus
-    from ianoie.models.app import App
-    from ianoie.templates.loader import TemplateLoader
-    from ianoie.templates.renderer import TemplateRenderer
     from ianoie.docker_ops.container_manager import ContainerManager
+    from ianoie.docker_ops.gpu_detector import GPUDetector
     from ianoie.docker_ops.image_manager import ImageManager
     from ianoie.docker_ops.network_manager import NetworkManager
-    from ianoie.docker_ops.gpu_detector import GPUDetector
+    from ianoie.models.app import App
+    from ianoie.models.installation import Installation, InstallationStatus
+    from ianoie.models.job import JobStatus
+    from ianoie.templates.loader import TemplateLoader
+    from ianoie.templates.renderer import TemplateRenderer
 
     db = _get_sync_db()
     docker_client = _get_docker_client()
@@ -65,19 +89,40 @@ def install_app(self, installation_id: int, job_id: int):
         template = TemplateLoader().load(app.template_path)
         user_config = json.loads(installation.config or "{}")
 
-        # GPU allocation
+        # GPU allocation — graceful handling
         gpu_uuids = []
-        if template.get("gpu", {}).get("required"):
-            detector = GPUDetector()
-            gpu_indices = user_config.get("gpu_indices")
-            if gpu_indices is None and user_config.get("gpu_index") is not None:
-                gpu_indices = [user_config["gpu_index"]]
-            if gpu_indices:
-                gpu_uuids = [detector.get_gpu_uuid(i) for i in gpu_indices]
-            else:
-                all_gpus = detector.get_all_gpus()
-                if all_gpus:
-                    gpu_uuids = [min(all_gpus, key=lambda g: g["utilization_gpu"])["uuid"]]
+        gpu_required = template.get("gpu", {}).get("required", False)
+        detector = GPUDetector()
+
+        if gpu_required and not detector.available:
+            raise RuntimeError(
+                "This app requires a GPU but no GPU was detected on this system"
+            )
+
+        if detector.available:
+            if gpu_required or user_config.get("gpu_indices") or user_config.get("gpu_index"):
+                gpu_indices = user_config.get("gpu_indices")
+                if gpu_indices is None and user_config.get("gpu_index") is not None:
+                    gpu_indices = [user_config["gpu_index"]]
+                if gpu_indices:
+                    gpu_uuids = [detector.get_gpu_uuid(i) for i in gpu_indices]
+                elif gpu_required:
+                    all_gpus = detector.get_all_gpus()
+                    if all_gpus:
+                        gpu_uuids = [min(all_gpus, key=lambda g: g["utilization_gpu"])["uuid"]]
+        elif gpu_required:
+            raise RuntimeError("GPU required but not available")
+        else:
+            logger.info("no_gpu_available_skipping_gpu_alloc", installation_id=installation_id)
+
+        # LLM config resolution
+        llm_config = _resolve_llm_config(installation)
+        if llm_config:
+            logger.info(
+                "llm_config_resolved",
+                provider=llm_config["provider_type"],
+                model=llm_config["model"],
+            )
 
         # Ensure proxy network
         network_mgr = NetworkManager(docker_client)
@@ -86,7 +131,7 @@ def install_app(self, installation_id: int, job_id: int):
         # Render container configs from template
         renderer = TemplateRenderer()
         container_configs = renderer.render(
-            template, user_config, installation_id, gpu_uuids
+            template, user_config, installation_id, gpu_uuids, llm_config=llm_config,
         )
 
         # Pull images and create containers in dependency order

@@ -37,9 +37,11 @@ services:
       dockerfile: Dockerfile
     container_name: ianoie-api
     restart: unless-stopped
+    pid: "host"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ../templates:/app/templates:ro
+      - /proc:/host_proc:ro
     environment:
       - DATABASE_URL=postgresql+asyncpg://ianoie:ianoie@postgres:5432/ianoie
       - DATABASE_URL_SYNC=postgresql+psycopg2://ianoie:ianoie@postgres:5432/ianoie
@@ -69,6 +71,7 @@ services:
       dockerfile: Dockerfile
     container_name: ianoie-worker
     restart: unless-stopped
+    pid: "host"
     command:
       [
         "celery",

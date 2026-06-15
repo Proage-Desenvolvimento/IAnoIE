@@ -4,10 +4,10 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ianoie.database import get_db
-from ianoie.models.user import User
-from ianoie.models.job import Job
 from ianoie.api.deps import get_current_user
+from ianoie.database import get_db
+from ianoie.models.job import Job
+from ianoie.models.user import User
 from ianoie.schemas.job import JobResponse
 
 router = APIRouter()

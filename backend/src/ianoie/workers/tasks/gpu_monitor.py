@@ -9,16 +9,21 @@ logger = structlog.get_logger()
 
 @celery_app.task(ignore_result=True)
 def collect_gpu_metrics():
-    from ianoie.models.gpu_metrics import GPUMetrics
-    from ianoie.docker_ops.gpu_detector import GPUDetector
-    from ianoie.database import sync_session_factory
     from ianoie.config import settings
+    from ianoie.database import sync_session_factory
+    from ianoie.docker_ops.gpu_detector import GPUDetector
+    from ianoie.models.gpu_metrics import GPUMetrics
 
     try:
         detector = GPUDetector()
+        if not detector.available:
+            return  # No GPU — skip silently
         gpus = detector.get_all_gpus()
     except Exception as e:
         logger.warning("gpu_detection_failed", error=str(e))
+        return
+
+    if not gpus:
         return
 
     db = sync_session_factory()

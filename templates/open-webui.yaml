@@ -4,7 +4,7 @@ metadata:
   name: "Open WebUI"
   slug: "open-webui"
   version: "1.0.0"
-  description: "ChatGPT-style web interface for local LLMs"
+  description: "ChatGPT-style web interface for local and cloud LLMs"
   category: "llm"
   icon: "MessageSquare"
   tags: ["chat", "webui", "llm"]
@@ -12,13 +12,30 @@ metadata:
 gpu:
   required: false
 
+llm:
+  supported_providers: ["openai", "gemini", "anthropic", "ollama"]
+  connection_env:
+    openai:
+      OPENAI_API_KEY: "{{llm.api_key}}"
+      OPENAI_BASE_URL: "{{llm.base_url}}"
+      OPENAI_MODEL: "{{llm.model}}"
+    gemini:
+      GOOGLE_API_KEY: "{{llm.api_key}}"
+      GEMINI_MODEL: "{{llm.model}}"
+    anthropic:
+      ANTHROPIC_API_KEY: "{{llm.api_key}}"
+      ANTHROPIC_MODEL: "{{llm.model}}"
+    ollama:
+      OLLAMA_BASE_URL: "{{llm.base_url}}"
+      OLLAMA_MODEL: "{{llm.model}}"
+
 config:
   - key: "ollama_base_url"
     label: "Ollama API URL"
     type: "string"
     default: "http://ollama:11434"
-    required: true
-    description: "URL of your Ollama instance"
+    required: false
+    description: "URL of your Ollama instance (optional if using cloud provider)"
 
 services:
   open-webui:

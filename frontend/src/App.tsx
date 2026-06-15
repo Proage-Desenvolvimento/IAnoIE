@@ -6,7 +6,8 @@ import { DashboardPage } from "@/pages/DashboardPage";
 import { CatalogPage } from "@/pages/CatalogPage";
 import { MyAppsPage } from "@/pages/MyAppsPage";
 import { AppDetailPage } from "@/pages/AppDetailPage";
-import { GpuMonitorPage } from "@/pages/GpuMonitorPage";
+import { SystemMonitorPage } from "@/pages/SystemMonitorPage";
+import { LLMProvidersPage } from "@/pages/LLMProvidersPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -40,7 +41,8 @@ export default function App() {
             <Route path="/catalog" element={<CatalogPage />} />
             <Route path="/my-apps" element={<MyAppsPage />} />
             <Route path="/app/:id" element={<AppDetailPage />} />
-            <Route path="/gpu" element={<GpuMonitorPage />} />
+            <Route path="/llm-providers" element={<LLMProvidersPage />} />
+            <Route path="/system" element={<SystemMonitorPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

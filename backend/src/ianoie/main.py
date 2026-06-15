@@ -1,12 +1,12 @@
-from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from ianoie.api.router import api_router
 from ianoie.config import settings
 from ianoie.core.middleware import SecurityHeadersMiddleware
-from ianoie.api.router import api_router
 
 
 @asynccontextmanager

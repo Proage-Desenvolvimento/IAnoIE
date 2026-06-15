@@ -1,10 +1,9 @@
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
+from ianoie.core.security import hash_password
 from ianoie.database import async_session_factory
 from ianoie.models.app import App
 from ianoie.models.user import User, UserRole
-from ianoie.core.security import hash_password
 
 APPS = [
     {

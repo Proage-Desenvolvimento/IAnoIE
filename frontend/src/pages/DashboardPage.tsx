@@ -1,27 +1,33 @@
 import { Link } from "react-router-dom";
 import { useInstallations } from "@/hooks/useInstallations";
-import { useGpuMetrics } from "@/hooks/useGpuMetrics";
+import { useSystemMetrics } from "@/hooks/useSystemMetrics";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Box, Monitor, Activity, ArrowRight, Store } from "lucide-react";
+import { formatBytes } from "@/lib/utils";
+import {
+  Box,
+  ArrowRight,
+  Store,
+  Cpu,
+  MemoryStick,
+  HardDrive,
+  Brain,
+} from "lucide-react";
 
 export function DashboardPage() {
   const { data: installationsData } = useInstallations();
-  const { data: gpuData } = useGpuMetrics();
+  const { data: sysMetrics } = useSystemMetrics();
 
   const installations = installationsData?.items || [];
   const runningApps = installations.filter((i) => i.status === "running");
-  const totalGpus = gpuData?.count || 0;
-  const gpus = gpuData?.gpus || [];
-  const avgUtil = gpus.length > 0 ? gpus.reduce((sum, g) => sum + g.utilization_gpu, 0) / gpus.length : 0;
-  const avgTemp = gpus.length > 0 ? gpus.reduce((sum, g) => sum + g.temperature, 0) / gpus.length : 0;
+  const hasGpus = (sysMetrics?.gpus?.length ?? 0) > 0;
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-zinc-900">Dashboard</h1>
-        <p className="text-sm text-zinc-500 mt-1">Overview of your DGX platform</p>
+        <p className="text-sm text-zinc-500 mt-1">Overview of your platform</p>
       </div>
 
       {/* Stats */}
@@ -44,11 +50,11 @@ export function DashboardPage() {
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Active GPUs</p>
-                <p className="mt-1 text-2xl font-bold text-zinc-900">{totalGpus}</p>
+                <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">CPU Usage</p>
+                <p className="mt-1 text-2xl font-bold text-zinc-900">{sysMetrics?.cpu_percent.toFixed(0) ?? 0}%</p>
               </div>
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
-                <Monitor className="h-5 w-5 text-blue-600" />
+                <Cpu className="h-5 w-5 text-blue-600" />
               </div>
             </div>
           </CardContent>
@@ -58,11 +64,11 @@ export function DashboardPage() {
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">GPU Utilization</p>
-                <p className="mt-1 text-2xl font-bold text-zinc-900">{avgUtil.toFixed(0)}%</p>
+                <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">RAM Usage</p>
+                <p className="mt-1 text-2xl font-bold text-zinc-900">{sysMetrics?.memory_percent.toFixed(0) ?? 0}%</p>
               </div>
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-50">
-                <Activity className="h-5 w-5 text-violet-600" />
+                <MemoryStick className="h-5 w-5 text-violet-600" />
               </div>
             </div>
           </CardContent>
@@ -72,11 +78,11 @@ export function DashboardPage() {
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Avg Temperature</p>
-                <p className="mt-1 text-2xl font-bold text-zinc-900">{avgTemp.toFixed(0)}C</p>
+                <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Disk Usage</p>
+                <p className="mt-1 text-2xl font-bold text-zinc-900">{sysMetrics?.disk_percent.toFixed(0) ?? 0}%</p>
               </div>
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50">
-                <Activity className="h-5 w-5 text-amber-600" />
+                <HardDrive className="h-5 w-5 text-amber-600" />
               </div>
             </div>
           </CardContent>
@@ -112,11 +118,21 @@ export function DashboardPage() {
               <div className="space-y-2">
                 {runningApps.map((inst) => (
                   <div key={inst.id} className="flex items-center justify-between rounded-lg border border-zinc-100 bg-zinc-50/50 px-4 py-3">
-                    <div>
-                      <p className="text-sm font-medium text-zinc-900">{inst.app_name}</p>
-                      <p className="text-xs text-zinc-400">
-                        Installed {new Date(inst.created_at).toLocaleDateString()}
-                      </p>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div>
+                        <p className="text-sm font-medium text-zinc-900">{inst.app_name}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <p className="text-xs text-zinc-400">
+                            {new Date(inst.created_at).toLocaleDateString()}
+                          </p>
+                          {inst.llm_provider_name && (
+                            <span className="flex items-center gap-1 text-xs text-purple-500">
+                              <Brain className="h-3 w-3" />
+                              {inst.llm_provider_name}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                     <StatusBadge status={inst.status} />
                   </div>
@@ -126,12 +142,12 @@ export function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* GPU Summary */}
+        {/* System Resources */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>GPU Overview</CardTitle>
-              <Link to="/gpu">
+              <CardTitle>System Resources</CardTitle>
+              <Link to="/system">
                 <Button variant="ghost" size="sm">
                   Details <ArrowRight className="h-3 w-3" />
                 </Button>
@@ -139,63 +155,67 @@ export function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {!gpuData || gpuData.gpus.length === 0 ? (
-              <p className="text-sm text-zinc-500 text-center py-8">No GPUs detected</p>
-            ) : (
+            {sysMetrics ? (
               <div className="space-y-3">
-                {gpuData.gpus.map((gpu) => (
-                  <div key={gpu.index} className="space-y-1.5">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium text-zinc-700">GPU {gpu.index}</span>
-                      <span className="text-xs text-zinc-400">{gpu.name}</span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div>
-                        <div className="flex justify-between text-[11px] text-zinc-400 mb-0.5">
-                          <span>Util</span>
-                          <span>{gpu.utilization_gpu.toFixed(0)}%</span>
-                        </div>
-                        <div className="h-1.5 rounded-full bg-zinc-100">
-                          <div
-                            className="h-1.5 rounded-full bg-blue-500 transition-all"
-                            style={{ width: `${gpu.utilization_gpu}%` }}
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-[11px] text-zinc-400 mb-0.5">
-                          <span>VRAM</span>
-                          <span>{((gpu.vram_used_mb / gpu.vram_total_mb) * 100).toFixed(0)}%</span>
-                        </div>
-                        <div className="h-1.5 rounded-full bg-zinc-100">
-                          <div
-                            className="h-1.5 rounded-full bg-emerald-500 transition-all"
-                            style={{ width: `${(gpu.vram_used_mb / gpu.vram_total_mb) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-[11px] text-zinc-400 mb-0.5">
-                          <span>Temp</span>
-                          <span>{gpu.temperature}C</span>
-                        </div>
-                        <div className="h-1.5 rounded-full bg-zinc-100">
-                          <div
-                            className="h-1.5 rounded-full transition-all"
-                            style={{
-                              width: `${Math.min((gpu.temperature / 100) * 100, 100)}%`,
-                              backgroundColor: gpu.temperature > 80 ? "#ef4444" : gpu.temperature > 60 ? "#f59e0b" : "#22c55e",
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
+                {/* CPU */}
+                <ResourceBar
+                  label="CPU"
+                  value={sysMetrics.cpu_percent}
+                  detail={`${sysMetrics.cpu_count} cores`}
+                  color="bg-blue-500"
+                />
+                {/* RAM */}
+                <ResourceBar
+                  label="RAM"
+                  value={sysMetrics.memory_percent}
+                  detail={`${formatBytes(sysMetrics.memory_used)} / ${formatBytes(sysMetrics.memory_total)}`}
+                  color="bg-violet-500"
+                />
+                {/* Disk */}
+                <ResourceBar
+                  label="Disk"
+                  value={sysMetrics.disk_percent}
+                  detail={`${formatBytes(sysMetrics.disk_used)} / ${formatBytes(sysMetrics.disk_total)}`}
+                  color="bg-amber-500"
+                />
+
+                {/* GPU section — only if detected */}
+                {hasGpus && sysMetrics.gpus!.map((gpu, i) => (
+                  <div key={i} className="pt-2 border-t border-zinc-100">
+                    <ResourceBar
+                      label={`GPU ${i}`}
+                      value={gpu.utilization_gpu}
+                      detail={`${(gpu.vram_used_mb / 1024).toFixed(1)}/${(gpu.vram_total_mb / 1024).toFixed(0)} GB — ${gpu.temperature}°C`}
+                      color="bg-emerald-500"
+                    />
                   </div>
                 ))}
               </div>
+            ) : (
+              <p className="text-sm text-zinc-500 text-center py-8">Loading system metrics...</p>
             )}
           </CardContent>
         </Card>
+      </div>
+    </div>
+  );
+}
+
+function ResourceBar({ label, value, detail, color }: { label: string; value: number; detail: string; color: string }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between text-sm">
+        <span className="font-medium text-zinc-700">{label}</span>
+        <span className="text-xs text-zinc-400">{detail}</span>
+      </div>
+      <div className="mt-1 flex items-center gap-2">
+        <div className="h-1.5 flex-1 rounded-full bg-zinc-100">
+          <div
+            className={`h-1.5 rounded-full transition-all ${color}`}
+            style={{ width: `${Math.min(value, 100)}%` }}
+          />
+        </div>
+        <span className="text-xs font-mono text-zinc-600 w-10 text-right">{value.toFixed(0)}%</span>
       </div>
     </div>
   );

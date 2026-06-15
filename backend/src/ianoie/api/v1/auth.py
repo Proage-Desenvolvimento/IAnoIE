@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ianoie.api.deps import get_current_user
 from ianoie.core.exceptions import InvalidCredentials
-from ianoie.core.security import verify_password, create_access_token, hash_password
+from ianoie.core.security import create_access_token, hash_password, verify_password
 from ianoie.database import get_db
 from ianoie.models.user import User, UserRole
 from ianoie.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserResponse

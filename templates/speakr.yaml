@@ -7,7 +7,7 @@ metadata:
   description: "AI-powered transcription and note-taking platform with speaker identification"
   long_description: |
     Transform audio recordings into organized, searchable notes.
-    Supports OpenAI API (cloud) or local WhisperX (GPU) for transcription.
+    Supports cloud APIs (OpenAI, Gemini) or local WhisperX (GPU) for transcription.
     Features: smart recording, AI transcription, voice profiles, semantic search, REST API.
   category: "productivity"
   icon: "Mic"
@@ -19,6 +19,19 @@ gpu:
   max_count: 1
   min_vram_gb: 0
 
+llm:
+  supported_providers: ["openai", "gemini", "anthropic"]
+  connection_env:
+    openai:
+      TEXT_MODEL_API_KEY: "{{llm.api_key}}"
+      TEXT_MODEL_NAME: "{{llm.model}}"
+    gemini:
+      TEXT_MODEL_API_KEY: "{{llm.api_key}}"
+      TEXT_MODEL_NAME: "{{llm.model}}"
+    anthropic:
+      TEXT_MODEL_API_KEY: "{{llm.api_key}}"
+      TEXT_MODEL_NAME: "{{llm.model}}"
+
 config:
   - key: "transcription_mode"
     label: "Transcription Mode"
@@ -29,25 +42,11 @@ config:
     description: "OpenAI = cloud API (needs API key). Local = WhisperX on your GPU (best quality + voice profiles)"
 
   - key: "openai_api_key"
-    label: "OpenAI API Key"
+    label: "OpenAI API Key (for transcription)"
     type: "string"
     default: ""
     required: false
-    description: "Required for OpenAI transcription mode. Also used for text generation if no separate key."
-
-  - key: "text_model_api_key"
-    label: "Text Model API Key"
-    type: "string"
-    default: ""
-    required: true
-    description: "API key for summaries, titles, and chat (OpenAI or OpenRouter)"
-
-  - key: "text_model_provider"
-    label: "Text Model Provider"
-    type: "select"
-    default: "openai"
-    options: ["openai", "openrouter"]
-    description: "Provider for text generation features"
+    description: "Required for OpenAI transcription mode only"
 
 services:
   speakr:
@@ -61,8 +60,6 @@ services:
       TRANSCRIPTION_MODEL: "gpt-4o-transcribe-diarize"
       ASR_BASE_URL: "http://whisperx-asr:9000"
       ASR_RETURN_SPEAKER_EMBEDDINGS: "true"
-      TEXT_MODEL_API_KEY: "{{config.text_model_api_key}}"
-      TEXT_MODEL_NAME: "gpt-4o-mini"
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "admin"
       ALLOW_REGISTRATION: "false"

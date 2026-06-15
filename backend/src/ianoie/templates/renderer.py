@@ -10,17 +10,32 @@ class TemplateRenderer:
         user_config: dict,
         installation_id: int,
         gpu_uuids: list[str],
+        llm_config: dict | None = None,
     ) -> list[ContainerConfig]:
         services = template["services"]
         ordered = self._resolve_dependency_order(services)
         configs = []
 
+        # Extract LLM connection env from template if present
+        llm_connection_env = template.get("llm", {}).get("connection_env", {})
+
         for svc_name in ordered:
             svc = services[svc_name]
+
+            # Build environment: start with service env, merge LLM connection env
+            environment = dict(svc.get("environment", {}))
+
+            # If LLM config provided and template defines connection env for the provider,
+            # merge those env vars into the service environment
+            if llm_config and llm_connection_env:
+                provider_type = llm_config.get("provider_type", "")
+                provider_env = llm_connection_env.get(provider_type, {})
+                environment.update(provider_env)
+
             config = ContainerConfig(
                 name=f"ianoie-{installation_id}-{svc_name}",
                 image=f"{svc['image']}:{svc.get('tag', 'latest')}",
-                environment=self._render_env(svc.get("environment", {}), user_config),
+                environment=self._render_env(environment, user_config, llm_config),
                 labels=self._build_labels(svc_name, svc, installation_id),
                 network="ianoie-proxy",
                 restart_policy=svc.get("restart", "unless-stopped"),
@@ -40,12 +55,20 @@ class TemplateRenderer:
 
         return configs
 
-    def _render_env(self, env: dict, user_config: dict) -> dict[str, str]:
+    def _render_env(
+        self, env: dict, user_config: dict, llm_config: dict | None = None
+    ) -> dict[str, str]:
         rendered = {}
         for key, value in env.items():
-            if isinstance(value, str) and "{{config." in value:
-                for config_key, config_val in user_config.items():
-                    value = value.replace(f"{{{{config.{config_key}}}}}", str(config_val))
+            if isinstance(value, str):
+                # Existing {{config.*}} interpolation
+                if "{{config." in value:
+                    for config_key, config_val in user_config.items():
+                        value = value.replace(f"{{{{config.{config_key}}}}}", str(config_val))
+                # New {{llm.*}} interpolation
+                if "{{llm." in value and llm_config:
+                    for llm_key, llm_val in llm_config.items():
+                        value = value.replace(f"{{{{llm.{llm_key}}}}}", str(llm_val))
             rendered[key] = str(value)
         return rendered
 

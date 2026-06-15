@@ -1,5 +1,4 @@
 from celery import Celery
-from celery.schedules import crontab
 
 from ianoie.config import settings
 
@@ -25,6 +24,10 @@ celery_app.conf.beat_schedule = {
     "collect-gpu-metrics": {
         "task": "ianoie.workers.tasks.gpu_monitor.collect_gpu_metrics",
         "schedule": settings.gpu_poll_interval_seconds,
+    },
+    "collect-system-metrics": {
+        "task": "ianoie.workers.tasks.system_monitor.collect_system_metrics",
+        "schedule": 30,
     },
 }
 

@@ -33,10 +33,10 @@ def _update_job(db, job_id: int, status, progress: float = None, error: str = No
 
 @celery_app.task(bind=True, max_retries=2, default_retry_delay=5)
 def uninstall_app(self, installation_id: int, job_id: int):
-    from ianoie.models.job import JobStatus
-    from ianoie.models.installation import Installation, InstallationStatus
     from ianoie.docker_ops.container_manager import ContainerManager
     from ianoie.docker_ops.volume_manager import VolumeManager
+    from ianoie.models.installation import Installation, InstallationStatus
+    from ianoie.models.job import JobStatus
 
     db = _get_sync_db()
     docker_client = _get_docker_client()
@@ -86,9 +86,9 @@ def uninstall_app(self, installation_id: int, job_id: int):
 
 @celery_app.task(bind=True, max_retries=2)
 def start_app(self, installation_id: int, job_id: int):
-    from ianoie.models.job import JobStatus
-    from ianoie.models.installation import Installation, InstallationStatus
     from ianoie.docker_ops.container_manager import ContainerManager
+    from ianoie.models.installation import Installation, InstallationStatus
+    from ianoie.models.job import JobStatus
 
     db = _get_sync_db()
     docker_client = _get_docker_client()
@@ -124,9 +124,9 @@ def start_app(self, installation_id: int, job_id: int):
 
 @celery_app.task(bind=True, max_retries=2)
 def stop_app(self, installation_id: int, job_id: int):
-    from ianoie.models.job import JobStatus
-    from ianoie.models.installation import Installation, InstallationStatus
     from ianoie.docker_ops.container_manager import ContainerManager
+    from ianoie.models.installation import Installation, InstallationStatus
+    from ianoie.models.job import JobStatus
 
     db = _get_sync_db()
     docker_client = _get_docker_client()
@@ -162,9 +162,9 @@ def stop_app(self, installation_id: int, job_id: int):
 
 @celery_app.task(bind=True, max_retries=2)
 def restart_app(self, installation_id: int, job_id: int):
-    from ianoie.models.job import JobStatus
-    from ianoie.models.installation import Installation, InstallationStatus
     from ianoie.docker_ops.container_manager import ContainerManager
+    from ianoie.models.installation import Installation, InstallationStatus
+    from ianoie.models.job import JobStatus
 
     db = _get_sync_db()
     docker_client = _get_docker_client()

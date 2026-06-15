@@ -4,26 +4,35 @@ metadata:
   name: "JupyterLab"
   slug: "jupyterlab"
   version: "1.0.0"
-  description: "Interactive notebook environment with GPU support"
+  description: "Interactive notebook environment with optional GPU support"
   category: "notebook"
   icon: "BookOpen"
   tags: ["notebook", "jupyter", "datascience"]
 
 gpu:
   required: false
-  min_count: 1
+  min_count: 0
   max_count: 4
-  min_vram_gb: 8
+  min_vram_gb: 0
+
+llm:
+  supported_providers: ["openai", "gemini", "anthropic", "ollama"]
+  connection_env:
+    openai:
+      OPENAI_API_KEY: "{{llm.api_key}}"
+      OPENAI_BASE_URL: "{{llm.base_url}}"
+      OPENAI_MODEL: "{{llm.model}}"
+    gemini:
+      GOOGLE_API_KEY: "{{llm.api_key}}"
+      GEMINI_MODEL: "{{llm.model}}"
+    anthropic:
+      ANTHROPIC_API_KEY: "{{llm.api_key}}"
+      ANTHROPIC_MODEL: "{{llm.model}}"
+    ollama:
+      OLLAMA_BASE_URL: "{{llm.base_url}}"
+      OLLAMA_MODEL: "{{llm.model}}"
 
 config:
-  - key: "gpu_index"
-    label: "GPU Assignment"
-    type: "select"
-    default: 0
-    required: false
-    options: [0, 1, 2, 3, 4, 5, 6, 7]
-    description: "Which GPU to use (optional)"
-
   - key: "password"
     label: "Jupyter Password"
     type: "string"
@@ -40,7 +49,6 @@ services:
     environment:
       JUPYTER_TOKEN: "{{config.password}}"
       JUPYTER_ENABLE_LAB: "yes"
-      NVIDIA_VISIBLE_DEVICES: "all"
 
     ports:
       - container_port: 8888

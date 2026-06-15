@@ -4,6 +4,7 @@ import {
   Store,
   Box,
   Monitor,
+  Brain,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,7 +13,8 @@ const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/catalog", icon: Store, label: "App Catalog" },
   { to: "/my-apps", icon: Box, label: "Installed Apps" },
-  { to: "/gpu", icon: Monitor, label: "GPU Monitor" },
+  { to: "/llm-providers", icon: Brain, label: "LLM Providers" },
+  { to: "/system", icon: Monitor, label: "System Monitor" },
 ];
 
 export function Sidebar() {

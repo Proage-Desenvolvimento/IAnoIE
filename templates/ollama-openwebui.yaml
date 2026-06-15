@@ -7,27 +7,20 @@ metadata:
   description: "Complete LLM stack with Ollama backend and Open WebUI frontend"
   long_description: |
     Open WebUI provides a ChatGPT-like interface connected to Ollama,
-    which runs LLMs locally on your DGX GPUs. Includes model management,
+    which runs LLMs locally on your GPU. Includes model management,
     conversation history, and document upload (RAG).
+    Works without GPU (CPU mode, slower) or with GPU (recommended).
   category: "llm"
   icon: "MessageSquare"
   tags: ["chat", "llm", "ollama", "rag"]
 
 gpu:
-  required: true
-  min_count: 1
+  required: false
+  min_count: 0
   max_count: 4
-  min_vram_gb: 16
+  min_vram_gb: 0
 
 config:
-  - key: "gpu_index"
-    label: "GPU Assignment"
-    type: "select"
-    default: 0
-    required: true
-    options: [0, 1, 2, 3, 4, 5, 6, 7]
-    description: "Which GPU to use for model inference"
-
   - key: "auto_pull_model"
     label: "Auto-pull default model"
     type: "boolean"

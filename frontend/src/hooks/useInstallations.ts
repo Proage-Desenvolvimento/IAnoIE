@@ -17,8 +17,18 @@ export function useInstallations(page = 1) {
 export function useInstallApp() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ appId, config }: { appId: number; config?: Record<string, unknown> }) =>
-      createInstallation(appId, config),
+    mutationFn: (params: {
+      appId: number;
+      config?: Record<string, unknown>;
+      llm_provider_id?: number | null;
+      llm_model?: string | null;
+    }) =>
+      createInstallation({
+        app_id: params.appId,
+        config: params.config,
+        llm_provider_id: params.llm_provider_id,
+        llm_model: params.llm_model,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["installations"] });
     },
@@ -49,8 +59,17 @@ export function useAppAction() {
 export function useUpdateConfig() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, config }: { id: number; config: Record<string, unknown> }) =>
-      updateInstallationConfig(id, config),
+    mutationFn: (params: {
+      id: number;
+      config: Record<string, unknown>;
+      llm_provider_id?: number | null;
+      llm_model?: string | null;
+    }) =>
+      updateInstallationConfig(params.id, {
+        config: params.config,
+        llm_provider_id: params.llm_provider_id,
+        llm_model: params.llm_model,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["installations"] });
     },

@@ -7,10 +7,14 @@ from pydantic import BaseModel
 class InstallationCreate(BaseModel):
     app_id: int
     config: Optional[dict[str, Any]] = None
+    llm_provider_id: Optional[int] = None
+    llm_model: Optional[str] = None
 
 
 class InstallationConfigUpdate(BaseModel):
     config: dict[str, Any]
+    llm_provider_id: Optional[int] = None
+    llm_model: Optional[str] = None
 
 
 class InstallationResponse(BaseModel):
@@ -25,6 +29,10 @@ class InstallationResponse(BaseModel):
     domain: Optional[str] = None
     config: Optional[dict[str, Any]] = None
     runtime_info: Optional[dict[str, Any]] = None
+    llm_provider_id: Optional[int] = None
+    llm_provider_name: Optional[str] = None
+    llm_provider_type: Optional[str] = None
+    llm_model: Optional[str] = None
     created_at: datetime.datetime
 
     model_config = {"from_attributes": True}

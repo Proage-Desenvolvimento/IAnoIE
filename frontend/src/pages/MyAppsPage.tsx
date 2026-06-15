@@ -22,6 +22,7 @@ import {
   Settings,
   CheckCircle2,
   XCircle,
+  Brain,
 } from "lucide-react";
 import type { Installation, TemplateConfigField } from "@/lib/types";
 
@@ -258,7 +259,6 @@ function InstallationRow({
   const isRunning = inst.status === "running";
   const isStopped = inst.status === "stopped";
   const isTransitioning = inst.status === "installing" || inst.status === "uninstalling" || inst.status === "pending";
-  const hasConfig = inst.config && Object.keys(inst.config).length > 0;
   const dateStr = new Date(inst.created_at).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
@@ -279,16 +279,19 @@ function InstallationRow({
             </div>
             <div className="mt-1 flex items-center gap-3 text-xs text-zinc-400">
               <span>Installed {dateStr}</span>
-              {inst.runtime_info && "gpu_uuids" in (inst.runtime_info as Record<string, unknown>) && (
-                <span className="flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
-                  GPU assigned
-                </span>
+              {inst.runtime_info && Array.isArray((inst.runtime_info as Record<string, unknown>).gpu_uuids) && ((inst.runtime_info as Record<string, unknown[]>).gpu_uuids as unknown[]).length > 0 && (
+                  <span className="flex items-center gap-1">
+                    <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
+                    GPU assigned
+                  </span>
               )}
-              {hasConfig && inst.config && "transcription_mode" in (inst.config as Record<string, unknown>) && (
+              {inst.llm_provider_name && (
                 <span className="flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
-                  {(inst.config as Record<string, unknown>).transcription_mode === "local" ? "Local GPU" : "OpenAI API"}
+                  <Brain className="h-3 w-3 text-purple-400" />
+                  <span className="text-purple-500">{inst.llm_provider_name}</span>
+                  {inst.llm_model && (
+                    <span className="text-zinc-400">/ {inst.llm_model}</span>
+                  )}
                 </span>
               )}
             </div>

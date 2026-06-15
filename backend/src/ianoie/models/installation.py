@@ -1,8 +1,8 @@
-import datetime
 import enum
 from typing import Optional
 
-from sqlalchemy import String, Text, Integer, ForeignKey, Enum as SAEnum
+from sqlalchemy import Enum as SAEnum
+from sqlalchemy import ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, TimestampMixin
@@ -34,6 +34,10 @@ class Installation(Base, TimestampMixin):
     domain: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     config: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     runtime_info: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    llm_provider_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("llm_providers.id", ondelete="SET NULL"), nullable=True,
+    )
+    llm_model: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
 
     app: Mapped["App"] = relationship(back_populates="installations")  # noqa: F821
     user: Mapped["User"] = relationship(back_populates="installations")  # noqa: F821
@@ -41,3 +45,4 @@ class Installation(Base, TimestampMixin):
         back_populates="installation", cascade="all, delete-orphan"
     )
     jobs: Mapped[list["Job"]] = relationship(back_populates="installation")  # noqa: F821
+    llm_provider: Mapped[Optional["LLMProvider"]] = relationship()  # noqa: F821

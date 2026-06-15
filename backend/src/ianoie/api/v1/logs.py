@@ -1,13 +1,11 @@
 import asyncio
 import json
-from typing import Annotated
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, Query
+from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from ianoie.core.security import verify_token
-from ianoie.database import get_db, async_session_factory
+from ianoie.database import async_session_factory
 from ianoie.models.installation import Installation
 
 router = APIRouter()
@@ -20,7 +18,7 @@ async def logs_websocket(
     token: str = Query(...),
 ):
     try:
-        payload = verify_token(token)
+        verify_token(token)
     except Exception:
         await websocket.close(code=4001, reason="Invalid token")
         return

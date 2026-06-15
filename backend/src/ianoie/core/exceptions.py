@@ -27,6 +27,14 @@ class GPUUnavailable(HTTPException):
         super().__init__(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=detail)
 
 
+class LLMProviderNotFound(HTTPException):
+    def __init__(self, provider_id: int):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"LLM Provider {provider_id} not found",
+        )
+
+
 class InvalidCredentials(HTTPException):
     def __init__(self):
         super().__init__(

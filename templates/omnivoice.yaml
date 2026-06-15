@@ -4,7 +4,7 @@ metadata:
   name: "OmniVoice"
   slug: "omnivoice"
   version: "0.1.2"
-  description: "Zero-shot TTS with voice cloning and voice design for 600+ languages"
+  description: "Zero-shot TTS with voice cloning and voice design for 600+ languages (GPU required)"
   long_description: |
     State-of-the-art text-to-speech model supporting 600+ languages.
     Features: Voice Cloning from 3-10s reference audio, Voice Design with

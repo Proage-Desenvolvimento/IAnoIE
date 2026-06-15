@@ -35,6 +35,13 @@ class Settings(BaseSettings):
     gpu_poll_interval_seconds: int = 60
     gpu_metrics_retention_days: int = 7
 
+    # System Monitoring
+    system_metrics_retention_days: int = 7
+
+    # Port Management
+    port_range_start: int = 9000
+    port_range_end: int = 9999
+
     # Templates
     templates_dir: str = "/app/templates"
 

@@ -1,11 +1,9 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from ianoie.database import get_db
-from ianoie.models.user import User
 from ianoie.api.deps import get_current_user
+from ianoie.models.user import User
 from ianoie.schemas.gpu import GPUStatusResponse
 
 router = APIRouter()
