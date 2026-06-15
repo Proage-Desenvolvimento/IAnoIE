@@ -6,6 +6,13 @@ celery_app = Celery(
     "ianoie",
     broker=settings.celery_broker_url,
     backend=settings.celery_result_backend,
+    include=[
+        "ianoie.workers.tasks.system_monitor",
+        "ianoie.workers.tasks.gpu_monitor",
+        "ianoie.workers.tasks.install",
+        "ianoie.workers.tasks.uninstall",
+        "ianoie.workers.tasks.reconfigure",
+    ],
 )
 
 celery_app.conf.update(
@@ -30,5 +37,3 @@ celery_app.conf.beat_schedule = {
         "schedule": 30,
     },
 }
-
-celery_app.autodiscover_tasks(["ianoie.workers.tasks"])
