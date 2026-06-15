@@ -12,18 +12,28 @@ One-click AI app installer and manager for NVIDIA DGX machines. Like Softaculous
 
 IAnoIE is a web platform that lets you install and manage AI applications on NVIDIA DGX machines with a single click. Deploy Ollama, ComfyUI, JupyterLab, and more without touching Docker or the command line.
 
+### Features
+
+- **One-click installs** of 10+ AI apps (Ollama, Open WebUI, ComfyUI, JupyterLab, vLLM, n8n, OmniVoice, Speakr, and more)
+- **GPU passthrough** with live GPU monitoring (utilization, VRAM, temperature, power)
+- **System monitoring** — CPU, RAM, disk, and network metrics with 24h history
+- **LLM provider management** — register OpenAI/Gemini/Anthropic/Ollama keys (encrypted at rest) and inject them into your apps
+- **Real-time container logs** streamed over WebSocket
+- **Per-app configuration** — template-driven config forms (timezones, model settings, etc.)
+
 ### Architecture
 
 ```
-Browser (React) → Traefik (:80) → FastAPI (:8000) → PostgreSQL
+Browser (React) → Traefik (:8888) → FastAPI (:8000) → PostgreSQL
                                           |→ Celery Worker → Docker Engine (socket)
-                                          |→ Celery Beat → GPU Metrics (pynvml)
+                                          |→ Celery Beat → GPU Metrics (pynvml) + System Metrics (psutil)
                                  → Redis (broker + backend)
 ```
 
 - **Traefik** discovers containers via Docker labels and routes by path `/app/{id}/`
 - **Celery** tasks use a synchronous session (psycopg2); FastAPI uses async (asyncpg)
 - **YAML templates** define apps; a renderer converts them into Docker configs with Traefik labels + GPU device requests
+- **LLM Providers** (OpenAI/Gemini/Anthropic/Ollama) are managed with API keys encrypted via Fernet; the default provider is injected into each app container
 
 ### Quick Start
 
@@ -41,6 +51,10 @@ sudo bash scripts/setup-dgx.sh
 
 This installs Docker, NVIDIA Container Toolkit, and creates the `ianoie-proxy` network.
 
+> **Other Linux distros / non-DGX VPS?** Use `sudo bash scripts/setup-vps.sh` instead — it supports Ubuntu/Debian/Alma/Rocky/CentOS/RHEL and only installs the NVIDIA toolkit when a GPU is detected.
+>
+> **Production shortcut:** `sudo bash scripts/install.sh` runs the full setup and auto-generates `JWT_SECRET` and `ENCRYPTION_KEY`.
+
 > **No git?** Run the setup directly:
 > ```bash
 > curl -fsSL https://raw.githubusercontent.com/Proage-Desenvolvimento/IAnoIE/main/scripts/setup-dgx.sh | sudo bash
@@ -55,6 +69,7 @@ cp .env.example .env
 Edit `.env` and change at minimum:
 - `POSTGRES_PASSWORD` — database password
 - `JWT_SECRET` — generate with `openssl rand -hex 32`
+- `ENCRYPTION_KEY` — generate with `python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
 - `DEFAULT_ADMIN_PASSWORD` — admin user password
 
 **3. Start the platform**:
@@ -88,6 +103,7 @@ copy .env.example .env
 Edit `.env` and change at minimum:
 - `POSTGRES_PASSWORD` — database password
 - `JWT_SECRET` — generate with `openssl rand -hex 32`
+- `ENCRYPTION_KEY` — generate with `python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
 - `DEFAULT_ADMIN_PASSWORD` — admin user password
 
 **3. Start the platform**:
@@ -122,6 +138,9 @@ This rebuilds the custom images (api, frontend) with the latest code and pulls a
 | **ComfyUI** | Stable Diffusion workflow engine |
 | **Triton Inference** | NVIDIA inference server |
 | **vLLM** | High-throughput LLM serving |
+| **n8n** | Visual workflow automation platform |
+| **OmniVoice** | Zero-shot TTS with voice cloning (600+ languages) |
+| **Speakr** | AI-powered transcription and note-taking |
 
 ### CI/CD
 
@@ -173,7 +192,7 @@ IAnoIE/
 │       ├── components/       # UI components
 │       ├── pages/            # Page components
 │       └── lib/              # Types, utils, constants
-├── templates/                # 7 YAML app templates
+├── templates/                # 10 YAML app templates
 ├── docker/
 │   ├── docker-compose.yml    # Production compose
 │   └── docker-compose.dev.yml
@@ -216,22 +235,31 @@ npm run dev    # http://localhost:5173, proxies /api → localhost:8000
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `APP_NAME` | `IAnoIE` | Application name |
+| `DEBUG` | `false` | Debug mode |
 | `POSTGRES_USER` | `ianoie` | PostgreSQL user |
 | `POSTGRES_PASSWORD` | `change-me-in-production` | PostgreSQL password |
 | `POSTGRES_DB` | `ianoie` | Database name |
 | `DATABASE_URL` | `postgresql+asyncpg://...` | Async DB URL (FastAPI) |
 | `DATABASE_URL_SYNC` | `postgresql+psycopg2://...` | Sync DB URL (Celery) |
-| `JWT_SECRET` | `change-me-...` | JWT signing secret |
-| `JWT_EXPIRE_HOURS` | `24` | Token expiration |
+| `DOCKER_HOST` | `unix:///var/run/docker.sock` | Docker socket |
+| `DOCKER_TIMEOUT` | `120` | Docker client timeout (s) |
+| `JWT_SECRET` | `change-me-to-a-random-secret-in-production` | JWT signing secret (`openssl rand -hex 32`) |
+| `JWT_ALGORITHM` | `HS256` | JWT algorithm |
+| `JWT_EXPIRE_HOURS` | `24` | Token expiration (hours) |
 | `REDIS_URL` | `redis://localhost:6379/0` | Redis connection |
 | `CELERY_BROKER_URL` | `redis://localhost:6379/1` | Celery broker |
 | `CELERY_RESULT_BACKEND` | `redis://localhost:6379/2` | Celery results |
-| `DOCKER_HOST` | `unix:///var/run/docker.sock` | Docker socket |
-| `TEMPLATES_DIR` | `/app/templates` | YAML templates path |
+| `ENCRYPTION_KEY` | `change-me-to-a-valid-fernet-key` | Fernet key to encrypt LLM provider API keys (**required**) |
+| `GPU_POLL_INTERVAL_SECONDS` | `60` | GPU metrics interval |
+| `GPU_METRICS_RETENTION_DAYS` | `7` | GPU metrics retention |
+| `SYSTEM_METRICS_RETENTION_DAYS` | `7` | System metrics retention |
+| `PORT_RANGE_START` | `9000` | Start of port range for apps |
+| `PORT_RANGE_END` | `9999` | End of port range for apps |
+| `TEMPLATES_HOST_PATH` | `/opt/ianoie/templates` | Templates path on host (mounted into containers) |
+| `TEMPLATES_DIR` | `/app/templates` | YAML templates path (inside container) |
 | `DEFAULT_ADMIN_EMAIL` | `admin@aimization.com` | Initial admin email |
 | `DEFAULT_ADMIN_PASSWORD` | `change-me-in-production` | Initial admin password |
-| `GPU_POLL_INTERVAL_SECONDS` | `60` | GPU metrics interval |
-| `GPU_METRICS_RETENTION_DAYS` | `7` | Metrics retention |
 
 ### Useful Commands
 
@@ -263,18 +291,28 @@ cd frontend && npm run build
 
 O IAnoIE é uma plataforma web que permite instalar e gerenciar aplicações de IA em máquinas DGX da NVIDIA com um clique. Deploy de Ollama, ComfyUI, JupyterLab e mais, sem precisar tocar em Docker ou linha de comando.
 
+### Funcionalidades
+
+- **Instalação com um clique** de 10+ apps de IA (Ollama, Open WebUI, ComfyUI, JupyterLab, vLLM, n8n, OmniVoice, Speakr, e mais)
+- **Passthrough de GPU** com monitoramento em tempo real (utilização, VRAM, temperatura, potência)
+- **Monitoramento de sistema** — métricas de CPU, RAM, disco e rede com histórico de 24h
+- **Gerenciamento de LLM providers** — cadastre chaves OpenAI/Gemini/Anthropic/Ollama (criptografadas em repouso) e injete nos seus apps
+- **Logs de container em tempo real** via WebSocket
+- **Configuração por app** — formulários de config baseados no template (fuso horário, ajustes de modelo, etc.)
+
 ### Arquitetura
 
 ```
-Browser (React) → Traefik (:80) → FastAPI (:8000) → PostgreSQL
+Browser (React) → Traefik (:8888) → FastAPI (:8000) → PostgreSQL
                                           |→ Celery Worker → Docker Engine (socket)
-                                          |→ Celery Beat → GPU Metrics (pynvml)
+                                          |→ Celery Beat → GPU Metrics (pynvml) + System Metrics (psutil)
                                  → Redis (broker + backend)
 ```
 
 - O **Traefik** descobre containers via labels Docker e faz roteamento por path `/app/{id}/`
 - As tasks do **Celery** usam sessão síncrona (psycopg2); o FastAPI usa async (asyncpg)
 - **Templates YAML** definem as apps; um renderer converte em configs Docker com labels Traefik + device requests de GPU
+- **LLM Providers** (OpenAI/Gemini/Anthropic/Ollama) são gerenciados com chaves de API criptografadas via Fernet; o provider padrão é injetado no container de cada app
 
 ### Início Rápido
 
@@ -292,6 +330,10 @@ sudo bash scripts/setup-dgx.sh
 
 Este script instala o Docker, o NVIDIA Container Toolkit e cria a rede `ianoie-proxy`.
 
+> **Outras distros Linux / VPS fora da DGX?** Use `sudo bash scripts/setup-vps.sh` — suporta Ubuntu/Debian/Alma/Rocky/CentOS/RHEL e só instala o toolkit da NVIDIA quando detecta uma GPU.
+>
+> **Atalho de produção:** `sudo bash scripts/install.sh` faz o setup completo e gera automaticamente `JWT_SECRET` e `ENCRYPTION_KEY`.
+
 > **Sem git?** Rode o setup direto da URL:
 > ```bash
 > curl -fsSL https://raw.githubusercontent.com/Proage-Desenvolvimento/IAnoIE/main/scripts/setup-dgx.sh | sudo bash
@@ -306,6 +348,7 @@ cp .env.example .env
 Edite o `.env` e altere no mínimo:
 - `POSTGRES_PASSWORD` — senha do banco de dados
 - `JWT_SECRET` — gere com `openssl rand -hex 32`
+- `ENCRYPTION_KEY` — gere com `python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
 - `DEFAULT_ADMIN_PASSWORD` — senha do usuário admin
 
 **3. Iniciar a plataforma**:
@@ -339,6 +382,7 @@ copy .env.example .env
 Edite o `.env` e altere no mínimo:
 - `POSTGRES_PASSWORD` — senha do banco de dados
 - `JWT_SECRET` — gere com `openssl rand -hex 32`
+- `ENCRYPTION_KEY` — gere com `python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
 - `DEFAULT_ADMIN_PASSWORD` — senha do usuário admin
 
 **3. Iniciar a plataforma**:
@@ -373,6 +417,9 @@ Isso reconstrói as imagens customizadas (api, frontend) com o código mais rece
 | **ComfyUI** | Motor de workflows do Stable Diffusion |
 | **Triton Inference** | Servidor de inferência da NVIDIA |
 | **vLLM** | Serving de LLMs em alto throughput |
+| **n8n** | Plataforma de automação de workflows visual |
+| **OmniVoice** | TTS zero-shot com clonagem de voz (600+ idiomas) |
+| **Speakr** | Transcrição e anotações com IA |
 
 ### CI/CD
 
@@ -424,7 +471,7 @@ IAnoIE/
 │       ├── components/       # Componentes UI
 │       ├── pages/            # Componentes de página
 │       └── lib/              # Tipos, utils, constantes
-├── templates/                # 7 templates YAML de apps
+├── templates/                # 10 templates YAML de apps
 ├── docker/
 │   ├── docker-compose.yml    # Compose de produção
 │   └── docker-compose.dev.yml
@@ -467,22 +514,31 @@ npm run dev    # http://localhost:5173, proxy /api → localhost:8000
 
 | Variável | Padrão | Descrição |
 |----------|--------|-----------|
+| `APP_NAME` | `IAnoIE` | Nome da aplicação |
+| `DEBUG` | `false` | Modo debug |
 | `POSTGRES_USER` | `ianoie` | Usuário do PostgreSQL |
 | `POSTGRES_PASSWORD` | `change-me-in-production` | Senha do PostgreSQL |
 | `POSTGRES_DB` | `ianoie` | Nome do banco |
 | `DATABASE_URL` | `postgresql+asyncpg://...` | URL async do banco (FastAPI) |
 | `DATABASE_URL_SYNC` | `postgresql+psycopg2://...` | URL sync do banco (Celery) |
-| `JWT_SECRET` | `change-me-...` | Secret de assinatura JWT |
-| `JWT_EXPIRE_HOURS` | `24` | Expiração do token |
+| `DOCKER_HOST` | `unix:///var/run/docker.sock` | Socket Docker |
+| `DOCKER_TIMEOUT` | `120` | Timeout do client Docker (s) |
+| `JWT_SECRET` | `change-me-to-a-random-secret-in-production` | Secret de assinatura JWT (`openssl rand -hex 32`) |
+| `JWT_ALGORITHM` | `HS256` | Algoritmo do JWT |
+| `JWT_EXPIRE_HOURS` | `24` | Expiração do token (horas) |
 | `REDIS_URL` | `redis://localhost:6379/0` | Conexão Redis |
 | `CELERY_BROKER_URL` | `redis://localhost:6379/1` | Broker do Celery |
 | `CELERY_RESULT_BACKEND` | `redis://localhost:6379/2` | Resultados do Celery |
-| `DOCKER_HOST` | `unix:///var/run/docker.sock` | Socket Docker |
-| `TEMPLATES_DIR` | `/app/templates` | Caminho dos templates YAML |
+| `ENCRYPTION_KEY` | `change-me-to-a-valid-fernet-key` | Chave Fernet p/ criptografar chaves de API dos LLM providers (**obrigatório**) |
+| `GPU_POLL_INTERVAL_SECONDS` | `60` | Intervalo de métricas GPU |
+| `GPU_METRICS_RETENTION_DAYS` | `7` | Retenção de métricas GPU |
+| `SYSTEM_METRICS_RETENTION_DAYS` | `7` | Retenção de métricas de sistema |
+| `PORT_RANGE_START` | `9000` | Início da faixa de portas p/ apps |
+| `PORT_RANGE_END` | `9999` | Fim da faixa de portas p/ apps |
+| `TEMPLATES_HOST_PATH` | `/opt/ianoie/templates` | Caminho dos templates no host (montado nos containers) |
+| `TEMPLATES_DIR` | `/app/templates` | Caminho dos templates YAML (dentro do container) |
 | `DEFAULT_ADMIN_EMAIL` | `admin@aimization.com` | Email do admin inicial |
 | `DEFAULT_ADMIN_PASSWORD` | `change-me-in-production` | Senha do admin inicial |
-| `GPU_POLL_INTERVAL_SECONDS` | `60` | Intervalo de métricas GPU |
-| `GPU_METRICS_RETENTION_DAYS` | `7` | Retenção de métricas |
 
 ### Comandos Úteis
 
