@@ -54,6 +54,8 @@ This installs Docker, NVIDIA Container Toolkit, and creates the `ianoie-proxy` n
 > **Other Linux distros / non-DGX VPS?** Use `sudo bash scripts/setup-vps.sh` instead — it supports Ubuntu/Debian/Alma/Rocky/CentOS/RHEL and only installs the NVIDIA toolkit when a GPU is detected.
 >
 > **Production shortcut:** `sudo bash scripts/install.sh` runs the full setup and auto-generates `JWT_SECRET` and `ENCRYPTION_KEY`.
+>
+> **SELinux?** Leave it in enforcing mode — compose bind mounts use the `:z` flag, so it works on RHEL/AlmaLinux/Rocky without disabling SELinux. `setup-vps.sh` reports the SELinux mode and warns if `container-selinux` is missing.
 
 > **No git?** Run the setup directly:
 > ```bash
@@ -194,10 +196,12 @@ IAnoIE/
 │       └── lib/              # Types, utils, constants
 ├── templates/                # 10 YAML app templates
 ├── docker/
-│   ├── docker-compose.yml    # Production compose
-│   └── docker-compose.dev.yml
+│   ├── docker-compose.yml    # Base compose (builds from source)
+│   ├── docker-compose.dev.yml # Infra-only for local dev
+│   └── docker-compose.prod.yml # Production (GHCR images)
 ├── scripts/
-│   └── setup-dgx.sh         # DGX provisioning script
+│   ├── setup-dgx.sh         # DGX Spark (Ubuntu) provisioning
+│   └── setup-vps.sh         # Generic multi-OS VPS (Ubuntu/Debian/Alma/Rocky/CentOS/RHEL), GPU-aware
 └── .env.example
 ```
 
@@ -333,6 +337,8 @@ Este script instala o Docker, o NVIDIA Container Toolkit e cria a rede `ianoie-p
 > **Outras distros Linux / VPS fora da DGX?** Use `sudo bash scripts/setup-vps.sh` — suporta Ubuntu/Debian/Alma/Rocky/CentOS/RHEL e só instala o toolkit da NVIDIA quando detecta uma GPU.
 >
 > **Atalho de produção:** `sudo bash scripts/install.sh` faz o setup completo e gera automaticamente `JWT_SECRET` e `ENCRYPTION_KEY`.
+>
+> **SELinux?** Pode deixar em enforcing — os bind mounts do compose usam a flag `:z`, então funciona no RHEL/AlmaLinux/Rocky sem precisar desligar o SELinux. O `setup-vps.sh` informa o modo do SELinux e avisa se faltar o `container-selinux`.
 
 > **Sem git?** Rode o setup direto da URL:
 > ```bash
@@ -473,10 +479,12 @@ IAnoIE/
 │       └── lib/              # Tipos, utils, constantes
 ├── templates/                # 10 templates YAML de apps
 ├── docker/
-│   ├── docker-compose.yml    # Compose de produção
-│   └── docker-compose.dev.yml
+│   ├── docker-compose.yml    # Compose base (builda do fonte)
+│   ├── docker-compose.dev.yml # Apenas infra p/ dev local
+│   └── docker-compose.prod.yml # Produção (imagens GHCR)
 ├── scripts/
-│   └── setup-dgx.sh         # Script de provisionamento DGX
+│   ├── setup-dgx.sh         # Provisionamento DGX Spark (Ubuntu)
+│   └── setup-vps.sh         # VPS genérico multi-OS (Ubuntu/Debian/Alma/Rocky/CentOS/RHEL), detecta GPU
 └── .env.example
 ```
 

@@ -114,6 +114,7 @@ IAnoIE/
 ### Infraestrutura (completo)
 - [x] docker-compose.yml com 7 serviços: postgres, redis, api, worker, beat, frontend, traefik (porta host 8888)
 - [x] docker-compose.dev.yml (apenas infra p/ dev) e docker-compose.prod.yml (imagens GHCR)
+- [x] Compatível com SELinux enforcing (RHEL/AlmaLinux/Rocky): todos os bind mounts do host usam `:z` (`docker-compose.yml`, `.dev.yml`, `.prod.yml`); `setup-vps.sh` informa o modo do SELinux e checa `container-selinux`. Removido o mount morto `/proc:/host_proc:ro` do serviço `api` (nenhum código lê `/host_proc`)
 - [x] Dockerfiles para backend (python:3.11-slim + libpq), frontend (node build + nginx) e omnivoice (build próprio)
 - [x] nginx.conf com proxy /api/ -> backend
 - [x] setup-dgx.sh (DGX Spark/Ubuntu) e setup-vps.sh (VPS genérico multi-OS) para provisionamento
@@ -196,6 +197,7 @@ npm run dev   # http://localhost:5173, proxy /api -> localhost:8000
 sudo bash scripts/setup-dgx.sh
 # ...ou em VPS genérico (Ubuntu/Debian/Alma/Rocky/CentOS/RHEL) — detecta GPU e instala o toolkit se houver:
 sudo bash scripts/setup-vps.sh
+# SELinux pode ficar em enforcing (RHEL/AlmaLinux): os bind mounts do compose já usam :z
 
 # Subir tudo
 docker network create ianoie-proxy
@@ -214,7 +216,7 @@ docker compose -f docker/docker-compose.yml up -d
 - **Backend:** ruff (lint), pytest (testes), structlog (logs), sync sessions no Celery, async no FastAPI
 - **Frontend:** componentes em `components/ui/` são primitivos genéricos; componentes de domínio ficam em `components/{domain}/`; páginas em `pages/`
 - **Templates YAML:** schema `ianoie-template/v1` com metadata, gpu, config, services; renderer resolve dependências e gera labels Traefik
-- **Docker:** todos containers gerenciados têm label `ianoie.managed=true` e `ianoie.installation_id`
+- **Docker:** todos containers gerenciados têm label `ianoie.managed=true` e `ianoie.installation_id`. Os bind mounts do host (`/var/run/docker.sock`, `templates/`) usam o sufixo **`:z`** (label compartilhada `container_file_t`) para compatibilidade com SELinux em modo **enforcing** no RHEL/AlmaLinux — sempre `:z`, nunca `:Z`, pois múltiplos containers compartilham o mesmo socket
 - **GPU:** DGX Spark tem 1x GB10 Grace Blackwell (detecção dinâmica via pynvml); Docker DeviceRequest com `capabilities=[["gpu"]]` e `device_ids=[uuids]` para passthrough; suporte a seleção de múltiplas GPUs para compatibilidade com DGX maiores
 - **LLM Providers:** chaves de API nunca ficam em texto plano — `core/crypto.py` (Fernet) grava na coluna `api_key_encrypted` de `LLMProvider`; o provider marcado como padrão é injetado como variável de ambiente no container da instalação
 - **Auth:** JWT no header `Authorization: Bearer <token>`, armazenado em `localStorage` no frontend
