@@ -136,6 +136,14 @@ export interface LogEntry {
   line: string;
 }
 
+export interface InstallLog {
+  id: number;
+  level: "debug" | "info" | "warn" | "error";
+  message: string;
+  container_name: string | null;
+  timestamp: string;
+}
+
 export interface WorkerNode {
   name: string;
   active: number;

@@ -43,7 +43,7 @@ APPS = [
     {
         "name": "Speakr",
         "slug": "speakr",
-        "description": "AI transcription and note-taking with speaker ID. Choose your transcription engine at install or later (Edit config): OpenAI, Mistral, VibeVoice, or your own Whisper/ASR server (asr_endpoint). Login: admin / admin.",
+        "description": "AI transcription and note-taking with speaker ID. Choose your transcription engine at install or later (Edit config): OpenAI, Mistral, VibeVoice, or your own Whisper/ASR server (asr_endpoint). Login: the admin email + password you set during install.",
         "category": "productivity",
         "template_path": "speakr.yaml",
         "icon_url": None,

@@ -5,6 +5,7 @@ import time
 import structlog
 
 from ianoie.workers.celery_app import celery_app
+from ianoie.workers.tasks._events import log_event
 
 logger = structlog.get_logger()
 
@@ -104,6 +105,7 @@ def install_app(self, installation_id: int, job_id: int):
     try:
         _update_job(db, job_id, JobStatus.running, 0.0)
         installation = _update_installation_status(db, installation_id, InstallationStatus.installing)
+        log_event(installation_id, "info", "Instalação iniciada")
 
         app = db.get(App, installation.app_id)
         template = TemplateLoader().load(app.template_path)
@@ -168,22 +170,36 @@ def install_app(self, installation_id: int, job_id: int):
             img_tag = image_parts[1] if len(image_parts) > 1 else "latest"
 
             if not image_mgr.exists(cfg.image):
+                log_event(installation_id, "info", f"Baixando imagem {cfg.image}…", container_name=cfg.name)
                 logger.info("pulling_image", image=cfg.image)
                 image_mgr.pull(img_name, img_tag)
+                log_event(installation_id, "info", f"Imagem {cfg.image} pronta", container_name=cfg.name)
 
+            log_event(installation_id, "info", f"Iniciando container {cfg.name}…")
             container = container_mgr.create(cfg)
             container_mgr.start(container.id)
             created_ids.append(container.id)
             logger.info("container_started", name=cfg.name, id=container.id[:12])
+            log_event(installation_id, "info", f"Container {cfg.name} iniciado", container_name=cfg.name)
 
             # Readiness: TCP probe from the worker (no dependency on curl in the image)
             if cfg.readiness_port:
+                log_event(
+                    installation_id, "info",
+                    f"Aguardando {cfg.name} responder na porta {cfg.readiness_port} (até 3 min)…",
+                    container_name=cfg.name,
+                )
                 ready = _wait_for_port(cfg.name, cfg.readiness_port, timeout=180)
                 if not ready:
                     raise RuntimeError(
                         f"Container {cfg.name} did not become ready on port {cfg.readiness_port}"
                     )
                 logger.info("container_ready", name=cfg.name, port=cfg.readiness_port)
+                log_event(
+                    installation_id, "info",
+                    f"Container {cfg.name} pronto na porta {cfg.readiness_port}",
+                    container_name=cfg.name,
+                )
 
         # Update installation record
         installation = db.get(Installation, installation_id)
@@ -196,11 +212,13 @@ def install_app(self, installation_id: int, job_id: int):
         })
         db.commit()
 
+        log_event(installation_id, "info", "Instalação concluída — pronto para uso")
         _update_job(db, job_id, JobStatus.completed, 1.0)
         logger.info("install_completed", installation_id=installation_id)
 
     except Exception as e:
         logger.error("install_failed", installation_id=installation_id, error=str(e))
+        log_event(installation_id, "error", f"Falha na instalação: {e}")
         # Roll back partially created containers so retries don't hit 409 name conflicts
         if container_mgr:
             for cid in created_ids:

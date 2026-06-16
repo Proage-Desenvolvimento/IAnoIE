@@ -62,13 +62,27 @@ config:
     required: false
     description: "Your Whisper/ASR server URL, e.g. http://192.168.1.50:9000. Used only when connector = asr_endpoint."
 
+  - key: "admin_email"
+    label: "Admin Email"
+    type: "string"
+    default: "admin@example.com"
+    required: true
+    description: "Email you'll use to log in to Speakr. The admin account is created with this on first launch."
+
+  - key: "admin_password"
+    label: "Admin Password"
+    type: "string"
+    default: "admin"
+    required: true
+    description: "Initial admin password (shown masked). Change it inside Speakr after your first login."
+
 access:
   url: "/app/{installation_id}/"
   credentials:
-    - label: "Username"
-      value: "admin"
+    - label: "Email"
+      value: "{{config.admin_email}}"
     - label: "Password"
-      value: "admin"
+      value: "{{config.admin_password}}"
   note: "Change the password after your first login."
 
 services:
@@ -84,7 +98,8 @@ services:
       ASR_BASE_URL: "{{config.asr_endpoint_url}}"
       ASR_RETURN_SPEAKER_EMBEDDINGS: "true"
       ADMIN_USERNAME: "admin"
-      ADMIN_PASSWORD: "admin"
+      ADMIN_EMAIL: "{{config.admin_email}}"
+      ADMIN_PASSWORD: "{{config.admin_password}}"
       ALLOW_REGISTRATION: "false"
       ENABLE_INQUIRE_MODE: "true"
       LOG_LEVEL: "ERROR"

@@ -1,13 +1,16 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ianoie.api.deps import get_current_user
 from ianoie.database import get_db
+from ianoie.models.app_log import AppLog
 from ianoie.models.user import User
 from ianoie.schemas.common import PaginatedResponse
 from ianoie.schemas.installation import (
+    AppLogResponse,
     InstallationConfigUpdate,
     InstallationCreate,
     InstallationResponse,
@@ -48,6 +51,26 @@ async def get_installation(
 ):
     svc = InstallationService(db)
     return await svc.get_installation(installation_id, current_user)
+
+
+@router.get("/{installation_id}/logs", response_model=list[AppLogResponse])
+async def list_installation_logs(
+    installation_id: int,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+    limit: int = Query(500, ge=1, le=2000),
+):
+    """Lifecycle events for an install (pull/start/ready/error) — polled live by the UI."""
+    svc = InstallationService(db)
+    await svc.get_installation(installation_id, current_user)  # ownership check (404)
+
+    result = await db.execute(
+        select(AppLog)
+        .where(AppLog.installation_id == installation_id)
+        .order_by(AppLog.timestamp.asc())
+        .limit(limit)
+    )
+    return result.scalars().all()
 
 
 @router.delete("/{installation_id}", status_code=202)

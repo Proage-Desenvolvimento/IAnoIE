@@ -48,3 +48,13 @@ class InstallationResponse(BaseModel):
     created_at: datetime.datetime
 
     model_config = {"from_attributes": True}
+
+
+class AppLogResponse(BaseModel):
+    id: int
+    level: str
+    message: str
+    container_name: Optional[str] = None
+    timestamp: datetime.datetime
+
+    model_config = {"from_attributes": True}

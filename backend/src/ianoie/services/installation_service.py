@@ -16,8 +16,8 @@ from ianoie.schemas.installation import AccessCredential, AccessInfo, Installati
 class InstallationService:
     def __init__(self, db: AsyncSession):
         self.db = db
-        # Cache of raw template `access` blocks keyed by app_id (per request)
-        self._access_cache: dict[int, dict | None] = {}
+        # Cache of loaded templates keyed by app_id (per request) — drives access resolution
+        self._template_cache: dict[int, dict | None] = {}
 
     async def list_installations(
         self, user: User, page: int = 1, per_page: int = 20
@@ -230,7 +230,7 @@ class InstallationService:
                 llm_provider_name = provider.name
                 llm_provider_type = provider.provider_type.value
 
-        access = self._resolve_access(app, inst.id)
+        access = self._resolve_access(app, inst.id, json.loads(inst.config) if inst.config else {})
 
         return InstallationResponse(
             id=inst.id,
@@ -252,21 +252,49 @@ class InstallationService:
             created_at=inst.created_at,
         )
 
-    def _resolve_access(self, app: App, installation_id: int) -> Optional[AccessInfo]:
-        """Resolve template-declared access info (URL + credentials) for an installation."""
+    def _resolve_access(
+        self, app: App, installation_id: int, user_config: dict | None = None
+    ) -> Optional[AccessInfo]:
+        """Resolve template-declared access info (URL + credentials) for an installation.
+
+        ``{{config.*}}`` placeholders in url/credentials/note are interpolated from the
+        installation's config, with template field defaults applied — mirrors
+        templates.renderer._render_env.
+        """
         from ianoie.templates.loader import TemplateLoader
 
-        if app.id not in self._access_cache:
+        if app.id not in self._template_cache:
             try:
-                template = TemplateLoader().load(app.template_path)
-                self._access_cache[app.id] = template.get("access") or None
+                self._template_cache[app.id] = TemplateLoader().load(app.template_path)
             except Exception:
-                self._access_cache[app.id] = None
-        raw = self._access_cache[app.id]
+                self._template_cache[app.id] = None
+        template = self._template_cache[app.id]
+        if not template:
+            return None
+        raw = template.get("access")
         if not raw:
             return None
-        url = raw.get("url")
+
+        # Apply config field defaults so {{config.*}} always resolves
+        cfg = dict(user_config or {})
+        for field in template.get("config", []):
+            key = field.get("key")
+            if key and "default" in field and cfg.get(key) in (None, ""):
+                cfg[key] = field["default"]
+
+        def _interp(value):
+            if not isinstance(value, str):
+                return value
+            for config_key, config_val in cfg.items():
+                value = value.replace(f"{{{{config.{config_key}}}}}", str(config_val))
+            return value
+
+        url = _interp(raw.get("url"))
         if url:
             url = url.replace("{installation_id}", str(installation_id))
-        credentials = [AccessCredential(**c) for c in raw.get("credentials", [])]
-        return AccessInfo(url=url or None, credentials=credentials, note=raw.get("note") or None)
+        credentials = [
+            AccessCredential(label=c.get("label", ""), value=_interp(c.get("value")) or "")
+            for c in raw.get("credentials", [])
+        ]
+        note = _interp(raw.get("note"))
+        return AccessInfo(url=url or None, credentials=credentials, note=note or None)

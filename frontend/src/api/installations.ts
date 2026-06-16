@@ -1,8 +1,12 @@
 import { api } from "./client";
-import type { Installation, PaginatedResponse } from "@/lib/types";
+import type { Installation, InstallLog, PaginatedResponse } from "@/lib/types";
 
 export async function getInstallations(page = 1) {
   return api.get("api/v1/installations", { searchParams: { page } }).json<PaginatedResponse<Installation>>();
+}
+
+export async function getInstallLogs(id: number) {
+  return api.get(`api/v1/installations/${id}/logs`).json<InstallLog[]>();
 }
 
 export async function createInstallation(data: {

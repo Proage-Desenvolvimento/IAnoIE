@@ -5,6 +5,7 @@ import { useInstallApp, useInstallations } from "@/hooks/useInstallations";
 import { useGpuMetrics } from "@/hooks/useGpuMetrics";
 import { useLLMProviders } from "@/hooks/useLLMProviders";
 import { useJobPolling } from "@/hooks/useJobPolling";
+import { useInstallLogs } from "@/hooks/useInstallLogs";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
@@ -13,6 +14,7 @@ import { Progress } from "@/components/ui/Progress";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ConfigForm } from "@/components/config/ConfigForm";
+import { InstallLogs } from "@/components/logs/InstallLogs";
 import { APP_CATEGORIES } from "@/lib/constants";
 import type { App, TemplateConfigField, TemplateConfig } from "@/lib/types";
 import { getTemplateConfig } from "@/api/apps";
@@ -29,6 +31,7 @@ import {
   XCircle,
   Mic,
   Brain,
+  Terminal,
 } from "lucide-react";
 
 const CATEGORY_ICONS: Record<string, typeof Cpu> = {
@@ -66,6 +69,8 @@ export function CatalogPage() {
   const [selectedApp, setSelectedApp] = useState<App | null>(null);
   const [gpuIndices, setGpuIndices] = useState<number[]>([0]);
   const [activeJobId, setActiveJobId] = useState<number | null>(null);
+  const [activeInstallationId, setActiveInstallationId] = useState<number | null>(null);
+  const [showInstallLogs, setShowInstallLogs] = useState(false);
   const [templateConfigFields, setTemplateConfigFields] = useState<TemplateConfigField[]>([]);
   const [templateLlmConfig, setTemplateLlmConfig] = useState<TemplateConfig["llm"] | null>(null);
   const [templateGpuConfig, setTemplateGpuConfig] = useState<TemplateConfig["gpu"] | null>(null);
@@ -85,6 +90,8 @@ export function CatalogPage() {
       setTimeout(() => {
         setActiveJobId(null);
         setSelectedApp(null);
+        setActiveInstallationId(null);
+        setShowInstallLogs(false);
       }, 2000);
     }
   });
@@ -109,7 +116,13 @@ export function CatalogPage() {
         llm_provider_id: selectedProviderId,
         llm_model: selectedModel || null,
       },
-      { onSuccess: (res) => setActiveJobId(res.job_id) },
+      {
+        onSuccess: (res) => {
+          setActiveJobId(res.job_id);
+          setActiveInstallationId(res.installation_id);
+          setShowInstallLogs(false);
+        },
+      },
     );
   };
 
@@ -152,6 +165,9 @@ export function CatalogPage() {
   const isInstalling = activeJobId !== null;
   const jobDone = jobQuery.data?.status === "completed";
   const jobFailed = jobQuery.data?.status === "failed";
+  const { logs: installLogLines, currentStatus } = useInstallLogs(
+    isInstalling ? activeInstallationId : null,
+  );
   const gpuRequired = templateGpuConfig?.required ?? false;
   const hasGpus = (gpuStatus?.count ?? 0) > 0;
 
@@ -419,9 +435,28 @@ export function CatalogPage() {
                   value={jobQuery.data?.progress ?? 0}
                   indicatorClassName={jobDone ? "bg-emerald-500" : jobFailed ? "bg-red-500" : undefined}
                 />
+                {!jobDone && !jobFailed && (
+                  <p className="flex items-center gap-1.5 text-xs text-zinc-500">
+                    <Spinner size="sm" />
+                    <span className="truncate">{currentStatus?.message ?? "Preparing…"}</span>
+                  </p>
+                )}
                 {jobQuery.data?.error && (
                   <p className="text-xs text-red-600 bg-red-50 rounded-lg p-2">{jobQuery.data.error}</p>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowInstallLogs((v) => !v)}
+                  className="text-zinc-500 hover:text-zinc-700 h-7 px-2"
+                >
+                  <Terminal className="h-3.5 w-3.5" />
+                  {showInstallLogs ? "Hide logs" : "View logs"}
+                </Button>
+                {showInstallLogs && <InstallLogs logs={installLogLines} />}
               </div>
               {jobDone && (
                 <div className="flex items-center gap-2 text-emerald-600">
