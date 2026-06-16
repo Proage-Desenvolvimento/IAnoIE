@@ -93,43 +93,6 @@ services:
 
     restart: "unless-stopped"
 
-    depends_on:
-      - "whisperx-asr"
-
     resource_limits:
       memory: "4g"
       cpus: 2.0
-
-  whisperx-asr:
-    image: "fedirka/whisperx-asr"
-    tag: "latest"
-    internal: true
-
-    environment:
-      ASR_MODEL: "large-v3"
-      ASR_DEVICE: "cuda"
-      ASR_COMPUTE_TYPE: "float16"
-
-    ports:
-      - container_port: 9000
-        host_port: null
-        protocol: "tcp"
-        expose: false
-
-    volumes:
-      - name: "whisperx-models"
-        mount_path: "/root/.cache/huggingface"
-        mode: "rw"
-
-    gpu:
-      enabled: true
-      count: 1
-
-    healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:9000/health || exit 1"]
-      interval: 30
-      timeout: 10
-      retries: 5
-      start_period: 120
-
-    restart: "unless-stopped"
