@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useApps } from "@/hooks/useApps";
-import { useInstallApp } from "@/hooks/useInstallations";
+import { useInstallApp, useInstallations } from "@/hooks/useInstallations";
 import { useGpuMetrics } from "@/hooks/useGpuMetrics";
 import { useLLMProviders } from "@/hooks/useLLMProviders";
 import { useJobPolling } from "@/hooks/useJobPolling";
@@ -76,6 +77,8 @@ export function CatalogPage() {
   const { data: gpuStatus } = useGpuMetrics();
   const { data: llmProviders } = useLLMProviders();
   const installApp = useInstallApp();
+  const { data: installationsData } = useInstallations();
+  const installedAppIds = new Set((installationsData?.items ?? []).map((i) => i.app_id));
 
   const jobQuery = useJobPolling(activeJobId, (job) => {
     if (job.status === "completed") {
@@ -215,6 +218,7 @@ export function CatalogPage() {
             const colorClass = CATEGORY_COLORS[app.category] || "";
             const gpuReq = app.gpu_requirements as Record<string, unknown> | null;
             const needsGpu = gpuReq?.gpu_required;
+            const isInstalled = installedAppIds.has(app.id);
 
             return (
               <Card key={app.id} className="flex flex-col hover:shadow-md transition-shadow">
@@ -241,13 +245,28 @@ export function CatalogPage() {
                         GPU
                       </Badge>
                     ) : null}
+                    {isInstalled && (
+                      <span className="inline-flex items-center rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+                        <CheckCircle2 className="h-3 w-3 mr-0.5" />
+                        Installed
+                      </span>
+                    )}
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button onClick={() => handleSelectApp(app)} className="w-full" size="sm">
-                    <Download className="h-3.5 w-3.5" />
-                    Install
-                  </Button>
+                  {isInstalled ? (
+                    <Link to="/my-apps" className="block">
+                      <Button variant="secondary" className="w-full" size="sm">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        Installed — Manage
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button onClick={() => handleSelectApp(app)} className="w-full" size="sm">
+                      <Download className="h-3.5 w-3.5" />
+                      Install
+                    </Button>
+                  )}
                 </CardFooter>
               </Card>
             );

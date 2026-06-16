@@ -31,6 +31,11 @@ export interface Installation {
   llm_provider_name: string | null;
   llm_provider_type: string | null;
   llm_model: string | null;
+  access: {
+    url: string | null;
+    credentials: { label: string; value: string }[];
+    note: string | null;
+  } | null;
   created_at: string;
 }
 

@@ -1,0 +1,114 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "Open Notebook"
+  slug: "open-notebook"
+  version: "1.0.0"
+  description: "Self-hosted alternative to Google's NotebookLM. Multi-modal research, chat with your sources, vector search, and multi-speaker podcasts. 16+ AI providers. No GPU required."
+  long_description: |
+    Open source, privacy-focused alternative to Google's NotebookLM. Keep your
+    research private and self-hosted. Ingest PDFs, videos, audio, web pages and
+    Office docs; run full-text and vector search; chat with your sources;
+    generate professional multi-speaker podcasts; automate via a full REST API.
+    Supports 16+ AI providers (OpenAI, Anthropic, Google, Ollama, LM Studio,
+    Groq and more) configured through its own Settings UI. API keys are
+    encrypted at rest with OPEN_NOTEBOOK_ENCRYPTION_KEY.
+  category: "notebook"
+  icon: "Notebook"
+  tags: ["notebook", "research", "rag", "podcast", "knowledge"]
+
+gpu:
+  required: false
+  min_count: 0
+  max_count: 0
+  min_vram_gb: 0
+
+# O provider padrão da IAnoIE é injetado no container como env var correspondente.
+# (Ollama/local fica de fora: a base URL depende de onde o Ollama roda — configurar na UI do app.)
+llm:
+  supported_providers: ["openai", "anthropic", "gemini"]
+  connection_env:
+    openai:
+      OPENAI_API_KEY: "{{llm.api_key}}"
+    anthropic:
+      ANTHROPIC_API_KEY: "{{llm.api_key}}"
+    gemini:
+      GOOGLE_API_KEY: "{{llm.api_key}}"
+
+config:
+  - key: "encryption_key"
+    label: "Encryption Key"
+    type: "string"
+    default: "ianoie-open-notebook-change-me"
+    required: true
+    description: "Secret (min 16 chars) que criptografa as chaves de API guardadas no banco do Open Notebook. NÃO troque após o primeiro uso — chaves já salvas ficariam ilegíveis."
+
+services:
+  surrealdb:
+    image: "surrealdb/surrealdb"
+    tag: "v2"
+    internal: true
+
+    command: ["start", "--log", "info", "--user", "root", "--pass", "root", "rocksdb:/mydata/mydatabase.db"]
+
+    environment:
+      SURREAL_EXPERIMENTAL_GRAPHQL: "true"
+
+    ports:
+      - container_port: 8000
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    volumes:
+      - name: "notebook-db"
+        mount_path: "/mydata"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "surreal is-ready --conn http://localhost:8000 || exit 1"]
+      interval: 15
+      timeout: 5
+      retries: 10
+      start_period: 30
+
+    restart: "unless-stopped"
+
+  open_notebook:
+    image: "lfnovo/open_notebook"
+    tag: "v1-latest"
+    internal: false
+
+    environment:
+      OPEN_NOTEBOOK_ENCRYPTION_KEY: "{{config.encryption_key}}"
+      SURREAL_URL: "ws://surrealdb:8000/rpc"
+      SURREAL_USER: "root"
+      SURREAL_PASSWORD: "root"
+      SURREAL_NAMESPACE: "open_notebook"
+      SURREAL_DATABASE: "open_notebook"
+
+    ports:
+      - container_port: 8502
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    volumes:
+      - name: "notebook-data"
+        mount_path: "/app/data"
+        mode: "rw"
+
+    gpu:
+      enabled: false
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8502/ || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 5
+      start_period: 90
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "surrealdb"

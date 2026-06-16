@@ -359,6 +359,31 @@ function InstallationRow({
           </div>
         </div>
 
+        {/* Access info (URL + credentials declared in the template) */}
+        {inst.access && (inst.access.credentials.length > 0 || inst.access.note || inst.access.url) && (
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 border-t border-zinc-100 bg-zinc-50/60 px-5 py-2.5 text-xs">
+            <span className="font-medium text-zinc-500">Access</span>
+            {inst.access.url && (
+              <a
+                href={inst.access.url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 font-medium text-zinc-700 hover:text-zinc-900"
+              >
+                <ExternalLink className="h-3 w-3" />
+                Open app
+              </a>
+            )}
+            {inst.access.credentials.map((c, i) => (
+              <span key={i} className="flex items-center gap-1">
+                <span className="text-zinc-400">{c.label}:</span>
+                <code className="rounded bg-zinc-200/70 px-1.5 py-0.5 font-mono text-zinc-700">{c.value}</code>
+              </span>
+            ))}
+            {inst.access.note && <span className="text-zinc-400">{inst.access.note}</span>}
+          </div>
+        )}
+
         {/* Inline log viewer */}
         {expanded && (
           <div className="border-t border-zinc-200">

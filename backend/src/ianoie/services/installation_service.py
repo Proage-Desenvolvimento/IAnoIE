@@ -10,12 +10,14 @@ from ianoie.models.installation import Installation, InstallationStatus
 from ianoie.models.job import Job, JobStatus, JobType
 from ianoie.models.user import User
 from ianoie.schemas.common import PaginatedResponse
-from ianoie.schemas.installation import InstallationResponse
+from ianoie.schemas.installation import AccessCredential, AccessInfo, InstallationResponse
 
 
 class InstallationService:
     def __init__(self, db: AsyncSession):
         self.db = db
+        # Cache of raw template `access` blocks keyed by app_id (per request)
+        self._access_cache: dict[int, dict | None] = {}
 
     async def list_installations(
         self, user: User, page: int = 1, per_page: int = 20
@@ -228,6 +230,8 @@ class InstallationService:
                 llm_provider_name = provider.name
                 llm_provider_type = provider.provider_type.value
 
+        access = self._resolve_access(app, inst.id)
+
         return InstallationResponse(
             id=inst.id,
             app_id=inst.app_id,
@@ -244,5 +248,25 @@ class InstallationService:
             llm_provider_name=llm_provider_name,
             llm_provider_type=llm_provider_type,
             llm_model=inst.llm_model,
+            access=access,
             created_at=inst.created_at,
         )
+
+    def _resolve_access(self, app: App, installation_id: int) -> Optional[AccessInfo]:
+        """Resolve template-declared access info (URL + credentials) for an installation."""
+        from ianoie.templates.loader import TemplateLoader
+
+        if app.id not in self._access_cache:
+            try:
+                template = TemplateLoader().load(app.template_path)
+                self._access_cache[app.id] = template.get("access") or None
+            except Exception:
+                self._access_cache[app.id] = None
+        raw = self._access_cache[app.id]
+        if not raw:
+            return None
+        url = raw.get("url")
+        if url:
+            url = url.replace("{installation_id}", str(installation_id))
+        credentials = [AccessCredential(**c) for c in raw.get("credentials", [])]
+        return AccessInfo(url=url or None, credentials=credentials, note=raw.get("note") or None)

@@ -10,11 +10,11 @@ One-click AI app installer and manager for NVIDIA DGX machines. Like Softaculous
 
 ### What is IAnoIE?
 
-IAnoIE is a web platform that lets you install and manage AI applications on NVIDIA DGX machines with a single click. Deploy Ollama, ComfyUI, JupyterLab, and more without touching Docker or the command line.
+IAnoIE is a web platform that lets you install and manage AI applications on NVIDIA DGX machines with a single click. Deploy ComfyUI, JupyterLab, and more without touching Docker or the command line.
 
 ### Features
 
-- **One-click installs** of 10+ AI apps (Ollama, Open WebUI, ComfyUI, JupyterLab, vLLM, n8n, OmniVoice, Speakr, and more)
+- **One-click installs** of 6 AI apps (Open WebUI, ComfyUI, JupyterLab, n8n, OmniVoice, Speakr)
 - **GPU passthrough** with live GPU monitoring (utilization, VRAM, temperature, power)
 - **System monitoring** — CPU, RAM, disk, and network metrics with 24h history
 - **LLM provider management** — register OpenAI/Gemini/Anthropic/Ollama keys (encrypted at rest) and inject them into your apps
@@ -133,13 +133,9 @@ This rebuilds the custom images (api, frontend) with the latest code and pulls a
 
 | App | Description |
 |-----|-------------|
-| **Ollama** | Run LLMs locally (Llama, Mistral, etc.) |
-| **Open WebUI** | Web interface for Ollama (ChatGPT-like) |
-| **Ollama + Open WebUI** | Both bundled together |
+| **Open WebUI** | Web interface for local LLMs (ChatGPT-like) |
 | **JupyterLab** | Interactive notebooks for data science |
 | **ComfyUI** | Stable Diffusion workflow engine |
-| **Triton Inference** | NVIDIA inference server |
-| **vLLM** | High-throughput LLM serving |
 | **n8n** | Visual workflow automation platform |
 | **OmniVoice** | Zero-shot TTS with voice cloning (600+ languages) |
 | **Speakr** | AI-powered transcription and note-taking |
@@ -194,7 +190,7 @@ IAnoIE/
 │       ├── components/       # UI components
 │       ├── pages/            # Page components
 │       └── lib/              # Types, utils, constants
-├── templates/                # 10 YAML app templates
+├── templates/                # 6 YAML app templates
 ├── docker/
 │   ├── docker-compose.yml    # Base compose (builds from source)
 │   ├── docker-compose.dev.yml # Infra-only for local dev
@@ -293,11 +289,11 @@ cd frontend && npm run build
 
 ### O que é o IAnoIE?
 
-O IAnoIE é uma plataforma web que permite instalar e gerenciar aplicações de IA em máquinas DGX da NVIDIA com um clique. Deploy de Ollama, ComfyUI, JupyterLab e mais, sem precisar tocar em Docker ou linha de comando.
+O IAnoIE é uma plataforma web que permite instalar e gerenciar aplicações de IA em máquinas DGX da NVIDIA com um clique. Deploy de ComfyUI, JupyterLab e mais, sem precisar tocar em Docker ou linha de comando.
 
 ### Funcionalidades
 
-- **Instalação com um clique** de 10+ apps de IA (Ollama, Open WebUI, ComfyUI, JupyterLab, vLLM, n8n, OmniVoice, Speakr, e mais)
+- **Instalação com um clique** de 6 apps de IA (Open WebUI, ComfyUI, JupyterLab, n8n, OmniVoice, Speakr)
 - **Passthrough de GPU** com monitoramento em tempo real (utilização, VRAM, temperatura, potência)
 - **Monitoramento de sistema** — métricas de CPU, RAM, disco e rede com histórico de 24h
 - **Gerenciamento de LLM providers** — cadastre chaves OpenAI/Gemini/Anthropic/Ollama (criptografadas em repouso) e injete nos seus apps
@@ -416,13 +412,9 @@ Isso reconstrói as imagens customizadas (api, frontend) com o código mais rece
 
 | App | Descrição |
 |-----|-----------|
-| **Ollama** | Execute LLMs localmente (Llama, Mistral, etc.) |
-| **Open WebUI** | Interface web para Ollama (estilo ChatGPT) |
-| **Ollama + Open WebUI** | Ambos juntos |
+| **Open WebUI** | Interface web para LLMs locais (estilo ChatGPT) |
 | **JupyterLab** | Notebooks interativos para ciência de dados |
 | **ComfyUI** | Motor de workflows do Stable Diffusion |
-| **Triton Inference** | Servidor de inferência da NVIDIA |
-| **vLLM** | Serving de LLMs em alto throughput |
 | **n8n** | Plataforma de automação de workflows visual |
 | **OmniVoice** | TTS zero-shot com clonagem de voz (600+ idiomas) |
 | **Speakr** | Transcrição e anotações com IA |
@@ -477,7 +469,7 @@ IAnoIE/
 │       ├── components/       # Componentes UI
 │       ├── pages/            # Componentes de página
 │       └── lib/              # Tipos, utils, constantes
-├── templates/                # 10 templates YAML de apps
+├── templates/                # 6 templates YAML de apps
 ├── docker/
 │   ├── docker-compose.yml    # Compose base (builda do fonte)
 │   ├── docker-compose.dev.yml # Apenas infra p/ dev local

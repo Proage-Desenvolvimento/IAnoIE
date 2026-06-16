@@ -43,7 +43,7 @@ IAnoIE/
 │       ├── templates/        # Template engine: loader.py (YAML), renderer.py (-> ContainerConfig)
 │       ├── workers/          # Celery: celery_app.py, tasks/{install,uninstall,gpu_monitor,system_monitor,reconfigure}.py
 │       ├── core/             # security.py (JWT+bcrypt), exceptions.py, middleware.py, crypto.py (Fernet)
-│       └── seed/             # seed_apps.py (10 apps + admin user)
+│       └── seed/             # seed_apps.py (6 apps + admin user)
 ├── frontend/                 # React 19 + TypeScript + Tailwind 4
 │   ├── package.json          # deps: react, react-router-dom, @tanstack/react-query, recharts, lucide-react, ky, zod, react-hook-form
 │   ├── vite.config.ts        # proxy /api -> localhost:8000
@@ -57,7 +57,7 @@ IAnoIE/
 │       │   └── config/       # ConfigForm (formulário dinâmico a partir dos config_fields do template)
 │       ├── pages/            # Login, Dashboard, Catalog, MyApps, AppDetail, GpuMonitor, LLMProviders, SystemMonitor
 │       └── lib/              # types.ts, utils.ts (cn, formatBytes), constants.ts
-├── templates/                # 10 YAML app templates: ollama, open-webui, ollama-openwebui, jupyterlab, comfyui, triton-inference, vllm, n8n, omnivoice, speakr
+├── templates/                # 6 YAML app templates: open-webui, jupyterlab, comfyui, n8n, omnivoice, speakr
 ├── docker/
 │   ├── docker-compose.yml    # postgres, redis, api, worker, beat, frontend, traefik (porta host 8888)
 │   ├── docker-compose.dev.yml
@@ -93,8 +93,8 @@ IAnoIE/
 - [x] LLM Providers: CRUD + teste de conexão (OpenAI/Gemini/Anthropic/Ollama) + toggle de provider padrão, chaves de API criptografadas com Fernet (`core/crypto.py`)
 - [x] WebSocket endpoint para stream de logs de container
 - [x] SecurityHeadersMiddleware (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection)
-- [x] Seed de 10 apps + admin user padrão (admin@aimization.com / admin)
-- [x] 10 templates YAML de apps prontos (ollama, open-webui, ollama-openwebui, jupyterlab, comfyui, triton-inference, vllm, n8n, omnivoice, speakr)
+- [x] Seed de 6 apps + admin user padrão (admin@aimization.com / admin)
+- [x] 6 templates YAML de apps prontos (open-webui, jupyterlab, comfyui, n8n, omnivoice, speakr)
 
 ### Frontend (completo)
 - [x] 8 componentes UI reutilizáveis (Button, Badge, Card, Dialog, Progress, Spinner, EmptyState, StatusBadge)
