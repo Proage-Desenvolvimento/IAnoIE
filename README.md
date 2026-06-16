@@ -122,12 +122,28 @@ Default login: `admin@aimization.com` / `admin` (change the password after first
 
 #### Updating an existing installation
 
+This is a **build-from-source** deploy (the compose `build:`s the api/worker/beat/frontend images from your clone — no GHCR pull). Use the helper script, which runs `git pull` and rebuilds **only what changed**:
+
 ```bash
-git pull
-docker compose -f docker/docker-compose.yml up -d --build
+chmod +x scripts/update.sh                 # first time only
+./scripts/update.sh                         # pull + rebuild what changed
+./scripts/update.sh --backup                # pg_dump the database first
+./scripts/update.sh --rebuild-all           # rebuild all source services
+./scripts/update.sh --services "api worker beat frontend"  # only these
+./scripts/update.sh --rollback              # revert to the previous commit + rebuild
 ```
 
-This rebuilds the custom images (api, frontend) with the latest code and pulls any updated external images (postgres, redis, traefik). Data in PostgreSQL and Redis is preserved in named volumes.
+The script inspects the diff and rebuilds just the affected services:
+
+| What changed | Action |
+|---|---|
+| `templates/*.yaml` only | nothing — bind-mounted, already live |
+| `backend/` | rebuild `api worker beat` |
+| `frontend/` | rebuild `frontend` |
+| `docker-compose.yml` / `.env` | recreate all services |
+| New DB column on a model | **manual `ALTER TABLE`** — the app uses `create_all`, which does not run migrations |
+
+Notes: `beat` shares the backend image, so it is rebuilt alongside `api`/`worker`. The seed (`seed_apps.py`) only runs on an empty database — changes don't apply to an already-seeded DB (use a manual `UPDATE`). Data in PostgreSQL/Redis volumes is preserved across updates.
 
 ### Available Apps
 
@@ -197,7 +213,8 @@ IAnoIE/
 │   └── docker-compose.prod.yml # Production (GHCR images)
 ├── scripts/
 │   ├── setup-dgx.sh         # DGX Spark (Ubuntu) provisioning
-│   └── setup-vps.sh         # Generic multi-OS VPS (Ubuntu/Debian/Alma/Rocky/CentOS/RHEL), GPU-aware
+│   ├── setup-vps.sh         # Generic multi-OS VPS (Ubuntu/Debian/Alma/Rocky/CentOS/RHEL), GPU-aware
+│   └── update.sh            # Update a git-clone install (pull + rebuild what changed)
 └── .env.example
 ```
 
@@ -401,12 +418,28 @@ Login padrão: `admin@aimization.com` / `admin` (altere a senha após o primeiro
 
 #### Atualizando uma instalação existente
 
+Este é um deploy **build-from-source** (o compose faz `build:` das imagens api/worker/beat/frontend a partir do seu clone — sem pull do GHCR). Use o script de update, que faz `git pull` e rebuilda **só o que mudou**:
+
 ```bash
-git pull
-docker compose -f docker/docker-compose.yml up -d --build
+chmod +x scripts/update.sh                 # só na primeira vez
+./scripts/update.sh                         # pull + rebuild do que mudou
+./scripts/update.sh --backup                # faz pg_dump do banco antes
+./scripts/update.sh --rebuild-all           # rebuild de todos os serviços source
+./scripts/update.sh --services "api worker beat frontend"  # só esses
+./scripts/update.sh --rollback              # volta pro commit anterior + rebuild
 ```
 
-Isso reconstrói as imagens customizadas (api, frontend) com o código mais recente e faz pull de imagens externas atualizadas (postgres, redis, traefik). Os dados do PostgreSQL e Redis são preservados nos volumes nomeados.
+O script inspeciona o diff e rebuilda apenas os serviços afetados:
+
+| O que mudou | Ação |
+|---|---|
+| Só `templates/*.yaml` | nada — bind-mounted, já está live |
+| `backend/` | rebuild `api worker beat` |
+| `frontend/` | rebuild `frontend` |
+| `docker-compose.yml` / `.env` | recria todos os serviços |
+| Nova coluna em um modelo | **`ALTER TABLE` manual** — o app usa `create_all`, não roda migration |
+
+Observações: o `beat` compartilha a imagem do backend, então é rebuildado junto com `api`/`worker`. A seed (`seed_apps.py`) só roda em banco vazio — mudanças não se aplicam a um DB já populado (use `UPDATE` manual). Os dados dos volumes do PostgreSQL/Redis são preservados entre updates.
 
 ### Aplicativos Disponíveis
 
@@ -476,7 +509,8 @@ IAnoIE/
 │   └── docker-compose.prod.yml # Produção (imagens GHCR)
 ├── scripts/
 │   ├── setup-dgx.sh         # Provisionamento DGX Spark (Ubuntu)
-│   └── setup-vps.sh         # VPS genérico multi-OS (Ubuntu/Debian/Alma/Rocky/CentOS/RHEL), detecta GPU
+│   ├── setup-vps.sh         # VPS genérico multi-OS (Ubuntu/Debian/Alma/Rocky/CentOS/RHEL), detecta GPU
+│   └── update.sh            # Atualiza instalação git-clone (pull + rebuild do que mudou)
 └── .env.example
 ```
 

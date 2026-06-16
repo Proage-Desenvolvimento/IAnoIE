@@ -68,7 +68,7 @@ IAnoIE/
 │   ├── setup-dgx.sh         # DGX Spark (Ubuntu): Docker + NVIDIA Container Toolkit + rede
 │   ├── setup-vps.sh         # VPS genérico multi-OS (Ubuntu/Debian/Alma/Rocky/CentOS/RHEL), detecta GPU
 │   ├── install.sh           # Instalação de produção (auto-gera JWT_SECRET e ENCRYPTION_KEY)
-│   ├── update.sh            # Atualiza uma instalação existente
+│   ├── update.sh            # Atualiza instalação git-clone (git pull + rebuild do que mudou; --backup/--rollback)
 │   └── backup.sh            # Backup de volumes/dados
 └── .env.example
 ```
@@ -141,7 +141,7 @@ IAnoIE/
 - [x] Encriptação de secrets com Fernet — implementado em `core/crypto.py` para chaves de API dos LLM providers
 - [ ] Health check endpoint do Celery worker
 - [ ] Graceful shutdown do worker (cleanup containers órfãos)
-- [ ] Retry logic melhorada no install_app (rollback de containers criados parcialmente)
+- [x] Retry logic melhorada no install_app — rollback de containers criados parcialmente no `except` (install.py e reconfigure.py removem os containers parciais antes do retry, evitando a cascata de 409 name-conflict). Readiness gate por **check TCP** no worker (`wait_for_port`) em vez do healthcheck do Docker (as imagens não têm `curl`); o `container_manager` não injeta mais healthcheck curl
 - [ ] Logs de instalação salvos no banco (AppLog) não apenas streamed
 
 ### Frontend — Melhorias
@@ -208,6 +208,34 @@ docker compose -f docker/docker-compose.yml up -d
 # Acessar: http://<dgx-spark-ip>:8888
 # Login: admin@aimization.com / admin
 ```
+
+### Atualizar instalação de produção (deploy via git clone)
+
+O deploy da VPS (kano.make2.com.br) é **build from source** (git clone + `build:` no compose) — **não usa GHCR**. Atualize com `scripts/update.sh`, que faz `git pull` e rebuilda **só o que mudou**:
+
+```bash
+./scripts/update.sh                  # pull + rebuild do que mudou
+./scripts/update.sh --backup         # pg_dump do banco antes
+./scripts/update.sh --rebuild-all    # força rebuild dos 4 (api worker beat frontend)
+./scripts/update.sh --services "api worker beat"   # só esses
+./scripts/update.sh --rollback       # volta pro commit anterior + rebuild
+```
+
+O script detecta sozinho o que rebuildar (compara o commit antigo com o novo):
+
+| O que mudou | Ação |
+|---|---|
+| Só `templates/*.yaml` | **nada** — bind-mounted nos containers, já está live |
+| `backend/` (Python) | rebuild `api worker beat` |
+| `frontend/` (React/TS) | rebuild `frontend` |
+| `docker-compose.yml` / `.env` | recria todos os serviços (`up -d`) |
+| Nova coluna em modelo SQLAlchemy | **cuidado**: o app usa `create_all` (não faz migration); precisa `ALTER TABLE` manual |
+
+> **Sempre inclua o `beat`** no rebuild de backend — ele compartilha a imagem do backend e importa os módulos de task no startup; sem rebuild, fica com código velho.
+>
+> **Seed (`seed_apps.py`)** só roda em banco vazio — mudanças (descrição, lista de apps) **não se aplicam** a um DB já populado; use `UPDATE`/`INSERT` manual.
+>
+> Os dados dos volumes do PostgreSQL/Redis são preservados entre updates.
 
 ---
 
