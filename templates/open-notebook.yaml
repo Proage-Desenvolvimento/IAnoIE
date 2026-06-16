@@ -81,10 +81,13 @@ services:
     image: "lfnovo/open_notebook"
     tag: "v1-latest"
     internal: false
+    # Same as surrealdb: the image runs as a non-root user that cannot write to
+    # the Docker-owned /app/data mount. Run as root.
+    user: "0:0"
 
     environment:
       OPEN_NOTEBOOK_ENCRYPTION_KEY: "{{config.encryption_key}}"
-      SURREAL_URL: "ws://surrealdb:8000/rpc"
+      SURREAL_URL: "ws://{{services.surrealdb}}:8000/rpc"
       SURREAL_USER: "root"
       SURREAL_PASSWORD: "root"
       SURREAL_NAMESPACE: "open_notebook"

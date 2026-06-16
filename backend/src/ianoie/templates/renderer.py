@@ -20,6 +20,10 @@ class TemplateRenderer:
             if key and "default" in field and user_config.get(key) in (None, ""):
                 user_config[key] = field["default"]
         ordered = self._resolve_dependency_order(services)
+        # Map each service name to its real container hostname on the proxy
+        # network, so templates can reference a sibling service with
+        # {{services.<name>}} (e.g. ws://{{services.surrealdb}}:8000/rpc).
+        service_hosts = {name: f"ianoie-{installation_id}-{name}" for name in services}
         configs = []
 
         # Extract LLM connection env from template if present
@@ -41,7 +45,7 @@ class TemplateRenderer:
             config = ContainerConfig(
                 name=f"ianoie-{installation_id}-{svc_name}",
                 image=f"{svc['image']}:{svc.get('tag', 'latest')}",
-                environment=self._render_env(environment, user_config, llm_config),
+                environment=self._render_env(environment, user_config, llm_config, service_hosts),
                 labels=self._build_labels(svc_name, svc, installation_id),
                 network="ianoie-proxy",
                 restart_policy=svc.get("restart", "unless-stopped"),
@@ -64,7 +68,8 @@ class TemplateRenderer:
         return configs
 
     def _render_env(
-        self, env: dict, user_config: dict, llm_config: dict | None = None
+        self, env: dict, user_config: dict, llm_config: dict | None = None,
+        service_hosts: dict | None = None,
     ) -> dict[str, str]:
         rendered = {}
         for key, value in env.items():
@@ -77,6 +82,10 @@ class TemplateRenderer:
                 if "{{llm." in value and llm_config:
                     for llm_key, llm_val in llm_config.items():
                         value = value.replace(f"{{{{llm.{llm_key}}}}}", str(llm_val))
+                # {{services.<name>}} -> real container hostname of a sibling service
+                if "{{services." in value and service_hosts:
+                    for svc_name, host in service_hosts.items():
+                        value = value.replace(f"{{{{services.{svc_name}}}}}", host)
             rendered[key] = str(value)
         return rendered
 
