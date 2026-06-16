@@ -33,20 +33,12 @@ llm:
       TEXT_MODEL_NAME: "{{llm.model}}"
 
 config:
-  - key: "transcription_mode"
-    label: "Transcription Mode"
-    type: "select"
-    default: "openai"
-    required: true
-    options: ["openai", "local"]
-    description: "OpenAI = cloud API (needs API key). Local = WhisperX on your GPU (best quality + voice profiles)"
-
   - key: "openai_api_key"
-    label: "OpenAI API Key (for transcription)"
+    label: "OpenAI API Key"
     type: "string"
     default: ""
-    required: false
-    description: "Required for OpenAI transcription mode only"
+    required: true
+    description: "Required — Speakr transcribes via the OpenAI API (gpt-4o-transcribe). Get a key at platform.openai.com."
 
 services:
   speakr:
@@ -55,11 +47,9 @@ services:
     internal: false
 
     environment:
-      TRANSCRIPTION_CONNECTOR: "{{config.transcription_mode}}"
+      TRANSCRIPTION_CONNECTOR: "openai_transcribe"
       TRANSCRIPTION_API_KEY: "{{config.openai_api_key}}"
       TRANSCRIPTION_MODEL: "gpt-4o-transcribe-diarize"
-      ASR_BASE_URL: "http://whisperx-asr:9000"
-      ASR_RETURN_SPEAKER_EMBEDDINGS: "true"
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "admin"
       ALLOW_REGISTRATION: "false"
