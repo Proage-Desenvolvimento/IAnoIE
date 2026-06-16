@@ -126,11 +126,12 @@ IAnoIE/
 ## O que ainda precisa ser feito
 
 ### Crítico (para rodar)
-- [ ] `npm install` no frontend e testar `npm run build` sem erros
-- [ ] Criar a rede Docker: `docker network create ianoie-proxy`
-- [ ] Subir o stack: `docker compose -f docker/docker-compose.yml up -d`
-- [ ] Testar o fluxo completo: login -> catalog -> install -> logs -> manage
-- [ ] Corrigir qualquer erro de import ou tipo que aparecer ao rodar
+> Concluído
+- [x] `npm install` no frontend e testar `npm run build` sem erros
+- [x] Criar a rede Docker: `docker network create ianoie-proxy`
+- [x] Subir o stack: `docker compose -f docker/docker-compose.yml up -d`
+- [x] Testar o fluxo completo: login -> catalog -> install -> logs -> manage
+- [x] Corrigir qualquer erro de import ou tipo que aparecer ao rodar
 
 ### Backend — Melhorias
 - [ ] Alembic migrations (atualmente usa `create_all` no lifespan)
@@ -139,7 +140,7 @@ IAnoIE/
 - [ ] Rate limiting com slowapi nos endpoints de auth
 - [ ] Docker socket proxy (tecnativa/docker-socket-proxy) para produção
 - [x] Encriptação de secrets com Fernet — implementado em `core/crypto.py` para chaves de API dos LLM providers
-- [ ] Health check endpoint do Celery worker
+- [x] Health check endpoint do Celery worker — `GET /api/v1/worker/health` (auth de usuário) em `api/v1/worker.py` + `services/worker_service.py` (Celery `control.ping`/`inspect` via `asyncio.to_thread`); healthcheck do container `worker` no `docker-compose.yml` (`celery inspect ping | grep -q pong`); card de status no SystemMonitor (frontend)
 - [ ] Graceful shutdown do worker (cleanup containers órfãos)
 - [x] Retry logic melhorada no install_app — rollback de containers criados parcialmente no `except` (install.py e reconfigure.py removem os containers parciais antes do retry, evitando a cascata de 409 name-conflict). Readiness gate por **check TCP** no worker (`wait_for_port`) em vez do healthcheck do Docker (as imagens não têm `curl`); o `container_manager` não injeta mais healthcheck curl
 - [ ] Logs de instalação salvos no banco (AppLog) não apenas streamed

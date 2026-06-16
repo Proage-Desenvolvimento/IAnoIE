@@ -8,6 +8,7 @@ from ianoie.api.v1.jobs import router as jobs_router
 from ianoie.api.v1.llm_providers import router as llm_providers_router
 from ianoie.api.v1.logs import router as logs_router
 from ianoie.api.v1.system import router as system_router
+from ianoie.api.v1.worker import router as worker_router
 
 api_router = APIRouter()
 
@@ -19,3 +20,4 @@ api_router.include_router(gpu_router, prefix="/gpu", tags=["gpu"])
 api_router.include_router(logs_router, prefix="/ws", tags=["logs"])
 api_router.include_router(system_router, prefix="/system", tags=["system"])
 api_router.include_router(llm_providers_router, prefix="/llm-providers", tags=["llm-providers"])
+api_router.include_router(worker_router, prefix="/worker", tags=["worker"])

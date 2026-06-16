@@ -135,3 +135,19 @@ export interface LogEntry {
   container_name: string;
   line: string;
 }
+
+export interface WorkerNode {
+  name: string;
+  active: number;
+  processed: number | null;
+  pool: string | null;
+}
+
+export interface WorkerHealth {
+  status: "healthy" | "unhealthy";
+  workers_online: number;
+  active_tasks: number;
+  broker_online: boolean;
+  workers: WorkerNode[];
+  timestamp: string;
+}

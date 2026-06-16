@@ -1,6 +1,8 @@
 import { useSystemMetrics, useSystemMetricsHistory } from "@/hooks/useSystemMetrics";
 import { useGpuMetrics } from "@/hooks/useGpuMetrics";
+import { useWorkerHealth } from "@/hooks/useWorkerHealth";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { formatBytes } from "@/lib/utils";
 import {
@@ -11,6 +13,7 @@ import {
   Thermometer,
   Zap,
   Activity,
+  ServerCog,
 } from "lucide-react";
 
 function GaugeBar({ value, max = 100, label, color }: { value: number; max?: number; label: string; color: string }) {
@@ -112,6 +115,7 @@ export function SystemMonitorPage() {
   const { data: metrics, isLoading } = useSystemMetrics();
   const { data: gpuStatus } = useGpuMetrics();
   const { data: history } = useSystemMetricsHistory(24);
+  const { data: worker } = useWorkerHealth();
 
   if (isLoading) {
     return (
@@ -159,6 +163,30 @@ export function SystemMonitorPage() {
         <ResourceCard icon={Wifi} title="Network I/O" value={`↑ ${netSentMB} MB`} subtitle={`↓ ${netRecvMB} MB transferred`}>
         </ResourceCard>
       </div>
+
+      {/* Background worker status */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ServerCog className="h-4 w-4 text-zinc-400" />
+              <CardTitle className="text-sm">Background Worker</CardTitle>
+            </div>
+            <Badge variant={worker?.status === "healthy" ? "success" : "danger"} dot>
+              {worker?.status === "healthy" ? "Healthy" : "Unhealthy"}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-zinc-900">{worker?.workers_online ?? 0}</div>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            workers online · {worker?.active_tasks ?? 0} active tasks
+          </p>
+          {worker && !worker.broker_online && (
+            <p className="text-xs text-amber-600 mt-1">Broker (Redis) unreachable</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* History chart (simple text-based until recharts is wired) */}
       {history && history.length > 1 && (
