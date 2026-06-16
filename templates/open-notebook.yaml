@@ -48,6 +48,9 @@ services:
     image: "surrealdb/surrealdb"
     tag: "v2"
     internal: true
+    # surrealdb:v2 runs as a non-root user and cannot write to the Docker-owned
+    # /mydata mount (Permission denied creating the RocksDB dir). Run as root.
+    user: "0:0"
 
     command: ["start", "--log", "info", "--user", "root", "--pass", "root", "rocksdb:/mydata/mydatabase.db"]
 

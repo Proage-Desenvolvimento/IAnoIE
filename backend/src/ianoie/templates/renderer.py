@@ -49,6 +49,7 @@ class TemplateRenderer:
                 readiness_port=self._first_container_port(svc),
                 volumes=self._build_volumes(svc.get("volumes", []), installation_id),
                 gpu_device_ids=gpu_uuids if svc.get("gpu", {}).get("enabled") else [],
+                user=svc.get("user"),
             )
 
             if svc.get("command"):

@@ -39,6 +39,7 @@ class ContainerConfig:
     command: list[str] | None = None
     memory_limit: str | None = None
     cpu_limit: float | None = None
+    user: str | None = None
 
 
 class ContainerManager:
@@ -67,6 +68,8 @@ class ContainerManager:
             kwargs["mem_limit"] = config.memory_limit
         if config.cpu_limit:
             kwargs["nano_cpus"] = int(config.cpu_limit * 1e9)
+        if config.user:
+            kwargs["user"] = config.user
 
         if config.gpu_device_ids:
             kwargs["device_requests"] = [
