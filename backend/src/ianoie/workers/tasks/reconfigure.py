@@ -60,7 +60,7 @@ def _resolve_llm_config(installation) -> dict | None:
 @celery_app.task(bind=True, max_retries=2, default_retry_delay=10)
 def reconfigure_app(self, installation_id: int, job_id: int):
     """Reconfigure an installation by recreating containers with updated config."""
-    from ianoie.docker_ops.container_manager import ContainerManager
+    from ianoie.docker_ops.container_manager import ContainerManager, wait_for_port
     from ianoie.docker_ops.gpu_detector import GPUDetector
     from ianoie.models.app import App
     from ianoie.models.installation import Installation, InstallationStatus
@@ -70,6 +70,8 @@ def reconfigure_app(self, installation_id: int, job_id: int):
 
     db = _get_sync_db()
     docker_client = _get_docker_client()
+    container_mgr = None
+    created_ids: list[str] = []
 
     try:
         _update_job(db, job_id, JobStatus.running, 0.0)
@@ -140,7 +142,6 @@ def reconfigure_app(self, installation_id: int, job_id: int):
         )
 
         # Create and start new containers with updated config
-        created_ids = []
         for i, cfg in enumerate(container_configs):
             progress = 0.3 + (0.5 * (i / max(len(container_configs), 1)))
             _update_job(db, job_id, JobStatus.running, progress)
@@ -150,11 +151,13 @@ def reconfigure_app(self, installation_id: int, job_id: int):
             created_ids.append(container.id)
             logger.info("container_recreated", name=cfg.name, id=container.id[:12])
 
-            if cfg.healthcheck:
-                healthy = container_mgr.wait_healthy(container.id, timeout=180)
-                if not healthy:
-                    raise RuntimeError(f"Container {cfg.name} failed health check after reconfigure")
-                logger.info("container_healthy", name=cfg.name)
+            if cfg.readiness_port:
+                ready = wait_for_port(cfg.name, cfg.readiness_port, timeout=180)
+                if not ready:
+                    raise RuntimeError(
+                        f"Container {cfg.name} did not become ready on port {cfg.readiness_port}"
+                    )
+                logger.info("container_ready", name=cfg.name, port=cfg.readiness_port)
 
         # Update installation record
         installation = db.get(Installation, installation_id)
@@ -172,6 +175,13 @@ def reconfigure_app(self, installation_id: int, job_id: int):
 
     except Exception as e:
         logger.error("reconfigure_failed", installation_id=installation_id, error=str(e))
+        if container_mgr:
+            for cid in created_ids:
+                try:
+                    container_mgr.remove(cid, force=True)
+                    logger.info("rollback_removed_container", container_id=cid[:12])
+                except Exception as rm_err:
+                    logger.warning("rollback_failed", container_id=cid[:12], error=str(rm_err))
         _update_job(db, job_id, JobStatus.failed, error=str(e))
         _update_installation_status(db, installation_id, InstallationStatus.error)
         db.close()

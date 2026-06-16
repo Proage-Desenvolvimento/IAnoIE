@@ -33,12 +33,34 @@ llm:
       TEXT_MODEL_NAME: "{{llm.model}}"
 
 config:
-  - key: "openai_api_key"
-    label: "OpenAI API Key"
+  - key: "transcription_connector"
+    label: "Transcription Connector"
+    type: "select"
+    default: "openai_transcribe"
+    required: true
+    options: ["openai_transcribe", "openai_whisper", "mistral", "vibevoice", "asr_endpoint"]
+    description: "openai_* = OpenAI cloud API; mistral / vibevoice = those cloud APIs; asr_endpoint = your own Whisper/ASR server (set URL below)."
+
+  - key: "transcription_api_key"
+    label: "API Key (cloud connectors)"
+    type: "string"
+    default: "sk-replace-with-your-key"
+    required: false
+    description: "API key for openai/mistral/vibevoice. A placeholder lets it install now; set the real key via Edit config. Ignored when using asr_endpoint."
+
+  - key: "transcription_model"
+    label: "Transcription Model"
+    type: "string"
+    default: "gpt-4o-transcribe-diarize"
+    required: false
+    description: "gpt-4o-transcribe-diarize (openai_transcribe), whisper-1 (openai_whisper), or your provider's model name."
+
+  - key: "asr_endpoint_url"
+    label: "ASR Endpoint URL (asr_endpoint only)"
     type: "string"
     default: ""
-    required: true
-    description: "Required — Speakr transcribes via the OpenAI API (gpt-4o-transcribe). Get a key at platform.openai.com."
+    required: false
+    description: "Your Whisper/ASR server URL, e.g. http://192.168.1.50:9000. Used only when connector = asr_endpoint."
 
 services:
   speakr:
@@ -47,9 +69,11 @@ services:
     internal: false
 
     environment:
-      TRANSCRIPTION_CONNECTOR: "openai_transcribe"
-      TRANSCRIPTION_API_KEY: "{{config.openai_api_key}}"
-      TRANSCRIPTION_MODEL: "gpt-4o-transcribe-diarize"
+      TRANSCRIPTION_CONNECTOR: "{{config.transcription_connector}}"
+      TRANSCRIPTION_API_KEY: "{{config.transcription_api_key}}"
+      TRANSCRIPTION_MODEL: "{{config.transcription_model}}"
+      ASR_BASE_URL: "{{config.asr_endpoint_url}}"
+      ASR_RETURN_SPEAKER_EMBEDDINGS: "true"
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "admin"
       ALLOW_REGISTRATION: "false"

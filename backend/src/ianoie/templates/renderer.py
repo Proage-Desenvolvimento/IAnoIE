@@ -17,7 +17,7 @@ class TemplateRenderer:
         user_config = dict(user_config or {})
         for field in template.get("config", []):
             key = field.get("key")
-            if key and key not in user_config and "default" in field:
+            if key and "default" in field and user_config.get(key) in (None, ""):
                 user_config[key] = field["default"]
         ordered = self._resolve_dependency_order(services)
         configs = []

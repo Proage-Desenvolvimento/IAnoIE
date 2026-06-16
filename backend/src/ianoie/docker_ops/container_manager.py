@@ -1,9 +1,26 @@
+import socket
 import time
 from dataclasses import dataclass, field
 
 import docker
 from docker import DockerClient
 from docker.models.containers import Container
+
+
+def wait_for_port(host: str, port: int, timeout: int = 180) -> bool:
+    """TCP readiness probe from the worker to a container.
+
+    The worker and managed containers share the ianoie-proxy network, so a
+    container is reachable by name. Avoids depending on curl in the image.
+    """
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            with socket.create_connection((host, port), timeout=3):
+                return True
+        except OSError:
+            time.sleep(2)
+    return False
 
 
 @dataclass
