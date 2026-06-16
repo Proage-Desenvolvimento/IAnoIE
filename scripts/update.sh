@@ -170,9 +170,10 @@ if [ -n "${PREV_COMMIT:-}" ] && [ "$PREV_COMMIT" != "$NEW_COMMIT" ]; then
   git --no-pager log --oneline "$PREV_COMMIT..$NEW_COMMIT" 2>/dev/null | sed 's/^/    /' || true
 fi
 
-# --- cleanup dangling images ---
-info "Pruning dangling images ..."
-docker image prune -f >/dev/null 2>&1 || true
+# --- cleanup unreferenced images + build cache (keeps stopped containers and their images) ---
+info "Pruning unreferenced images and build cache ..."
+docker image prune -a -f >/dev/null 2>&1 || true
+docker builder prune -f >/dev/null 2>&1 || true
 
 echo ""
 ok "Update complete → $(git rev-parse --short HEAD)"
