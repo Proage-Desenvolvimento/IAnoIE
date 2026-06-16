@@ -1,4 +1,6 @@
 import json
+import socket
+import time
 
 import structlog
 
@@ -15,6 +17,22 @@ def _get_sync_db():
 def _get_docker_client():
     from ianoie.docker_ops.client import get_docker_client
     return get_docker_client()
+
+
+def _wait_for_port(host: str, port: int, timeout: int = 180) -> bool:
+    """TCP readiness probe from the worker to the container.
+
+    Works without curl in the image (the worker and the managed containers
+    share the ianoie-proxy network, so the container is reachable by name).
+    """
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            with socket.create_connection((host, port), timeout=3):
+                return True
+        except OSError:
+            time.sleep(2)
+    return False
 
 
 def _update_job(db, job_id: int, status, progress: float = None, error: str = None):
@@ -80,6 +98,8 @@ def install_app(self, installation_id: int, job_id: int):
 
     db = _get_sync_db()
     docker_client = _get_docker_client()
+    container_mgr = None
+    created_ids: list[str] = []
 
     try:
         _update_job(db, job_id, JobStatus.running, 0.0)
@@ -137,7 +157,6 @@ def install_app(self, installation_id: int, job_id: int):
         # Pull images and create containers in dependency order
         image_mgr = ImageManager(docker_client)
         container_mgr = ContainerManager(docker_client)
-        created_ids = []
 
         for i, cfg in enumerate(container_configs):
             progress = 0.1 + (0.7 * (i / max(len(container_configs), 1)))
@@ -157,11 +176,14 @@ def install_app(self, installation_id: int, job_id: int):
             created_ids.append(container.id)
             logger.info("container_started", name=cfg.name, id=container.id[:12])
 
-            if cfg.healthcheck:
-                healthy = container_mgr.wait_healthy(container.id, timeout=180)
-                if not healthy:
-                    raise RuntimeError(f"Container {cfg.name} failed health check")
-                logger.info("container_healthy", name=cfg.name)
+            # Readiness: TCP probe from the worker (no dependency on curl in the image)
+            if cfg.readiness_port:
+                ready = _wait_for_port(cfg.name, cfg.readiness_port, timeout=180)
+                if not ready:
+                    raise RuntimeError(
+                        f"Container {cfg.name} did not become ready on port {cfg.readiness_port}"
+                    )
+                logger.info("container_ready", name=cfg.name, port=cfg.readiness_port)
 
         # Update installation record
         installation = db.get(Installation, installation_id)
@@ -179,6 +201,14 @@ def install_app(self, installation_id: int, job_id: int):
 
     except Exception as e:
         logger.error("install_failed", installation_id=installation_id, error=str(e))
+        # Roll back partially created containers so retries don't hit 409 name conflicts
+        if container_mgr:
+            for cid in created_ids:
+                try:
+                    container_mgr.remove(cid, force=True)
+                    logger.info("rollback_removed_container", container_id=cid[:12])
+                except Exception as rm_err:
+                    logger.warning("rollback_failed", container_id=cid[:12], error=str(rm_err))
         _update_job(db, job_id, JobStatus.failed, error=str(e))
         _update_installation_status(db, installation_id, InstallationStatus.error)
         db.close()

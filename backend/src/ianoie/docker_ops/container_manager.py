@@ -17,6 +17,7 @@ class ContainerConfig:
     ports: dict | None = None
     gpu_device_ids: list[str] = field(default_factory=list)
     healthcheck: dict | None = None
+    readiness_port: int | None = None
     restart_policy: str = "unless-stopped"
     command: list[str] | None = None
     memory_limit: str | None = None
@@ -59,9 +60,8 @@ class ContainerManager:
                 )
             ]
 
-        if config.healthcheck:
-            kwargs["healthcheck"] = config.healthcheck
-
+        # NOTE: image-internal healthchecks (curl-based in our templates) are not
+        # injected — readiness is gated by a TCP probe in the install task instead.
         return self.client.containers.create(**kwargs)
 
     def start(self, container_id: str) -> None:

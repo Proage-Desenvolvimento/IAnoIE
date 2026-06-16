@@ -40,6 +40,7 @@ class TemplateRenderer:
                 network="ianoie-proxy",
                 restart_policy=svc.get("restart", "unless-stopped"),
                 healthcheck=self._build_healthcheck(svc.get("healthcheck")),
+                readiness_port=self._first_container_port(svc),
                 volumes=self._build_volumes(svc.get("volumes", []), installation_id),
                 gpu_device_ids=gpu_uuids if svc.get("gpu", {}).get("enabled") else [],
             )
@@ -112,6 +113,13 @@ class TemplateRenderer:
             "retries": hc.get("retries", 3),
             "start_period": hc.get("start_period", 30) * 1_000_000_000,
         }
+
+    def _first_container_port(self, svc: dict) -> int | None:
+        """First listening port of the service — used for the worker TCP readiness probe."""
+        for port_cfg in svc.get("ports", []):
+            if port_cfg.get("container_port"):
+                return port_cfg["container_port"]
+        return None
 
     def _build_volumes(self, volumes: list[dict], installation_id: int) -> dict | None:
         if not volumes:
