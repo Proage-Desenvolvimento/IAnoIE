@@ -1,9 +1,13 @@
-from sqlalchemy import select
+import structlog
+from sqlalchemy import delete, select
 
 from ianoie.core.security import hash_password
 from ianoie.database import async_session_factory
 from ianoie.models.app import App
+from ianoie.models.installation import Installation
 from ianoie.models.user import User, UserRole
+
+logger = structlog.get_logger()
 
 APPS = [
     {
@@ -79,16 +83,90 @@ APPS = [
 ]
 
 
-async def seed_initial_apps() -> None:
+async def sync_apps() -> None:
+    """Sincroniza o catálogo de apps no banco com a lista APPS.
+
+    Roda a cada startup da API (idempotente): faz UPSERT por slug (cria os
+    novos, atualiza campos mutáveis dos existentes) e remove apps obsoletos
+    — porém somente aqueles sem instalações, para nunca cascade-deletar uma
+    instalação de usuário (FK ``installations.app_id`` é ``ondelete=CASCADE``).
+    """
     async with async_session_factory() as db:
-        existing = await db.execute(select(App))
-        if existing.scalars().first():
-            return
+        # 1) Carrega apps existentes num dict por slug (uma query; sem tocar
+        #    relationships para evitar MissingGreenlet em sessão async).
+        result = await db.execute(select(App))
+        existing_by_slug: dict[str, App] = {a.slug: a for a in result.scalars().all()}
+        desired_slugs = {app["slug"] for app in APPS}
 
+        # 2) UPSERT: cria se faltar o slug, atualiza apenas campos mutáveis.
+        created = 0
+        updated = 0
         for app_data in APPS:
-            db.add(App(**app_data))
+            row = existing_by_slug.get(app_data["slug"])
+            if row is None:
+                db.add(App(**app_data))
+                created += 1
+                continue
 
-        # Create default admin user
+            changed = False
+            for field in (
+                "name",
+                "description",
+                "category",
+                "template_path",
+                "icon_url",
+                "version",
+                "gpu_requirements",
+            ):
+                if getattr(row, field) != app_data[field]:
+                    setattr(row, field, app_data[field])
+                    changed = True
+            if changed:
+                updated += 1
+
+        # 3) Remoção SEGURA de apps obsoletos — somente os sem instalações.
+        #    Nunca acessa ``row.installations`` (lazy em async); usa uma query
+        #    distinct() de Installation.app_id para saber quais proteger.
+        stale_slugs = set(existing_by_slug) - desired_slugs
+        to_delete: list[App] = []
+        skipped: list[str] = []
+        if stale_slugs:
+            stale_ids = [existing_by_slug[s].id for s in stale_slugs]
+            protected = {
+                row[0]
+                for row in (
+                    await db.execute(
+                        select(Installation.app_id)
+                        .where(Installation.app_id.in_(stale_ids))
+                        .distinct()
+                    )
+                ).all()
+            }
+            for slug in stale_slugs:
+                row = existing_by_slug[slug]
+                if row.id in protected:
+                    skipped.append(slug)
+                    logger.warning(
+                        "sync_apps_skip_stale_with_installations",
+                        slug=slug,
+                        app_id=row.id,
+                    )
+                else:
+                    to_delete.append(row)
+            if to_delete:
+                await db.execute(
+                    delete(App).where(App.id.in_([r.id for r in to_delete]))
+                )
+
+        logger.info(
+            "sync_apps_done",
+            created=created,
+            updated=updated,
+            deleted=len(to_delete),
+            skipped_with_installations=len(skipped),
+        )
+
+        # 4) Criação do admin padrão — preservada do seed original.
         from ianoie.config import settings
         admin = await db.execute(
             select(User).where(User.email == settings.default_admin_email)
@@ -100,4 +178,5 @@ async def seed_initial_apps() -> None:
                 role=UserRole.admin,
             ))
 
+        # 5) Commit único: upserts + remoções + admin atômicos.
         await db.commit()

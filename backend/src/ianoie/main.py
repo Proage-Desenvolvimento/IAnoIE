@@ -17,8 +17,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    from ianoie.seed.seed_apps import seed_initial_apps
-    await seed_initial_apps()
+    from ianoie.seed.seed_apps import sync_apps
+    await sync_apps()
 
     yield
 

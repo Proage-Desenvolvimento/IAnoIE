@@ -97,6 +97,8 @@ fi
 
 # --- record current commit (for a future --rollback) ---
 PREV_COMMIT="$(git rev-parse HEAD 2>/dev/null || echo "")"
+FIRST_RUN=false
+[ -f "$PREV_FILE" ] || FIRST_RUN=true
 
 # --- pull ---
 info "Pulling latest code ..."
@@ -106,10 +108,14 @@ fi
 NEW_COMMIT="$(git rev-parse HEAD)"
 
 # remember the pre-update commit so --rollback can return to it
-[ -n "$PREV_COMMIT" ] && [ "$PREV_COMMIT" != "$NEW_COMMIT" ] && echo "$PREV_COMMIT" > "$PREV_FILE"
+if [ "$FIRST_RUN" = true ]; then
+  echo "$NEW_COMMIT" > "$PREV_FILE"   # establish baseline on the first run
+elif [ -n "$PREV_COMMIT" ] && [ "$PREV_COMMIT" != "$NEW_COMMIT" ]; then
+  echo "$PREV_COMMIT" > "$PREV_FILE"
+fi
 
-# nothing new?
-if [ -n "$PREV_COMMIT" ] && [ "$PREV_COMMIT" = "$NEW_COMMIT" ] && [ "$REBUILD_ALL" = false ]; then
+# nothing new — and not the first run, and not forced?
+if [ "$FIRST_RUN" = false ] && [ -n "$PREV_COMMIT" ] && [ "$PREV_COMMIT" = "$NEW_COMMIT" ] && [ "$REBUILD_ALL" = false ]; then
   ok "Already up to date ($(git rev-parse --short HEAD)). Nothing to do."
   exit 0
 fi
@@ -119,8 +125,9 @@ SERVICES=()
 RECREATE_ALL=false
 if [ -n "$SERVICES_OVERRIDE" ]; then
   SERVICES=( $SERVICES_OVERRIDE )
-elif [ "$REBUILD_ALL" = true ] || [ -z "$PREV_COMMIT" ]; then
+elif [ "$REBUILD_ALL" = true ] || [ "$FIRST_RUN" = true ] || [ -z "$PREV_COMMIT" ]; then
   SERVICES=( "${SOURCE_SERVICES[@]}" )
+  [ "$FIRST_RUN" = true ] && info "First update.sh run — rebuilding all source services to establish the baseline."
 else
   CHANGED="$(git diff --name-only "$PREV_COMMIT" "$NEW_COMMIT")"
   if echo "$CHANGED" | grep -q '^backend/';  then SERVICES+=(api worker beat); fi
