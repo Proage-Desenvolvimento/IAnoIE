@@ -5,15 +5,17 @@ import type { ReactNode } from "react";
 interface DialogProps {
   open: boolean;
   onClose: () => void;
+  /** Sobrescreve a largura máxima do painel (default max-w-lg). */
+  panelClassName?: string;
   children: ReactNode;
 }
 
-export function Dialog({ open, onClose, children }: DialogProps) {
+export function Dialog({ open, onClose, panelClassName = "max-w-lg", children }: DialogProps) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg animate-in fade-in zoom-in-95 rounded-xl border bg-white shadow-xl">
+      <div className={cn("relative z-10 w-full animate-in fade-in zoom-in-95 rounded-xl border bg-white shadow-xl", panelClassName)}>
         {children}
       </div>
     </div>
