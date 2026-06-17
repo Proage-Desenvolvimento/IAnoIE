@@ -54,7 +54,10 @@ IAnoIE/
 │       │   ├── ui/           # Button, Badge, Card, Dialog, Progress, Spinner, EmptyState, StatusBadge
 │       │   ├── layout/       # AppShell (sidebar+outlet), Sidebar (nav+logout)
 │       │   ├── logs/         # LogViewer (terminal-style, WebSocket streaming, filter, auto-scroll)
-│       │   └── config/       # ConfigForm (formulário dinâmico a partir dos config_fields do template)
+│       │   ├── config/       # ConfigForm (formulário dinâmico a partir dos config_fields do template)
+│       │   └── catalog/      # AppCard, AppDetailDialog, AppMedia, YouTubeEmbed, LanguageToggle, constants (ícone/cor por categoria)
+│       ├── content/          # apps.ts — copy de marketing do catálogo por slug (tagline/benefits/useCases + hero/video) — pt-br + en
+│       ├── i18n/             # LanguageContext.tsx + messages.ts — i18n leve ESCOPADO ao catálogo (sem react-i18next)
 │       ├── pages/            # Login, Dashboard, Catalog, MyApps, AppDetail, GpuMonitor, LLMProviders, SystemMonitor
 │       └── lib/              # types.ts, utils.ts (cn, formatBytes), constants.ts
 ├── templates/                # 6 YAML app templates: open-webui, jupyterlab, comfyui, n8n, omnivoice, speakr
@@ -101,7 +104,7 @@ IAnoIE/
 - [x] LogViewer terminal-style com WebSocket, filtro, pause, auto-scroll
 - [x] ConfigForm: formulário dinâmico gerado a partir dos config_fields do template (string/select/boolean/number)
 - [x] 8 páginas: Login, Dashboard, Catalog, MyApps, AppDetail, GpuMonitor, LLMProviders, SystemMonitor
-- [x] Catalog: busca + filtro por categoria, cards com ícone/cor por categoria, dialog de install com GPU selector e config form, progress bar em tempo real via polling de job
+- [x] Catalog: busca + filtro por categoria, cards ricos bilíngues pt-br/en (tagline + benefícios em tópicos), dialog de detalhe com benefícios/casos de uso/requisitos + mídia (imagem/YouTube) e install com GPU selector + config form, progress bar em tempo real via polling de job. Conteúdo de marketing no frontend (`content/apps.ts`); i18n leve escopado ao catálogo (`i18n/`)
 - [x] MyApps: lista com status badge, lifecycle controls (start/stop/restart/uninstall), inline log viewer expandível, edição de config (reconfigure)
 - [x] AppDetail: detalhes da instalação + log viewer full + controls
 - [x] Dashboard: stats cards, running apps, GPU overview com bars
@@ -251,6 +254,7 @@ O script detecta sozinho o que rebuildar (compara o commit antigo com o novo):
 - **Auth:** JWT no header `Authorization: Bearer <token>`, armazenado em `localStorage` no frontend
 - **Rotas API:** tudo sob `/api/v1/`; WebSocket em `/api/v1/ws/logs/{id}?token=`
 - **Frontend API client:** ky com interceptor JWT e redirect 401 -> /login
+- **Catálogo bilíngue (pt-br/en):** a página `/catalog` é bilíngue e focada em gestor. O i18n é **leve e escopado SÓ ao catálogo** (`frontend/src/i18n/` — `LanguageContext.tsx` + `messages.ts`, React Context puro, **sem react-i18next**); o resto do app segue em inglês. O conteúdo de marketing (tagline, **benefícios em tópicos**, casos de uso, requisitos, mídia) vive no **frontend** em `frontend/src/content/apps.ts` (key por slug) — **não no modelo `App`/DB**. Motivo: o projeto usa `create_all` (sem Alembic), então adicionar colunas exigiria `ALTER TABLE` manual, e os apps são fixos (seed). Editar copy = editar este arquivo TS. Mídia: `hero` (path em `frontend/public/images/apps/<slug>.png`) e `video` (URL YouTube) — sem eles, `components/catalog/AppMedia.tsx` mostra um placeholder gradiente. Não proponha migrar i18n/conteúdo para o backend a menos que o usuário peça.
 
 ---
 

@@ -14,7 +14,8 @@ IAnoIE is a web platform that lets you install and manage AI applications on NVI
 
 ### Features
 
-- **One-click installs** of 6 AI apps (Open WebUI, ComfyUI, JupyterLab, n8n, OmniVoice, Speakr)
+- **One-click installs** of 7 AI apps (Open WebUI, ComfyUI, JupyterLab, n8n, OmniVoice, Speakr, Open Notebook)
+- **Bilingual catalog (PT/EN)** — manager-focused, with per-app benefits, use cases, and rich media (images, YouTube videos)
 - **GPU passthrough** with live GPU monitoring (utilization, VRAM, temperature, power)
 - **System monitoring** — CPU, RAM, disk, and network metrics with 24h history
 - **LLM provider management** — register OpenAI/Gemini/Anthropic/Ollama keys (encrypted at rest) and inject them into your apps
@@ -155,6 +156,20 @@ Notes: `beat` shares the backend image, so it is rebuilt alongside `api`/`worker
 | **n8n** | Visual workflow automation platform |
 | **OmniVoice** | Zero-shot TTS with voice cloning (600+ languages) |
 | **Speakr** | AI-powered transcription and note-taking |
+| **Open Notebook** | Self-hosted NotebookLM alternative (multi-modal research, podcasts) |
+
+### Customizing the Catalog
+
+The `/catalog` page is bilingual (PT/EN, toggle in the header) and manager-focused: each app shows a tagline, **benefits as bullet points**, use cases, requirements, and optional media (image and/or YouTube video). All of this content lives in the frontend — no database or backend changes needed.
+
+**Edit an app's marketing copy** — `frontend/src/content/apps.ts` (keyed by slug). Each entry has `{ hero?, video?, "pt-br": {...}, en: {...} }` with `tagline`, `description`, `benefits[]`, and `useCases[]`. Apps without an entry fall back to the API description.
+
+**Add media:**
+- **Image** — drop the file in `frontend/public/images/apps/<slug>.png` and set `hero: "/images/apps/<slug>.png"`.
+- **YouTube video** — set `video: "https://youtu.be/..."` (supports `youtu.be`, `watch?v=`, `/embed/`, `/shorts/`). Renders as a thumbnail on the card and an embedded player in the detail view.
+- Without `hero`/`video`, an automatic placeholder is shown.
+
+Since this only touches `frontend/`, `./scripts/update.sh` rebuilds just the `frontend` service.
 
 ### CI/CD
 
@@ -310,7 +325,8 @@ O IAnoIE é uma plataforma web que permite instalar e gerenciar aplicações de 
 
 ### Funcionalidades
 
-- **Instalação com um clique** de 6 apps de IA (Open WebUI, ComfyUI, JupyterLab, n8n, OmniVoice, Speakr)
+- **Instalação com um clique** de 7 apps de IA (Open WebUI, ComfyUI, JupyterLab, n8n, OmniVoice, Speakr, Open Notebook)
+- **Catálogo bilíngue (PT/EN)** — focado em gestor, com benefícios por app, casos de uso e mídia (imagens, vídeos do YouTube)
 - **Passthrough de GPU** com monitoramento em tempo real (utilização, VRAM, temperatura, potência)
 - **Monitoramento de sistema** — métricas de CPU, RAM, disco e rede com histórico de 24h
 - **Gerenciamento de LLM providers** — cadastre chaves OpenAI/Gemini/Anthropic/Ollama (criptografadas em repouso) e injete nos seus apps
@@ -451,6 +467,20 @@ Observações: o `beat` compartilha a imagem do backend, então é rebuildado ju
 | **n8n** | Plataforma de automação de workflows visual |
 | **OmniVoice** | TTS zero-shot com clonagem de voz (600+ idiomas) |
 | **Speakr** | Transcrição e anotações com IA |
+| **Open Notebook** | Alternativa self-hosted ao NotebookLM (pesquisa multimodal, podcasts) |
+
+### Customizando o Catálogo
+
+A página `/catalog` é bilíngue (PT/EN, toggle no header) e focada em gestor: cada app mostra tagline, **benefícios em tópicos**, casos de uso, requisitos e mídia opcional (imagem e/ou vídeo do YouTube). Todo esse conteúdo vive no frontend — não precisa mexer no banco nem no backend.
+
+**Editar a copy de um app** — `frontend/src/content/apps.ts` (indexado por slug). Cada entrada tem `{ hero?, video?, "pt-br": {...}, en: {...} }` com `tagline`, `description`, `benefits[]` e `useCases[]`. Apps sem entrada usam a descrição da API como fallback.
+
+**Adicionar mídia:**
+- **Imagem** — coloque o arquivo em `frontend/public/images/apps/<slug>.png` e sete `hero: "/images/apps/<slug>.png"`.
+- **Vídeo do YouTube** — sete `video: "https://youtu.be/..."` (aceita `youtu.be`, `watch?v=`, `/embed/`, `/shorts/`). Vira thumbnail no card e player embutido no detalhe.
+- Sem `hero`/`video`, um placeholder automático é exibido.
+
+Como só mexe no `frontend/`, o `./scripts/update.sh` rebuilda só o serviço `frontend`.
 
 ### CI/CD
 
