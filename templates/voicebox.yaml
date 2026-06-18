@@ -1,0 +1,68 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "Voicebox"
+  slug: "voicebox"
+  version: "1.0.0"
+  description: "Open-source AI voice studio: voice cloning, TTS in 23 languages, dictation, and agent voice output via MCP (CPU)"
+  long_description: |
+    Open-source alternative to ElevenLabs and WisprFlow in one app. Clone voices
+    from a few seconds of audio, generate speech in 23 languages across 7 TTS
+    engines (Qwen3-TTS, Chatterbox, Kokoro and more), dictate into any text
+    field with a global hotkey, and give any MCP-aware AI agent (Claude Code,
+    Cursor, Cline) a voice you own. Ships a REST API and built-in MCP server.
+    Runs entirely locally — models and voice data never leave the machine.
+    (This template runs the upstream CPU build; GPU acceleration is a future option.)
+  category: "productivity"
+  icon: "AudioLines"
+  tags: ["tts", "voice-cloning", "speech", "dictation", "mcp", "ai"]
+
+gpu:
+  required: false
+  min_count: 0
+  max_count: 0
+  min_vram_gb: 0
+
+config: []
+
+services:
+  voicebox:
+    image: "ianoie/voicebox"
+    tag: "latest"
+    internal: false
+
+    environment:
+      LOG_LEVEL: "info"
+      NUMBA_CACHE_DIR: "/tmp/numba_cache"
+      # Redirect the HuggingFace model cache under the writable /app/data volume
+      # (set as HF_HUB_CACHE by the app). The container runs as a non-root user
+      # that cannot write to ~/.cache/huggingface, so models must live on the
+      # pre-created, chowned data dir — otherwise first-run model downloads fail.
+      VOICEBOX_MODELS_DIR: "/app/data/models"
+
+    ports:
+      - container_port: 17493
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    volumes:
+      - name: "voicebox-data"
+        mount_path: "/app/data"
+        mode: "rw"
+
+    gpu:
+      enabled: false
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:17493/health || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 5
+      start_period: 90
+
+    restart: "unless-stopped"
+
+    resource_limits:
+      memory: "8g"
+      cpus: 4.0

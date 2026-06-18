@@ -240,6 +240,45 @@ export const APP_CONTENT: Record<string, AppContent> = {
     },
   },
 
+  voicebox: {
+    "pt-br": {
+      tagline: "Estúdio de voz com IA: clone vozes, gere fala e dite em qualquer app.",
+      description:
+        "Alternativa open-source ao ElevenLabs e ao WisprFlow em um só lugar. Clone vozes a partir de poucos segundos de áudio, gere narração em 23 idiomas com 7 motores de TTS, dite em qualquer campo de texto e dê voz a agentes de IA — tudo rodando localmente, com privacidade total.",
+      benefits: [
+        "Clona qualquer voz a partir de poucos segundos de áudio",
+        "Gera fala em 23 idiomas com 7 motores de TTS (Qwen3, Chatterbox, Kokoro…)",
+        "Ditado por atalho global direto em qualquer aplicativo",
+        "Dá voz a agentes de IA via MCP (Claude Code, Cursor, Cline)",
+        "100% local: vozes e dados nunca saem da sua máquina",
+      ],
+      useCases: [
+        "Narração e dublagem de vídeos em vários idiomas",
+        "Acessibilidade: voz para quem não pode falar",
+        "Agentes e assistentes que respondem em voz clonada",
+        "Podcasts e histórias com múltiplas vozes no editor Stories",
+      ],
+    },
+    en: {
+      tagline: "Open-source AI voice studio: clone voices, generate speech, dictate anywhere.",
+      description:
+        "An open-source alternative to ElevenLabs and WisprFlow in one app. Clone voices from a few seconds of audio, generate speech in 23 languages across 7 TTS engines, dictate into any text field, and give any MCP-aware AI agent a voice — all running locally, with complete privacy.",
+      benefits: [
+        "Clone any voice from a few seconds of audio",
+        "Generate speech in 23 languages across 7 TTS engines (Qwen3, Chatterbox, Kokoro…)",
+        "Global dictation hotkey straight into any application",
+        "Give AI agents a voice via MCP (Claude Code, Cursor, Cline)",
+        "100% local: voices and data never leave your machine",
+      ],
+      useCases: [
+        "Voiceover and dubbing for videos across languages",
+        "Accessibility: a voice for those who can't speak",
+        "Agents and assistants that reply in a cloned voice",
+        "Podcasts and stories with multiple voices in the Stories editor",
+      ],
+    },
+  },
+
   "open-notebook": {
     "pt-br": {
       tagline: "Alternativa self-hosted ao NotebookLM.",

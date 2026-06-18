@@ -61,6 +61,16 @@ APPS = [
         "gpu_requirements": '{"min_gpu_count": 1, "min_vram_gb": 8, "gpu_required": true}',
     },
     {
+        "name": "Voicebox",
+        "slug": "voicebox",
+        "description": "Open-source AI voice studio. Clone voices, generate speech in 23 languages across 7 TTS engines, dictate anywhere, and give AI agents a voice. REST API + MCP. Runs locally on CPU.",
+        "category": "productivity",
+        "template_path": "voicebox.yaml",
+        "icon_url": None,
+        "version": "0.2.3",
+        "gpu_requirements": '{"min_gpu_count": 0, "min_vram_gb": 0, "gpu_required": false}',
+    },
+    {
         "name": "n8n",
         "slug": "n8n",
         "description": "Workflow automation platform. Connect apps and automate tasks with a visual node-based editor.",
