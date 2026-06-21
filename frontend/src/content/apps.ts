@@ -313,6 +313,43 @@ export const APP_CONTENT: Record<string, AppContent> = {
       ],
     },
   },
+
+  scrapling: {
+    "pt-br": {
+      tagline: "Coleta de dados da web que dribla bloqueios — use no terminal ou deixe a IA usar.",
+      description:
+        "Framework de web scraping adaptativo: captura páginas, contorna defesas anti-bot como Cloudflare e extrai só o que importa. Use direto num terminal web no navegador, ou conecte o endpoint MCP ao Claude/Cursor para a IA coletar os dados para você. Tudo protegido por um token.",
+      benefits: [
+        "Extrai dados de sites que bloqueiam scrapers comuns (Cloudflare, anti-bot)",
+        "Dois modos: terminal web no navegador e servidor MCP para Claude/Cursor/Claude Code",
+        "Seletores inteligentes que se adaptam quando o site muda de layout",
+        "A IA pré-filtra o conteúdo antes de processar — gasta menos tokens",
+        "Protegido por usuário/token: só quem tem a chave usa",
+      ],
+      useCases: [
+        "Coleta de preços e catálogos de concorrentes",
+        "Alimentação de planilhas e bancos com dados de sites",
+        "Extração de conteúdo para alimentar IA e relatórios",
+      ],
+    },
+    en: {
+      tagline: "Web data collection that bypasses blocks — use it from a terminal or let your AI use it.",
+      description:
+        "An adaptive web scraping framework: it fetches pages, beats anti-bot defenses like Cloudflare and extracts only what matters. Use it straight from a web terminal in your browser, or point its MCP endpoint at Claude/Cursor so the AI collects the data for you. All gated behind a token.",
+      benefits: [
+        "Extracts data from sites that block ordinary scrapers (Cloudflare, anti-bot)",
+        "Two modes: a browser web terminal and an MCP server for Claude/Cursor/Claude Code",
+        "Smart selectors that adapt when a site changes its layout",
+        "The AI pre-filters content before processing — fewer tokens spent",
+        "Protected by a username/token: only key holders can use it",
+      ],
+      useCases: [
+        "Competitor price and catalog collection",
+        "Feeding spreadsheets and databases with site data",
+        "Content extraction to feed AI and reports",
+      ],
+    },
+  },
 };
 
 /** Conteúdo rico de um app, ou undefined se não houver entrada para o slug. */

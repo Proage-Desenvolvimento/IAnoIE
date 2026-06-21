@@ -1,4 +1,15 @@
+import base64
+import hashlib
+
 from ianoie.docker_ops.container_manager import ContainerConfig
+
+
+def _sha1_basic_auth_hash(password: str) -> str:
+    """htpasswd-style ``{SHA}`` hash — accepted by Traefik's BasicAuth middleware.
+
+    Uses only the stdlib (no passlib needed); sufficient for a local access token.
+    """
+    return "{SHA}" + base64.b64encode(hashlib.sha1(password.encode()).digest()).decode()
 
 
 class TemplateRenderer:
@@ -46,7 +57,7 @@ class TemplateRenderer:
                 name=f"ianoie-{installation_id}-{svc_name}",
                 image=f"{svc['image']}:{svc.get('tag', 'latest')}",
                 environment=self._render_env(environment, user_config, llm_config, service_hosts),
-                labels=self._build_labels(svc_name, svc, installation_id),
+                labels=self._build_labels(svc_name, svc, installation_id, user_config),
                 network="ianoie-proxy",
                 restart_policy=svc.get("restart", "unless-stopped"),
                 healthcheck=self._build_healthcheck(svc.get("healthcheck")),
@@ -89,35 +100,109 @@ class TemplateRenderer:
             rendered[key] = str(value)
         return rendered
 
-    def _build_labels(self, svc_name: str, svc: dict, inst_id: int) -> dict[str, str]:
+    def _build_labels(
+        self, svc_name: str, svc: dict, inst_id: int, user_config: dict | None = None,
+    ) -> dict[str, str]:
         labels = {
             "ianoie.managed": "true",
             "ianoie.installation_id": str(inst_id),
             "ianoie.service_name": svc_name,
         }
 
-        if not svc.get("internal", False):
-            for port_cfg in svc.get("ports", []):
-                if port_cfg.get("expose", True):
-                    router_name = f"ianoie-{inst_id}-{svc_name}"
-                    labels.update({
-                        "traefik.enable": "true",
-                        f"traefik.http.routers.{router_name}.rule": (
-                            f"PathPrefix(`/app/{inst_id}/`)"
-                        ),
-                        f"traefik.http.routers.{router_name}.entrypoints": "web",
-                        f"traefik.http.services.{router_name}.loadbalancer.server.port": (
-                            str(port_cfg["container_port"])
-                        ),
-                        f"traefik.http.middlewares.{router_name}-strip.stripprefix.prefixes": (
-                            f"/app/{inst_id}"
-                        ),
-                        f"traefik.http.routers.{router_name}.middlewares": (
-                            f"{router_name}-strip"
-                        ),
-                    })
+        if svc.get("internal", False):
+            return labels
 
+        # BasicAuth middleware shared across all of the service's routers.
+        auth_mw = self._build_auth_labels(svc, svc_name, inst_id, user_config, labels)
+
+        if svc.get("routes"):
+            self._build_route_labels(svc_name, svc, inst_id, auth_mw, labels)
+        else:
+            self._build_port_labels(svc_name, svc, inst_id, auth_mw, labels)
         return labels
+
+    def _build_port_labels(
+        self, svc_name: str, svc: dict, inst_id: int, auth_mw: str | None, labels: dict[str, str],
+    ) -> None:
+        """Legacy single-path exposure via ``ports`` (one Traefik router). Backward compatible."""
+        for port_cfg in svc.get("ports", []):
+            if not port_cfg.get("expose", True):
+                continue
+            router_name = f"ianoie-{inst_id}-{svc_name}"
+            middlewares = f"{router_name}-strip"
+            if auth_mw:
+                middlewares = f"{middlewares},{auth_mw}"
+            labels.update({
+                "traefik.enable": "true",
+                f"traefik.http.routers.{router_name}.rule": f"PathPrefix(`/app/{inst_id}/`)",
+                f"traefik.http.routers.{router_name}.entrypoints": "web",
+                f"traefik.http.services.{router_name}.loadbalancer.server.port": (
+                    str(port_cfg["container_port"])
+                ),
+                f"traefik.http.middlewares.{router_name}-strip.stripprefix.prefixes": (
+                    f"/app/{inst_id}"
+                ),
+                f"traefik.http.routers.{router_name}.middlewares": middlewares,
+            })
+
+    def _build_route_labels(
+        self, svc_name: str, svc: dict, inst_id: int, auth_mw: str | None, labels: dict[str, str],
+    ) -> None:
+        """Multi-path exposure via ``routes`` — one Traefik router per ``{path, port}``.
+
+        Each router gets its own StripPrefix middleware so the backend sees the request at ``/``.
+        The root route (``path: ""``) excludes its sibling sub-paths so it doesn't shadow them.
+        """
+        base = f"/app/{inst_id}"
+        sibling_paths = [r["path"] for r in svc["routes"] if r.get("path")]
+        labels["traefik.enable"] = "true"
+        for route in svc["routes"]:
+            path = route.get("path", "") or ""
+            port = route["port"]
+            slug = path or "root"
+            router = f"ianoie-{inst_id}-{svc_name}-{slug}"
+            prefix = f"{base}/{path}" if path else base
+            if path:
+                rule = f"PathPrefix(`{prefix}`)"
+            else:
+                exclusions = "".join(f" && !PathPrefix(`{base}/{p}`)" for p in sibling_paths)
+                rule = f"PathPrefix(`{base}/`){exclusions}"
+            middlewares = f"{router}-strip"
+            if auth_mw:
+                middlewares = f"{middlewares},{auth_mw}"
+            labels.update({
+                f"traefik.http.routers.{router}.rule": rule,
+                f"traefik.http.routers.{router}.entrypoints": "web",
+                f"traefik.http.services.{router}.loadbalancer.server.port": str(port),
+                f"traefik.http.middlewares.{router}-strip.stripprefix.prefixes": prefix,
+                f"traefik.http.routers.{router}.middlewares": middlewares,
+            })
+
+    def _build_auth_labels(
+        self, svc: dict, svc_name: str, inst_id: int,
+        user_config: dict | None, labels: dict[str, str],
+    ) -> str | None:
+        """Emit a Traefik BasicAuth middleware (auth.type == basic); name or None."""
+        auth = svc.get("auth")
+        if not auth or auth.get("type") != "basic":
+            return None
+        mw = f"ianoie-{inst_id}-{svc_name}-auth"
+        rendered = []
+        for user in auth.get("users", []):
+            username = self._interpolate(user.get("username", ""), user_config)
+            token = self._interpolate(user.get("token", ""), user_config)
+            rendered.append(f"{username}:{_sha1_basic_auth_hash(token)}")
+        labels[f"traefik.http.middlewares.{mw}.basicauth.users"] = ",".join(rendered)
+        return mw
+
+    def _interpolate(self, value, user_config: dict | None) -> str:
+        """Replace ``{{config.<key>}}`` placeholders in a string (mirrors ``_render_env``)."""
+        if not isinstance(value, str):
+            return str(value) if value is not None else ""
+        if user_config:
+            for ck, cv in user_config.items():
+                value = value.replace(f"{{{{config.{ck}}}}}", str(cv))
+        return value
 
     def _build_healthcheck(self, hc: dict | None) -> dict | None:
         if not hc:
@@ -131,7 +216,13 @@ class TemplateRenderer:
         }
 
     def _first_container_port(self, svc: dict) -> int | None:
-        """First listening port of the service — used for the worker TCP readiness probe."""
+        """First listening port of the service — used for the worker TCP readiness probe.
+
+        Checks ``routes`` (multi-path) first, then the legacy ``ports`` list.
+        """
+        for route in svc.get("routes", []):
+            if route.get("port"):
+                return route["port"]
         for port_cfg in svc.get("ports", []):
             if port_cfg.get("container_port"):
                 return port_cfg["container_port"]

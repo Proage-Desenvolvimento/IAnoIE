@@ -90,6 +90,16 @@ APPS = [
         "version": "latest",
         "gpu_requirements": '{"min_gpu_count": 0, "min_vram_gb": 0, "gpu_required": false}',
     },
+    {
+        "name": "Scrapling",
+        "slug": "scrapling",
+        "description": "Adaptive web scraping framework — stealth HTTP, real browsers, Cloudflare bypass. Use it from a web terminal (CLI) or expose the MCP server to Claude/Cursor/Claude Code. Both protected by a username/token you set at install.",
+        "category": "data",
+        "template_path": "scrapling.yaml",
+        "icon_url": None,
+        "version": "0.4.1",
+        "gpu_requirements": '{"min_gpu_count": 0, "min_vram_gb": 0, "gpu_required": false}',
+    },
 ]
 
 

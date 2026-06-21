@@ -1,0 +1,85 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "Scrapling"
+  slug: "scrapling"
+  version: "0.4.1"
+  description: "Adaptive web scraping framework — stealth HTTP, real browsers, Cloudflare bypass. Use it from a web terminal (CLI) or expose the MCP server to Claude/Cursor/Claude Code."
+  category: "data"
+  icon: "Globe"
+  tags: ["scraping", "mcp", "automation", "data", "extraction"]
+  long_description: |
+    Scrapling is an adaptive web scraping framework that handles everything from a single
+    request to a full-scale crawl. Its parser learns from website changes and relocates
+    elements automatically; its fetchers bypass anti-bot systems like Cloudflare Turnstile
+    out of the box; and its built-in MCP server lets Claude/Cursor/Claude Code scrape and
+    extract data conversationally. This template serves it two ways under one URL:
+    a web terminal (the CLI / `scrapling shell`) on `/app/{id}/` and a Streamable-HTTP MCP
+    endpoint on `/app/{id}/mcp` for AI clients. Both are protected by a username/token
+    you choose at install time.
+
+gpu:
+  required: false
+
+config:
+  - key: "username"
+    label: "Access Username"
+    type: "string"
+    default: "scrapling"
+    required: true
+    description: "Username protecting the web terminal and the MCP endpoint (Basic Auth)."
+
+  - key: "access_token"
+    label: "Access Token"
+    type: "string"
+    required: true
+    description: "Secret token (password) protecting both endpoints. Pick something strong — anyone with it can use your scraper."
+
+services:
+  scrapling:
+    image: "ianoie/scrapling"
+    tag: "latest"
+    internal: false
+
+    routes:
+      # Web terminal (ttyd) → run `scrapling shell`, `scrapling extract`, or Python scripts.
+      - path: ""
+        port: 7681
+      # MCP Streamable HTTP (since Scrapling v0.3.6) → point Claude Desktop/Cursor/Claude Code here.
+      - path: "mcp"
+        port: 8000
+
+    auth:
+      type: "basic"
+      users:
+        - username: "{{config.username}}"
+          token: "{{config.access_token}}"
+
+    volumes:
+      - name: "scrapling-work"
+        mount_path: "/root/work"
+        mode: "rw"
+
+    # NOTE: image-internal healthchecks are not injected by ContainerManager today;
+    # readiness is gated by a worker TCP probe on the first route port (7681).
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost/7681' || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 5
+      start_period: 60
+
+    restart: "unless-stopped"
+
+access:
+  url: "/app/{installation_id}/"
+  credentials:
+    - label: "Username"
+      value: "{{config.username}}"
+    - label: "Token"
+      value: "{{config.access_token}}"
+  note: |
+    Browser: open this app → a web terminal. Run `scrapling shell` (interactive) or
+    `scrapling extract get <url> out.md`. For Claude Desktop / Cursor / Claude Code: add an
+    MCP server with transport "Streamable HTTP", URL
+    http://<your-host>:8888/app/{installation_id}/mcp and these username:token credentials.
