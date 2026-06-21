@@ -1,8 +1,9 @@
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
 from ianoie.api.router import api_router
 from ianoie.config import settings
@@ -45,4 +46,13 @@ app.include_router(api_router, prefix="/api/v1")
 
 @app.get("/health")
 async def health() -> dict[str, str]:
+    # Validate the DB connection so the Docker healthcheck detects both a
+    # wedged event loop (no response) and an unreachable Postgres (503).
+    from ianoie.database import async_session_factory
+
+    try:
+        async with async_session_factory() as session:
+            await session.execute(text("SELECT 1"))
+    except Exception:
+        raise HTTPException(status_code=503, detail="database unavailable")
     return {"status": "ok"}

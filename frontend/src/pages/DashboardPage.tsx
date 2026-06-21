@@ -4,6 +4,7 @@ import { useSystemMetrics } from "@/hooks/useSystemMetrics";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { formatBytes } from "@/lib/utils";
 import {
   Box,
@@ -16,8 +17,8 @@ import {
 } from "lucide-react";
 
 export function DashboardPage() {
-  const { data: installationsData } = useInstallations();
-  const { data: sysMetrics } = useSystemMetrics();
+  const { data: installationsData, isError: installationsError, refetch: refetchInstallations } = useInstallations();
+  const { data: sysMetrics, isError: sysMetricsError, refetch: refetchSysMetrics } = useSystemMetrics();
 
   const installations = installationsData?.items || [];
   const runningApps = installations.filter((i) => i.status === "running");
@@ -104,7 +105,13 @@ export function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {runningApps.length === 0 ? (
+            {installationsError ? (
+              <ErrorState
+                title="Couldn’t load apps"
+                description="Your installed applications could not be loaded."
+                onRetry={() => refetchInstallations()}
+              />
+            ) : runningApps.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-sm text-zinc-500">No apps running</p>
                 <Link to="/catalog">
@@ -191,6 +198,12 @@ export function DashboardPage() {
                   </div>
                 ))}
               </div>
+            ) : sysMetricsError ? (
+              <ErrorState
+                title="Couldn’t load metrics"
+                description="System metrics are unavailable right now."
+                onRetry={() => refetchSysMetrics()}
+              />
             ) : (
               <p className="text-sm text-zinc-500 text-center py-8">Loading system metrics...</p>
             )}

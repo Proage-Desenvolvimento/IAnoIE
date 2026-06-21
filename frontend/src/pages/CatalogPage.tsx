@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import { useApps } from "@/hooks/useApps";
 import { useInstallations } from "@/hooks/useInstallations";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { AppCard } from "@/components/catalog/AppCard";
 import { AppDetailDialog } from "@/components/catalog/AppDetailDialog";
 import { LanguageToggle } from "@/components/catalog/LanguageToggle";
@@ -17,7 +18,7 @@ function CatalogContent() {
   const [search, setSearch] = useState("");
   const [selectedApp, setSelectedApp] = useState<App | null>(null);
 
-  const { data, isLoading } = useApps({ category, search: search || undefined });
+  const { data, isLoading, isError, refetch } = useApps({ category, search: search || undefined });
   const { data: installationsData } = useInstallations();
   const installedAppIds = new Set((installationsData?.items ?? []).map((i) => i.app_id));
 
@@ -74,6 +75,8 @@ function CatalogContent() {
             <div key={i} className="h-72 animate-pulse rounded-xl border border-zinc-200 bg-zinc-50" />
           ))}
         </div>
+      ) : isError ? (
+        <ErrorState onRetry={() => refetch()} />
       ) : (data?.items.length ?? 0) === 0 ? (
         <EmptyState title={t("catalog.noResults")} description={t("catalog.noResultsHint")} />
       ) : (

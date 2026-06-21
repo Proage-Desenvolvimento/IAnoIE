@@ -6,6 +6,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { LogViewer } from "@/components/logs/LogViewer";
 import { ConfigForm } from "@/components/config/ConfigForm";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -27,7 +28,7 @@ import {
 import type { Installation, TemplateConfigField } from "@/lib/types";
 
 export function MyAppsPage() {
-  const { data, isLoading } = useInstallations();
+  const { data, isLoading, isError, refetch } = useInstallations();
   const uninstall = useUninstallApp();
   const action = useAppAction();
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -103,6 +104,8 @@ export function MyAppsPage() {
             <div key={i} className="h-24 rounded-xl border border-zinc-200 bg-zinc-50 animate-pulse" />
           ))}
         </div>
+      ) : isError ? (
+        <ErrorState onRetry={() => refetch()} />
       ) : data?.items.length === 0 ? (
         <EmptyState
           icon={<Box className="h-6 w-6" />}

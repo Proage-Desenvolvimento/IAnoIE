@@ -7,6 +7,9 @@ function getToken(): string | null {
 
 export const api = ky.create({
   prefixUrl: API_URL || undefined,
+  // Fail fast instead of hanging forever when the API is wedged. Generous
+  // enough for normal endpoints; log streaming uses a separate WebSocket.
+  timeout: 20000,
   hooks: {
     beforeRequest: [
       (request) => {
