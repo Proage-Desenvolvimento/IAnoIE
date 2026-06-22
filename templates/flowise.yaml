@@ -1,0 +1,63 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "Flowise"
+  slug: "flowise"
+  version: "1.0.0"
+  description: "Visual low-code builder for LLM apps — drag-and-drop LangChain/LlamaIndex flows, agents and RAG pipelines."
+  long_description: |
+    Flowise is a drag-and-drop UI to build customized LLM apps with LangChain
+    and LlamaIndex — chatbots, agents, RAG pipelines and autonomous flows.
+    Compose nodes visually, expose them as APIs or chat widgets, and manage
+    credentials centrally. Single container with built-in SQLite (PostgreSQL and
+    Redis are optional for multi-user / queue mode). LLM providers (OpenAI,
+    Anthropic, Google, Ollama, Azure and more) are wired per-node in the editor.
+  category: "automation"
+  icon: "Workflow"
+  tags: ["llm", "automation", "langchain", "rag", "agents"]
+
+gpu:
+  required: false
+  min_count: 0
+  max_count: 0
+  min_vram_gb: 0
+
+config:
+  - key: "secret_key"
+    label: "Secret Key"
+    type: "string"
+    default: "ianoie-flowise-change-me"
+    required: true
+    description: "Chave que criptografa as credenciais LLM salvas no Flowise. NÃO troque após o primeiro uso — credenciais já salvas ficariam ilegíveis."
+
+services:
+  flowise:
+    image: "flowiseai/flowise"
+    tag: "latest"
+    internal: false
+
+    environment:
+      PORT: "3000"
+      DATABASE_TYPE: "sqlite"
+      FLOWISE_SECRETKEY_OVERWRITE: "{{config.secret_key}}"
+      DISABLE_FLOWISE_TELEMETRY: "true"
+
+    ports:
+      - container_port: 3000
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    volumes:
+      - name: "flowise-data"
+        mount_path: "/root/.flowise"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/3000' || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 5
+      start_period: 60
+
+    restart: "unless-stopped"

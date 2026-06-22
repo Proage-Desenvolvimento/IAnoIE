@@ -1,0 +1,90 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "AnythingLLM"
+  slug: "anythingllm"
+  version: "1.0.0"
+  description: "Full-stack RAG app — chat with your documents, build agents, multi-workspace and multi-user. 30+ LLM providers."
+  long_description: |
+    AnythingLLM is a full-stack document-chat and AI-agent application. Drop in
+    PDFs, web pages, Confluence or GitHub repos; chunk and embed them; then chat,
+    build agents and share workspaces across users. Bundles SQLite + LanceDB (no
+    external DB required) and supports 30+ LLM providers (OpenAI, Anthropic,
+    Gemini, Ollama, Azure, LocalAI and more). The default provider chosen at
+    install is injected automatically; refine it later in the app settings.
+  category: "llm"
+  icon: "BookOpen"
+  tags: ["llm", "rag", "documents", "agents"]
+
+gpu:
+  required: false
+  min_count: 0
+  max_count: 0
+  min_vram_gb: 0
+
+# O provider padrão da IAnoIE é injetado como as env vars correspondentes do
+# AnythingLLM. (LLM_PROVIDER seleciona o backend; cada provider tem seus vars.)
+llm:
+  supported_providers: ["openai", "anthropic", "gemini", "ollama"]
+  connection_env:
+    openai:
+      LLM_PROVIDER: "openai"
+      OPEN_AI_KEY: "{{llm.api_key}}"
+      OPEN_MODEL_PREF: "{{llm.model}}"
+    anthropic:
+      LLM_PROVIDER: "anthropic"
+      ANTHROPIC_API_KEY: "{{llm.api_key}}"
+      ANTHROPIC_MODEL_PREF: "{{llm.model}}"
+    gemini:
+      LLM_PROVIDER: "gemini"
+      GEMINI_API_KEY: "{{llm.api_key}}"
+      GEMINI_LLM_MODEL_PREF: "{{llm.model}}"
+    ollama:
+      LLM_PROVIDER: "ollama"
+      OLLAMA_BASE_PATH: "{{llm.base_url}}"
+      OLLAMA_MODEL_PREF: "{{llm.model}}"
+
+config:
+  - key: "auth_token"
+    label: "Access Password (optional)"
+    type: "string"
+    default: ""
+    required: false
+    description: "Senha de acesso ao app quando hospedado remotamente. Deixe vazio para o modo multi-usuário padrão do AnythingLLM."
+
+services:
+  anythingllm:
+    image: "mintplexlabs/anythingllm"
+    tag: "latest"
+    internal: false
+    # A imagem roda como não-root; o named volume é root-owned, então rodamos como
+    # root para garantir escrita em /app/server/storage.
+    user: "0:0"
+
+    environment:
+      SERVER_PORT: "3001"
+      STORAGE_DIR: "/app/server/storage"
+      EMBEDDING_ENGINE: "native"
+      # Sem cap_add: SYS_ADMIN no schema — desativa o sandbox do Chromium do Puppeteer.
+      ANYTHINGLLM_CHROMIUM_ARGS: "--no-sandbox,--disable-setuid-sandbox"
+      AUTH_TOKEN: "{{config.auth_token}}"
+
+    ports:
+      - container_port: 3001
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    volumes:
+      - name: "anythingllm-storage"
+        mount_path: "/app/server/storage"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/3001' || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 5
+      start_period: 90
+
+    restart: "unless-stopped"

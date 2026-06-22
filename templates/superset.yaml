@@ -1,0 +1,176 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "Apache Superset"
+  slug: "superset"
+  version: "1.0.0"
+  description: "Modern data exploration and visualization platform — dashboards, charts and SQL editor over any DB."
+  long_description: |
+    Apache Superset is a fast, lightweight, enterprise-ready BI platform for
+    data exploration and visualization. Connect dozens of databases, write SQL,
+    build rich dashboards and share them, with row-level security and a role
+    model. Built on Flask + Celery with PostgreSQL + Redis. DB migrations and the
+    admin user are created automatically on boot; the admin logs in as
+    `admin` with the password you set at install.
+  category: "data"
+  icon: "PieChart"
+  tags: ["bi", "analytics", "dashboards", "data"]
+
+gpu:
+  required: false
+  min_count: 0
+  max_count: 0
+  min_vram_gb: 0
+
+config:
+  - key: "secret_key"
+    label: "Secret Key"
+    type: "string"
+    default: "NM+z9g0cawECSPq96Tw5S4IopTyZ+rjzjZfU7Onui/8GISrdaDilwD1n"
+    required: true
+    description: "Chave (gere com `openssl rand -base64 42`) usada pelo Flask para sessão/cookies/CSRF. NÃO troque após o primeiro uso."
+  - key: "admin_password"
+    label: "Admin Password"
+    type: "string"
+    default: "change-me-admin"
+    required: true
+    description: "Senha do usuário admin do Superset (login: admin). Troque após o primeiro login."
+
+services:
+  postgres:
+    image: "postgres"
+    tag: "17-alpine"
+    internal: true
+
+    environment:
+      POSTGRES_DB: "superset"
+      POSTGRES_USER: "superset"
+      POSTGRES_PASSWORD: "ianoiesupersetdb2024"
+
+    ports:
+      - container_port: 5432
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    volumes:
+      - name: "superset-db"
+        mount_path: "/var/lib/postgresql/data"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U superset"]
+      interval: 15
+      timeout: 5
+      retries: 10
+      start_period: 30
+
+    restart: "unless-stopped"
+
+  redis:
+    image: "redis"
+    tag: "7-alpine"
+    internal: true
+
+    ports:
+      - container_port: 6379
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+      interval: 15
+      timeout: 5
+      retries: 10
+      start_period: 20
+
+    restart: "unless-stopped"
+
+  superset:
+    image: "apache/superset"
+    tag: "latest"
+    internal: false
+
+    # Sem init-container separado (o sistema não suporta `condition:
+    # service_completed_successfully`): dobra migrations + create-admin + init
+    # antes de subir o gunicorn. create-admin é idempotente via `|| true`.
+    command:
+      - "/bin/bash"
+      - "-c"
+      - >
+        superset db upgrade &&
+        (superset fab create-admin --username admin --email admin@superset.com
+        --password $$ADMIN_PASSWORD --firstname Admin --lastname User || true) &&
+        superset init &&
+        exec gunicorn -w 4 -b 0.0.0.0:8088 --timeout 120 'superset.app:create_app()'
+
+    environment:
+      SUPERSET_SECRET_KEY: "{{config.secret_key}}"
+      SUPERSET__SQLALCHEMY_DATABASE_URI: "postgresql+psycopg2://superset:ianoiesupersetdb2024@{{services.postgres}}:5432/superset"
+      SUPERSET_ENV: "production"
+      SUPERSET_LOAD_EXAMPLES: "no"
+      REDIS_HOST: "{{services.redis}}"
+      REDIS_PORT: "6379"
+      ADMIN_PASSWORD: "{{config.admin_password}}"
+
+    ports:
+      - container_port: 8088
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/8088' || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 6
+      start_period: 240
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "postgres"
+      - "redis"
+
+  worker:
+    image: "apache/superset"
+    tag: "latest"
+    internal: true
+
+    command: ["celery", "-A", "superset.tasks.celery_app:app", "worker"]
+
+    environment:
+      SUPERSET_SECRET_KEY: "{{config.secret_key}}"
+      SUPERSET__SQLALCHEMY_DATABASE_URI: "postgresql+psycopg2://superset:ianoiesupersetdb2024@{{services.postgres}}:5432/superset"
+      SUPERSET_ENV: "production"
+      REDIS_HOST: "{{services.redis}}"
+      REDIS_PORT: "6379"
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "postgres"
+      - "redis"
+      - "superset"
+
+  beat:
+    image: "apache/superset"
+    tag: "latest"
+    internal: true
+
+    command: ["celery", "-A", "superset.tasks.celery_app:app", "beat"]
+
+    environment:
+      SUPERSET_SECRET_KEY: "{{config.secret_key}}"
+      SUPERSET__SQLALCHEMY_DATABASE_URI: "postgresql+psycopg2://superset:ianoiesupersetdb2024@{{services.postgres}}:5432/superset"
+      SUPERSET_ENV: "production"
+      REDIS_HOST: "{{services.redis}}"
+      REDIS_PORT: "6379"
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "postgres"
+      - "redis"
+      - "superset"

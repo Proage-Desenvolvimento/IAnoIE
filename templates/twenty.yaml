@@ -1,0 +1,148 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "Twenty"
+  slug: "twenty"
+  version: "1.0.0"
+  description: "Open-source CRM — a modern, customizable alternative to Salesforce and Hubspot."
+  long_description: |
+    Twenty is an open-source CRM you can fully customize. Manage contacts,
+    companies, deals and custom objects with a flexible data model; automate
+    workflows; and connect your mailbox and calendar. Built on PostgreSQL +
+    Redis with a background worker. The first user to sign up becomes the
+    workspace owner/admin.
+  category: "productivity"
+  icon: "Users"
+  tags: ["crm", "productivity", "sales"]
+
+gpu:
+  required: false
+  min_count: 0
+  max_count: 0
+  min_vram_gb: 0
+
+config:
+  - key: "encryption_key"
+    label: "Encryption Key"
+    type: "string"
+    default: "aJgVUMpjdjeUfK9wXU7SkUD1TotTwxz8ZSAAtR5Bb/Y="
+    required: true
+    description: "Chave base64 (gere com `openssl rand -base64 32`) que cifra os secrets/integrações do workspace. NÃO troque após o primeiro uso."
+  - key: "server_url"
+    label: "Public Server URL"
+    type: "string"
+    default: "https://localhost"
+    required: false
+    description: "URL pública do Twenty (ex.: https://suite.aimization.com). Usada em callbacks e links."
+
+services:
+  db:
+    image: "postgres"
+    tag: "16-alpine"
+    internal: true
+
+    environment:
+      POSTGRES_DB: "default"
+      POSTGRES_USER: "postgres"
+      # Alfanumérico: é interpolado numa connection URL (chars especiais quebram).
+      POSTGRES_PASSWORD: "ianoietwentydb2024"
+
+    ports:
+      - container_port: 5432
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    volumes:
+      - name: "twenty-db"
+        mount_path: "/var/lib/postgresql/data"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 15
+      timeout: 5
+      retries: 10
+      start_period: 30
+
+    restart: "unless-stopped"
+
+  redis:
+    image: "redis"
+    tag: "7-alpine"
+    internal: true
+
+    ports:
+      - container_port: 6379
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+      interval: 15
+      timeout: 5
+      retries: 10
+      start_period: 20
+
+    restart: "unless-stopped"
+
+  server:
+    image: "twentycrm/twenty"
+    tag: "latest"
+    internal: false
+    # A imagem roda migrations + cron registration + servidor no boot (CMD default).
+
+    environment:
+      PG_DATABASE_URL: "postgresql://postgres:ianoietwentydb2024@{{services.db}}:5432/default"
+      REDIS_URL: "redis://{{services.redis}}:6379"
+      ENCRYPTION_KEY: "{{config.encryption_key}}"
+      SERVER_URL: "{{config.server_url}}"
+      STORAGE_TYPE: "local"
+
+    ports:
+      - container_port: 3000
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    volumes:
+      - name: "twenty-storage"
+        mount_path: "/app/packages/twenty-server/.local-storage"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/3000' || exit 1"]
+      interval: 15
+      timeout: 10
+      retries: 10
+      start_period: 120
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "db"
+      - "redis"
+
+  worker:
+    image: "twentycrm/twenty"
+    tag: "latest"
+    internal: true
+
+    command: ["yarn", "worker:prod"]
+
+    environment:
+      PG_DATABASE_URL: "postgresql://postgres:ianoietwentydb2024@{{services.db}}:5432/default"
+      REDIS_URL: "redis://{{services.redis}}:6379"
+      ENCRYPTION_KEY: "{{config.encryption_key}}"
+      SERVER_URL: "{{config.server_url}}"
+      STORAGE_TYPE: "local"
+      DISABLE_DB_MIGRATIONS: "true"
+      DISABLE_CRON: "true"
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "db"
+      - "redis"
+      - "server"

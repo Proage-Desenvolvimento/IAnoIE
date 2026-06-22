@@ -371,6 +371,366 @@ export const APP_CONTENT: Record<string, AppContent> = {
       ],
     },
   },
+
+  flowise: {
+    repo_url: "https://github.com/FlowiseAI/Flowise",
+    "pt-br": {
+      tagline: "Monte apps de IA visualmente, arrastando e soltando.",
+      description:
+        "Construa chatbots, agentes e pipelines de RAG com LangChain e LlamaIndex usando um editor visual de nós. Exponha cada fluxo como API ou widget de chat, sem escrever código.",
+      benefits: [
+        "Crie agentes e assistentes sem programar, num editor visual",
+        "Conecta OpenAI, Anthropic, Google, Ollama e dezenas de provedores",
+        "Cada fluxo vira uma API ou widget de chat pronto para usar",
+        "Single container, leve — não exige GPU nem DevOps",
+      ],
+      useCases: [
+        "Chatbots de atendimento e suporte",
+        "Assistentes com RAG sobre documentos",
+        "Protótipos rápidos de agentes autônomos",
+      ],
+    },
+    en: {
+      tagline: "Build AI apps visually, by dragging and dropping.",
+      description:
+        "Build chatbots, agents and RAG pipelines with LangChain and LlamaIndex using a visual node editor. Expose each flow as an API or chat widget, with no code.",
+      benefits: [
+        "Build agents and assistants without coding, in a visual editor",
+        "Connects OpenAI, Anthropic, Google, Ollama and dozens of providers",
+        "Each flow becomes a ready-to-use API or chat widget",
+        "Single container, lightweight — no GPU or DevOps required",
+      ],
+      useCases: [
+        "Support and helpdesk chatbots",
+        "RAG assistants over your documents",
+        "Fast prototypes of autonomous agents",
+      ],
+    },
+  },
+
+  anythingllm: {
+    repo_url: "https://github.com/Mintplex-Labs/anything-llm",
+    "pt-br": {
+      tagline: "Converse com seus documentos e monte agentes de IA.",
+      description:
+        "Aplicação completa de RAG: jogue PDFs, páginas web e repositórios, faça perguntas, crie agentes e compartilhe workspaces entre usuários. Já vem com banco e vetorizador embutidos e suporta 30+ provedores de IA.",
+      benefits: [
+        "Pergunte anything sobre seus documentos (PDFs, sites, GitHub)",
+        "Workspaces separados e multi-usuário",
+        "30+ provedores de LLM (OpenAI, Anthropic, Gemini, Ollama…)",
+        "Sem banco externo nem GPU obrigatória",
+      ],
+      useCases: [
+        "Base de conhecimento interna pesquisável",
+        "Assistente de suporte sobre manuais e políticas",
+        "Análise de contratos e relatórios",
+      ],
+    },
+    en: {
+      tagline: "Chat with your documents and build AI agents.",
+      description:
+        "A full-stack RAG app: drop in PDFs, web pages and repos, ask questions, build agents and share workspaces across users. Ships with a built-in database and vector store and supports 30+ AI providers.",
+      benefits: [
+        "Ask anything about your documents (PDFs, sites, GitHub)",
+        "Separate workspaces and multi-user support",
+        "30+ LLM providers (OpenAI, Anthropic, Gemini, Ollama…)",
+        "No external database and no GPU required",
+      ],
+      useCases: [
+        "Searchable internal knowledge base",
+        "Support assistant over manuals and policies",
+        "Contract and report analysis",
+      ],
+    },
+  },
+
+  metabase: {
+    repo_url: "https://github.com/metabase/metabase",
+    "pt-br": {
+      tagline: "Business intelligence open-source, sem SQL.",
+      description:
+        "Faça perguntas em linguagem natural sobre seus bancos de dados, monte dashboards e compartilhe com a equipe. Conecta PostgreSQL, MySQL, Snowflake, BigQuery e dezenas de fontes.",
+      benefits: [
+        "Pergunte em linguagem natural, sem escrever SQL",
+        "Dashboards interativos para compartilhar com a equipe",
+        "Conecta dezenas de bancos (Postgres, MySQL, BigQuery…)",
+        "Open-source e self-hosted: seus dados ficam com você",
+      ],
+      useCases: [
+        "Painéis de vendas e operação",
+        "Métricas de produto e retenção",
+        "Relatórios para a diretoria",
+      ],
+    },
+    en: {
+      tagline: "Open-source business intelligence, no SQL needed.",
+      description:
+        "Ask questions in plain language over your databases, build dashboards and share them with the team. Connects PostgreSQL, MySQL, Snowflake, BigQuery and dozens of sources.",
+      benefits: [
+        "Ask in plain language, without writing SQL",
+        "Interactive dashboards to share with the team",
+        "Connects dozens of databases (Postgres, MySQL, BigQuery…)",
+        "Open-source and self-hosted: your data stays with you",
+      ],
+      useCases: [
+        "Sales and operations dashboards",
+        "Product and retention metrics",
+        "Executive reports",
+      ],
+    },
+  },
+
+  khoj: {
+    repo_url: "https://github.com/khoj-ai/khoj",
+    "pt-br": {
+      tagline: "Segundo cérebro com IA para suas notas, docs e a web.",
+      description:
+        "Conecte suas notas, PDFs, GitHub e a web; converse, faça pesquisa profunda, execute código e receba respostas fundamentadas nos seus dados. Compatível com OpenAI, Anthropic, Gemini e qualquer endpoint OpenAI-compatible.",
+      benefits: [
+        "Converse com notas, documentos e repositórios",
+        "Pesquisa profunda (deep research) com citações",
+        "Suporta OpenAI, Anthropic, Gemini e Ollama",
+        "Open-source e privado: seus dados sob controle",
+      ],
+      useCases: [
+        "Assistente pessoal de pesquisa",
+        "Resumos e respostas sobre acervo próprio",
+        "Copilento para desenvolvedores sobre o código",
+      ],
+    },
+    en: {
+      tagline: "An AI second brain for your notes, docs and the web.",
+      description:
+        "Connect your notes, PDFs, GitHub and the web; chat, run deep research, execute code and get answers grounded in your own data. Supports OpenAI, Anthropic, Gemini and any OpenAI-compatible endpoint.",
+      benefits: [
+        "Chat with notes, documents and repositories",
+        "Deep research with citations",
+        "Supports OpenAI, Anthropic, Gemini and Ollama",
+        "Open-source and private: your data under control",
+      ],
+      useCases: [
+        "Personal research assistant",
+        "Summaries and answers over your own library",
+        "Developer copilot over your code",
+      ],
+    },
+  },
+
+  twenty: {
+    repo_url: "https://github.com/twentyhq/twenty",
+    "pt-br": {
+      tagline: "CRM open-source — alternativa moderna a Salesforce e Hubspot.",
+      description:
+        "Gerencie contatos, empresas, negócios e objetos customizados com um modelo de dados flexível. Automatize fluxos e conecte e-mail e calendário. O primeiro cadastro vira dono do workspace.",
+      benefits: [
+        "Modelo de dados flexível e customizável",
+        "Alternativa self-hosted a CRMs caros",
+        "Automações e integração com e-mail e calendário",
+        "Open-source: controle total dos dados de vendas",
+      ],
+      useCases: [
+        "Funil de vendas e gestão de contatos",
+        "Relacionamento com clientes (pós-venda)",
+        "Pipeline customizado de oportunidades",
+      ],
+    },
+    en: {
+      tagline: "Open-source CRM — a modern alternative to Salesforce and Hubspot.",
+      description:
+        "Manage contacts, companies, deals and custom objects with a flexible data model. Automate workflows and connect your mailbox and calendar. The first signup becomes the workspace owner.",
+      benefits: [
+        "Flexible, customizable data model",
+        "A self-hosted alternative to expensive CRMs",
+        "Automations and email/calendar integration",
+        "Open-source: full control over your sales data",
+      ],
+      useCases: [
+        "Sales pipeline and contact management",
+        "Customer relationships (post-sale)",
+        "Custom opportunity pipeline",
+      ],
+    },
+  },
+
+  chatwoot: {
+    repo_url: "https://github.com/chatwoot/chatwoot",
+    "pt-br": {
+      tagline: "Atendimento omnichannel open-source em uma só caixa.",
+      description:
+        "Una chat ao vivo, e-mail, WhatsApp, SMS e redes sociais em caixas de entrada compartilhadas. Crie chatbots, automatize campanhas e acompanhe conversas entre canais.",
+      benefits: [
+        "Uma caixa de entrada para chat, e-mail, WhatsApp e mais",
+        "Caixas compartilhadas entre a equipe de suporte",
+        "Chatbots e automações de campanhas",
+        "Open-source e self-hosted",
+      ],
+      useCases: [
+        "Suporte ao cliente multicanal",
+        "Atendimento por WhatsApp em escala",
+        "Helpdesk interno de TI",
+      ],
+    },
+    en: {
+      tagline: "Open-source omnichannel engagement in one inbox.",
+      description:
+        "Unify live chat, email, WhatsApp, SMS and social into shared team inboxes. Build chatbots, automate campaigns and track conversations across channels.",
+      benefits: [
+        "One inbox for chat, email, WhatsApp and more",
+        "Shared inboxes across the support team",
+        "Chatbots and campaign automations",
+        "Open-source and self-hosted",
+      ],
+      useCases: [
+        "Multichannel customer support",
+        "WhatsApp support at scale",
+        "Internal IT helpdesk",
+      ],
+    },
+  },
+
+  superset: {
+    repo_url: "https://github.com/apache/superset",
+    "pt-br": {
+      tagline: "Plataforma moderna de exploração e visualização de dados.",
+      description:
+        "Conecte dezenas de bancos, escreva SQL, monte dashboards ricos e compartilhe com segurança por linha (row-level security). Apache Superset é BI enterprise-ready, open-source.",
+      benefits: [
+        "Dashboards e gráficos ricos sobre qualquer banco",
+        "Editor SQL e exploração ad-hoc",
+        "Segurança por linha e modelo de papéis",
+        "Padrão Apache, enterprise-ready",
+      ],
+      useCases: [
+        "Painéis executivos e operacionais",
+        "Exploração de dados por analistas",
+        "Métricas de produto em tempo real",
+      ],
+    },
+    en: {
+      tagline: "A modern data exploration and visualization platform.",
+      description:
+        "Connect dozens of databases, write SQL, build rich dashboards and share them securely with row-level security. Apache Superset is enterprise-ready, open-source BI.",
+      benefits: [
+        "Rich dashboards and charts over any database",
+        "SQL editor and ad-hoc exploration",
+        "Row-level security and a role model",
+        "Apache-standard, enterprise-ready",
+      ],
+      useCases: [
+        "Executive and operational dashboards",
+        "Analyst data exploration",
+        "Real-time product metrics",
+      ],
+    },
+  },
+
+  onyx: {
+    repo_url: "https://github.com/onyx-dot-app/onyx",
+    "pt-br": {
+      tagline: "Assistente de IA empresarial conectado ao conhecimento da empresa.",
+      description:
+        "Conecte Google Drive, Slack, Notion, GitHub, Confluence e wikis, e converse com um assistente que fundamenta respostas nos seus dados, com citações, agentes e busca federada.",
+      benefits: [
+        "Respostas fundamentadas no conhecimento da empresa, com citações",
+        "Conecta dezenas de fontes (Drive, Slack, Notion, GitHub…)",
+        "Agentes e busca federada entre sistemas",
+        "Open-source e self-hosted",
+      ],
+      useCases: [
+        "Assistente interno de conhecimento",
+        "Busca unificada entre sistemas da empresa",
+        "Onboarding e respostas para o time",
+      ],
+    },
+    en: {
+      tagline: "Enterprise AI assistant connected to your company knowledge.",
+      description:
+        "Connect Google Drive, Slack, Notion, GitHub, Confluence and wikis, and chat with an assistant that grounds answers in your data, with citations, agents and federated search.",
+      benefits: [
+        "Answers grounded in company knowledge, with citations",
+        "Connects dozens of sources (Drive, Slack, Notion, GitHub…)",
+        "Agents and federated search across systems",
+        "Open-source and self-hosted",
+      ],
+      useCases: [
+        "Internal knowledge assistant",
+        "Unified search across company systems",
+        "Onboarding and team Q&A",
+      ],
+    },
+  },
+
+  appflowy: {
+    repo_url: "https://github.com/AppFlowy-IO/AppFlowy",
+    "pt-br": {
+      tagline: "Alternativa open-source ao Notion, self-hosted.",
+      description:
+        "Rode o servidor de colaboração do AppFlowy na sua própria infraestrutura: workspaces, wikis, edição em tempo real e IA. O cliente AppFlowy (desktop/mobile) se conecta a este servidor.",
+      benefits: [
+        "Workspaces, wikis e colaboração em tempo real",
+        "Self-hosted: suas notas e dados ficam com você",
+        "Recursos de IA integrados",
+        "Open-core, alternativa ao Notion",
+      ],
+      useCases: [
+        "Wiki e base de conhecimento da equipe",
+        "Gestão de projetos e notas compartilhadas",
+        "Documentação interna colaborativa",
+      ],
+    },
+    en: {
+      tagline: "An open-source, self-hosted alternative to Notion.",
+      description:
+        "Run the AppFlowy collaboration server on your own infrastructure: workspaces, wikis, realtime editing and AI. The AppFlowy client (desktop/mobile) connects to this server.",
+      benefits: [
+        "Workspaces, wikis and realtime collaboration",
+        "Self-hosted: your notes and data stay with you",
+        "Built-in AI features",
+        "Open-core, a Notion alternative",
+      ],
+      useCases: [
+        "Team wiki and knowledge base",
+        "Project management and shared notes",
+        "Collaborative internal documentation",
+      ],
+    },
+  },
+
+  dify: {
+    repo_url: "https://github.com/langgenius/dify",
+    "pt-br": {
+      tagline: "Plataforma open-source para desenvolver apps com LLM.",
+      description:
+        "Construa agentes, fluxos visuais, pipelines de RAG e chatbots com um IDE de prompts, ferramentas de avaliação e um marketplace de 100+ modelos. Do conceito à produção em uma plataforma só.",
+      benefits: [
+        "Agentes e fluxos de trabalho visuais, sem código",
+        "IDE de prompts e ferramentas de avaliação",
+        "Marketplace com 100+ modelos (OpenAI, Anthropic, Ollama…)",
+        "Open-source, da prototipação à produção",
+      ],
+      useCases: [
+        "Chatbots e agentes de atendimento",
+        "Assistentes com RAG sobre a base da empresa",
+        "Automações com LLM em pipelines internos",
+      ],
+    },
+    en: {
+      tagline: "Open-source platform to develop LLM apps.",
+      description:
+        "Build agents, visual workflows, RAG pipelines and chatbots with a prompt IDE, evaluation tools and a marketplace of 100+ models. From idea to production on one platform.",
+      benefits: [
+        "Visual agents and workflows, no code",
+        "Prompt IDE and evaluation tools",
+        "Marketplace with 100+ models (OpenAI, Anthropic, Ollama…)",
+        "Open-source, from prototype to production",
+      ],
+      useCases: [
+        "Support chatbots and agents",
+        "RAG assistants over company data",
+        "LLM automations in internal pipelines",
+      ],
+    },
+  },
 };
 
 /** Conteúdo rico de um app, ou undefined se não houver entrada para o slug. */

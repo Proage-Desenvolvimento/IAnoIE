@@ -1,0 +1,142 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "Khoj"
+  slug: "khoj"
+  version: "1.0.0"
+  description: "AI second brain — chat with your notes, docs and the web, with deep research and optional local models."
+  long_description: |
+    Khoj is an open-source AI copilot for your second brain. Connect your notes,
+    PDFs, GitHub and the web; chat, run deep research, execute code and get
+    answers grounded in your own data. Supports OpenAI, Anthropic, Gemini and any
+    OpenAI-compatible endpoint (Ollama, vLLM). Requires PostgreSQL with the
+    pgvector extension. The default LLM provider chosen at install is injected
+    automatically; refine models/keys later in the /config wizard.
+  category: "llm"
+  icon: "Sparkles"
+  tags: ["llm", "assistant", "rag", "research"]
+
+gpu:
+  required: false
+  min_count: 0
+  max_count: 0
+  min_vram_gb: 0
+
+# O provider padrão da IAnoIE é injetado como as env vars correspondentes do Khoj.
+# (Khoj trata Ollama como endpoint OpenAI-compatible via OPENAI_BASE_URL.)
+llm:
+  supported_providers: ["openai", "anthropic", "gemini", "ollama"]
+  connection_env:
+    openai:
+      OPENAI_API_KEY: "{{llm.api_key}}"
+      OPENAI_BASE_URL: "{{llm.base_url}}"
+      KHOJ_DEFAULT_CHAT_MODEL: "{{llm.model}}"
+    anthropic:
+      ANTHROPIC_API_KEY: "{{llm.api_key}}"
+    gemini:
+      GEMINI_API_KEY: "{{llm.api_key}}"
+    ollama:
+      OPENAI_API_KEY: "{{llm.api_key}}"
+      OPENAI_BASE_URL: "{{llm.base_url}}"
+      KHOJ_DEFAULT_CHAT_MODEL: "{{llm.model}}"
+
+config:
+  - key: "admin_email"
+    label: "Admin Email"
+    type: "string"
+    default: "admin@example.com"
+    required: true
+    description: "E-mail do superusuário Django (admin do Khoj)."
+  - key: "admin_password"
+    label: "Admin Password"
+    type: "string"
+    default: "change-me-now"
+    required: true
+    description: "Senha do admin. Troque após o primeiro login."
+  - key: "secret_key"
+    label: "Django Secret Key"
+    type: "string"
+    default: "ianoie-khoj-change-me"
+    required: true
+    description: "Django secret key do Khoj. NÃO troque após o primeiro uso."
+  - key: "site_url"
+    label: "Public Site URL"
+    type: "string"
+    default: "http://localhost"
+    required: false
+    description: "URL pública do Khoj (ex.: https://suite.aimization.com)."
+
+services:
+  db:
+    image: "pgvector/pgvector"
+    tag: "pg15"
+    internal: true
+
+    environment:
+      POSTGRES_DB: "khoj"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "ianoie-khoj-internal"
+
+    ports:
+      - container_port: 5432
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    volumes:
+      - name: "khoj-db"
+        mount_path: "/var/lib/postgresql/data"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 15
+      timeout: 5
+      retries: 10
+      start_period: 30
+
+    restart: "unless-stopped"
+
+  khoj:
+    image: "ghcr.io/khoj-ai/khoj"
+    tag: "latest"
+    internal: false
+
+    # ENTRYPOINT da imagem é o launcher `khoj`; bind 0.0.0.0 para o Traefik alcançar.
+    command: ["--host=0.0.0.0", "--port=42110"]
+
+    environment:
+      KHOJ_DJANGO_SECRET_KEY: "{{config.secret_key}}"
+      KHOJ_ADMIN_EMAIL: "{{config.admin_email}}"
+      KHOJ_ADMIN_PASSWORD: "{{config.admin_password}}"
+      POSTGRES_HOST: "{{services.db}}"
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: "khoj"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "ianoie-khoj-internal"
+      KHOJ_DOMAIN: "{{config.site_url}}"
+      KHOJ_NO_HTTPS: "True"
+      KHOJ_TELEMETRY_DISABLE: "True"
+
+    ports:
+      - container_port: 42110
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    volumes:
+      - name: "khoj-data"
+        mount_path: "/root/.khoj"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/42110' || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 5
+      start_period: 120
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "db"

@@ -1,0 +1,160 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "Chatwoot"
+  slug: "chatwoot"
+  version: "1.0.0"
+  description: "Open-source omnichannel customer engagement — live chat, email, WhatsApp and more in one inbox."
+  long_description: |
+    Chatwoot is an open-source customer-support platform. Unify live chat, email,
+    WhatsApp, SMS and social into shared team inboxes; build chatbots; automate
+    campaigns; and track conversations across channels. Built on Rails + Sidekiq
+    with PostgreSQL (pgvector) + Redis. Migrations run automatically on boot. The
+    first account created via the onboarding wizard becomes the owner.
+  category: "productivity"
+  icon: "MessagesSquare"
+  tags: ["support", "helpdesk", "crm", "omnichannel"]
+
+gpu:
+  required: false
+  min_count: 0
+  max_count: 0
+  min_vram_gb: 0
+
+config:
+  - key: "secret_key_base"
+    label: "Secret Key Base"
+    type: "string"
+    default: "ca4d443ab4c5f10a9b8678cb923fbfca6e67b7d2c153af23aa61b6306ecd8d3c3ca2b9283b99b62f21738528b702aed0a26b5eecc02631f9a94bb0143fc07009"
+    required: true
+    description: "Chave alfanumérica (sem caracteres especiais!) que assina os cookies/session. Gere com `openssl rand -hex 64`. NÃO troque após o primeiro uso."
+  - key: "frontend_url"
+    label: "Public Frontend URL"
+    type: "string"
+    default: "https://localhost"
+    required: false
+    description: "URL pública do Chatwoot (ex.: https://suite.aimization.com). Usada em CORS, links e ActionCable."
+
+services:
+  postgres:
+    image: "pgvector/pgvector"
+    tag: "pg16"
+    internal: true
+
+    environment:
+      POSTGRES_DB: "chatwoot"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "ianoiechatwootdb2024"
+
+    ports:
+      - container_port: 5432
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    volumes:
+      - name: "chatwoot-pg"
+        mount_path: "/var/lib/postgresql/data"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 15
+      timeout: 5
+      retries: 10
+      start_period: 30
+
+    restart: "unless-stopped"
+
+  redis:
+    image: "redis"
+    tag: "7-alpine"
+    internal: true
+
+    ports:
+      - container_port: 6379
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+      interval: 15
+      timeout: 5
+      retries: 10
+      start_period: 20
+
+    restart: "unless-stopped"
+
+  rails:
+    image: "chatwoot/chatwoot"
+    tag: "latest"
+    internal: false
+
+    # Migrations não são automáticas no entrypoint — dobrar db:prepare (idempotente)
+    # antes de subir o Rails.
+    command: ["/bin/sh", "-c", "bundle exec rails db:prepare && bundle exec rails s -p 3000 -b 0.0.0.0"]
+
+    environment:
+      SECRET_KEY_BASE: "{{config.secret_key_base}}"
+      RAILS_ENV: "production"
+      NODE_ENV: "production"
+      POSTGRES_HOST: "{{services.postgres}}"
+      POSTGRES_PORT: "5432"
+      POSTGRES_DATABASE: "chatwoot"
+      POSTGRES_USERNAME: "postgres"
+      POSTGRES_PASSWORD: "ianoiechatwootdb2024"
+      REDIS_URL: "redis://{{services.redis}}:6379"
+      FRONTEND_URL: "{{config.frontend_url}}"
+      INSTALLATION_ENV: "docker"
+
+    ports:
+      - container_port: 3000
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    volumes:
+      - name: "chatwoot-storage"
+        mount_path: "/app/storage"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/3000' || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 6
+      start_period: 150
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "postgres"
+      - "redis"
+
+  sidekiq:
+    image: "chatwoot/chatwoot"
+    tag: "latest"
+    internal: true
+
+    command: ["bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
+
+    environment:
+      SECRET_KEY_BASE: "{{config.secret_key_base}}"
+      RAILS_ENV: "production"
+      NODE_ENV: "production"
+      POSTGRES_HOST: "{{services.postgres}}"
+      POSTGRES_PORT: "5432"
+      POSTGRES_DATABASE: "chatwoot"
+      POSTGRES_USERNAME: "postgres"
+      POSTGRES_PASSWORD: "ianoiechatwootdb2024"
+      REDIS_URL: "redis://{{services.redis}}:6379"
+      FRONTEND_URL: "{{config.frontend_url}}"
+      INSTALLATION_ENV: "docker"
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "postgres"
+      - "redis"
+      - "rails"

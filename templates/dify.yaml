@@ -1,0 +1,338 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "Dify"
+  slug: "dify"
+  version: "1.0.0"
+  description: "Open-source LLM app development platform — build agents, workflows, RAG and chatbots visually."
+  long_description: |
+    Dify is an open-source platform to develop and operate LLM applications. Build
+    AI agents, visual workflows, RAG pipelines and chatbots with a prompt IDE,
+    evaluation tools and a model marketplace of 100+ providers. Full stack:
+    API + worker (FastAPI/Celery), Next.js web, plugin daemon, sandbox, SSRF proxy,
+    PostgreSQL, Redis and Weaviate (vector store). LLM providers are configured at
+    runtime in the admin UI (Model Provider). Set an initial admin password at
+    install via the console.
+  category: "llm"
+  icon: "Workflow"
+  tags: ["llm", "agents", "workflow", "rag"]
+
+gpu:
+  required: false
+  min_count: 0
+  max_count: 0
+  min_vram_gb: 0
+
+# Sem seção llm: o Dify configura providers em runtime (Model Provider no admin UI).
+#
+# NOTA: stack pesadíssimo (~9 containers + Weaviate). O frontend Next.js usa paths
+# absolutos (/console/api, /api, /v1) que não roteiam sob o sub-path /app/{id}/ sem
+# o nginx do próprio Dify — a UI pode quebrar. Funcionalidade plena requer o nginx
+# do Dify ou roteamento por domínio próprio (roadmap Fase 2).
+
+config:
+  - key: "secret_key"
+    label: "Secret Key"
+    type: "string"
+    default: "fba6b244688d26217b16cf93f7bd2e8d014877ba5bca06313b725fb9ec91516a"
+    required: true
+    description: "Secret key do Dify (sessão/encrypt). Gere com `openssl rand -hex 32`. NÃO troque após o primeiro uso."
+  - key: "init_password"
+    label: "Initial Admin Password"
+    type: "string"
+    default: "change-me-dify-admin"
+    required: true
+    description: "Senha inicial do admin do console do Dify (definida no primeiro acesso)."
+  - key: "public_url"
+    label: "Public URL"
+    type: "string"
+    default: "http://localhost"
+    required: false
+    description: "URL pública do Dify (ex.: https://suite.aimization.com). Base para CONSOLE_API_URL e APP_API_URL."
+
+services:
+  db_postgres:
+    image: "postgres"
+    tag: "15-alpine"
+    internal: true
+
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "IanoieDifyPg2024"
+      POSTGRES_DB: "dify"
+
+    ports:
+      - container_port: 5432
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    volumes:
+      - name: "dify-db"
+        mount_path: "/var/lib/postgresql/data"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 15
+      timeout: 5
+      retries: 15
+      start_period: 30
+
+    restart: "unless-stopped"
+
+  redis:
+    image: "redis"
+    tag: "6-alpine"
+    internal: true
+
+    command: ["redis-server", "--requirepass", "IanoieDifyRedis2024"]
+
+    ports:
+      - container_port: 6379
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    volumes:
+      - name: "dify-redis"
+        mount_path: "/data"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a IanoieDifyRedis2024 ping | grep -q PONG"]
+      interval: 15
+      timeout: 5
+      retries: 10
+      start_period: 20
+
+    restart: "unless-stopped"
+
+  weaviate:
+    image: "semitechnologies/weaviate"
+    tag: "1.27.0"
+    internal: true
+
+    environment:
+      QUERY_DEFAULTS_LIMIT: "25"
+      AUTHORIZATION_ANONYMOUS_ACCESS_ENABLED: "true"
+      PERSISTENCE_DATA_PATH: "/var/lib/weaviate"
+      DEFAULT_VECTORIZER_MODULE: "none"
+      CLUSTER_HOSTNAME: "node1"
+
+    ports:
+      - container_port: 8080
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    volumes:
+      - name: "dify-weaviate"
+        mount_path: "/var/lib/weaviate"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/8080' || exit 1"]
+      interval: 20
+      timeout: 10
+      retries: 10
+      start_period: 40
+
+    restart: "unless-stopped"
+
+  ssrf_proxy:
+    image: "ubuntu/squid"
+    tag: "latest"
+    internal: true
+
+    ports:
+      - container_port: 3128
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/3128' || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 5
+      start_period: 30
+
+    restart: "unless-stopped"
+
+  sandbox:
+    image: "langgenius/dify-sandbox"
+    tag: "0.2.15"
+    internal: true
+
+    environment:
+      SANDBOX_API_KEY: "IanoieDifySandbox2024"
+
+    ports:
+      - container_port: 8194
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/8194' || exit 1"]
+      interval: 20
+      timeout: 10
+      retries: 10
+      start_period: 40
+
+    restart: "unless-stopped"
+
+  plugin_daemon:
+    image: "langgenius/dify-plugin-daemon"
+    tag: "0.6.1-local"
+    internal: true
+
+    environment:
+      SERVER_PORT: "5002"
+      PLUGIN_DAEMON_KEY: "IanoieDifyPlugin2024"
+      INNER_API_KEY_FOR_PLUGIN: "IanoieDifyPlugin2024"
+      DB_USERNAME: "postgres"
+      DB_PASSWORD: "IanoieDifyPg2024"
+      DB_HOST: "{{services.db_postgres}}"
+      DB_PORT: "5432"
+      DB_DATABASE: "dify"
+      REDIS_URL: "redis://:IanoieDifyRedis2024@{{services.redis}}:6379/2"
+
+    ports:
+      - container_port: 5002
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/5002' || exit 1"]
+      interval: 20
+      timeout: 10
+      retries: 10
+      start_period: 60
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "db_postgres"
+      - "redis"
+
+  worker:
+    image: "langgenius/dify-api"
+    tag: "1.14.2"
+    internal: true
+
+    environment:
+      MODE: "worker"
+      SECRET_KEY: "{{config.secret_key}}"
+      LOG_LEVEL: "INFO"
+      DB_USERNAME: "postgres"
+      DB_PASSWORD: "IanoieDifyPg2024"
+      DB_HOST: "{{services.db_postgres}}"
+      DB_PORT: "5432"
+      DB_DATABASE: "dify"
+      SQLALCHEMY_DATABASE_URI_SCHEME: "postgresql+psycopg2"
+      REDIS_HOST: "{{services.redis}}"
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: "IanoieDifyRedis2024"
+      CELERY_BROKER_URL: "redis://:IanoieDifyRedis2024@{{services.redis}}:6379/1"
+      VECTOR_STORE: "weaviate"
+      WEAVIATE_ENDPOINT: "http://{{services.weaviate}}:8080"
+      SANDBOX_HOST: "{{services.sandbox}}"
+      SANDBOX_PORT: "8194"
+      SANDBOX_API_KEY: "IanoieDifySandbox2024"
+      SSRF_PROXY_HTTP_URL: "http://{{services.ssrf_proxy}}:3128"
+      SSRF_PROXY_HTTPS_URL: "http://{{services.ssrf_proxy}}:3128"
+      PLUGIN_DAEMON_URL: "http://{{services.plugin_daemon}}:5002"
+      INNER_API_KEY_FOR_PLUGIN: "IanoieDifyPlugin2024"
+      CONSOLE_API_URL: "{{config.public_url}}"
+      APP_API_URL: "{{config.public_url}}/api"
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "db_postgres"
+      - "redis"
+
+  api:
+    image: "langgenius/dify-api"
+    tag: "1.14.2"
+    # Interno: só o `web` é a entrada Traefik (evita dois routers na mesma
+    # PathPrefix /app/{id}/). O console chama a API via CONSOLE_API_URL; sob
+    # sub-path isso é a limitação documentada.
+    internal: true
+
+    environment:
+      MODE: "api"
+      SECRET_KEY: "{{config.secret_key}}"
+      INIT_PASSWORD: "{{config.init_password}}"
+      LOG_LEVEL: "INFO"
+      DB_USERNAME: "postgres"
+      DB_PASSWORD: "IanoieDifyPg2024"
+      DB_HOST: "{{services.db_postgres}}"
+      DB_PORT: "5432"
+      DB_DATABASE: "dify"
+      SQLALCHEMY_DATABASE_URI_SCHEME: "postgresql+psycopg2"
+      REDIS_HOST: "{{services.redis}}"
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: "IanoieDifyRedis2024"
+      VECTOR_STORE: "weaviate"
+      WEAVIATE_ENDPOINT: "http://{{services.weaviate}}:8080"
+      SANDBOX_HOST: "{{services.sandbox}}"
+      SANDBOX_PORT: "8194"
+      SANDBOX_API_KEY: "IanoieDifySandbox2024"
+      SSRF_PROXY_HTTP_URL: "http://{{services.ssrf_proxy}}:3128"
+      SSRF_PROXY_HTTPS_URL: "http://{{services.ssrf_proxy}}:3128"
+      PLUGIN_DAEMON_URL: "http://{{services.plugin_daemon}}:5002"
+      INNER_API_KEY_FOR_PLUGIN: "IanoieDifyPlugin2024"
+      CONSOLE_API_URL: "{{config.public_url}}"
+      APP_API_URL: "{{config.public_url}}/api"
+
+    ports:
+      - container_port: 5001
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/5001' || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 10
+      start_period: 180
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "db_postgres"
+      - "redis"
+      - "sandbox"
+      - "plugin_daemon"
+
+  web:
+    image: "langgenius/dify-web"
+    tag: "1.14.2"
+    internal: false
+
+    environment:
+      CONSOLE_API_URL: "{{config.public_url}}"
+      APP_API_URL: "{{config.public_url}}/api"
+
+    ports:
+      - container_port: 3000
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/3000' || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 10
+      start_period: 120
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "api"

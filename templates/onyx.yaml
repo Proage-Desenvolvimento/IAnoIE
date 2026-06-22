@@ -1,0 +1,257 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "Onyx"
+  slug: "onyx"
+  version: "1.0.0"
+  description: "Enterprise AI assistant with connected knowledge — chat, agents and search across all your company data."
+  long_description: |
+    Onyx (formerly Danswer) is an open-source enterprise AI assistant. Connect
+    your knowledge (Google Drive, Slack, Notion, GitHub, Confluence, wikis and
+    more) and chat with an assistant that grounds answers in your data, with
+    citations, agents and federated search. Built on PostgreSQL, OpenSearch
+    (vector + keyword search) and Redis, with local model servers for embeddings.
+    LLM providers (OpenAI, Anthropic, Gemini, any OpenAI-compatible endpoint)
+    are configured in the admin UI.
+  category: "llm"
+  icon: "Bot"
+  tags: ["llm", "assistant", "rag", "enterprise", "search"]
+
+gpu:
+  required: false
+  min_count: 0
+  max_count: 0
+  min_vram_gb: 0
+
+# Sem seção llm: o Onyx não tem env de deploy para providers — configure-os no
+# admin UI (LLM Models). O provider padrão da IAnoIE não é injetado aqui.
+#
+# NOTA: stack pesado (OpenSearch ~4GB de RAM obrigatório). Primeiro boot é lento
+# (migrations Alembic + downloads de modelos HuggingFace). A UI Next.js espera
+# rodar na raiz do host; sob o sub-path /app/{id}/ ela pode quebrar — funcionalidade
+# plena requer roteamento por domínio próprio (roadmap Fase 2).
+
+services:
+  relational_db:
+    image: "library/postgres"
+    tag: "15.2-alpine"
+    internal: true
+
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "Ianoie0nyxPg2024"
+      POSTGRES_DB: "onyx"
+
+    ports:
+      - container_port: 5432
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    volumes:
+      - name: "onyx-db"
+        mount_path: "/var/lib/postgresql/data"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 15
+      timeout: 5
+      retries: 15
+      start_period: 30
+
+    restart: "unless-stopped"
+
+  opensearch:
+    image: "opensearchproject/opensearch"
+    tag: "3.6.0"
+    internal: true
+
+    environment:
+      discovery.type: "single-node"
+      cluster.name: "onyx-opensearch"
+      OPENSEARCH_JAVA_OPTS: "-Xms2g -Xmx2g"
+      # 2.12+ exige senha inicial de admin forte (8+ chars, maiús/minús/dígito/especial).
+      OPENSEARCH_INITIAL_ADMIN_PASSWORD: "Ianoie0nyx!2024"
+
+    ports:
+      - container_port: 9200
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    volumes:
+      - name: "onyx-opensearch"
+        mount_path: "/usr/share/opensearch/data"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/9200' || exit 1"]
+      interval: 20
+      timeout: 10
+      retries: 15
+      start_period: 60
+
+    restart: "unless-stopped"
+
+  cache:
+    image: "library/redis"
+    tag: "7.4-alpine"
+    internal: true
+
+    ports:
+      - container_port: 6379
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+      interval: 15
+      timeout: 5
+      retries: 10
+      start_period: 20
+
+    restart: "unless-stopped"
+
+  inference_model_server:
+    image: "onyxdotapp/onyx-model-server"
+    tag: "latest"
+    internal: true
+    # Imagem stock é CPU-only (CUDA desabilitado por design). Inferência local em
+    # GPU requer build customizado. LLMs externos (OpenAI/Anthropic/...) são a via padrão.
+
+    environment:
+      MODEL_SERVER_HOST: "0.0.0.0"
+
+    ports:
+      - container_port: 9000
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    volumes:
+      - name: "onyx-model-cache"
+        mount_path: "/root/.cache/huggingface"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/9000' || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 10
+      start_period: 180
+
+    restart: "unless-stopped"
+
+  indexing_model_server:
+    image: "onyxdotapp/onyx-model-server"
+    tag: "latest"
+    internal: true
+
+    environment:
+      INDEXING_ONLY: "True"
+      MODEL_SERVER_HOST: "0.0.0.0"
+
+    ports:
+      - container_port: 9000
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/9000' || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 10
+      start_period: 180
+
+    restart: "unless-stopped"
+
+  background:
+    image: "onyxdotapp/onyx-backend"
+    tag: "latest"
+    internal: true
+
+    environment:
+      AUTH_TYPE: "basic"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "Ianoie0nyxPg2024"
+      POSTGRES_HOST: "{{services.relational_db}}"
+      POSTGRES_DB: "onyx"
+      OPENSEARCH_ADMIN_PASSWORD: "Ianoie0nyx!2024"
+      REDIS_HOST: "{{services.cache}}"
+      REDIS_PORT: "6379"
+      MODEL_SERVER_HOST: "{{services.inference_model_server}}"
+      INDEXING_MODEL_SERVER_HOST: "{{services.indexing_model_server}}"
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "relational_db"
+      - "opensearch"
+      - "cache"
+
+  api_server:
+    image: "onyxdotapp/onyx-backend"
+    tag: "latest"
+    internal: true
+
+    environment:
+      AUTH_TYPE: "basic"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "Ianoie0nyxPg2024"
+      POSTGRES_HOST: "{{services.relational_db}}"
+      POSTGRES_DB: "onyx"
+      OPENSEARCH_ADMIN_PASSWORD: "Ianoie0nyx!2024"
+      REDIS_HOST: "{{services.cache}}"
+      REDIS_PORT: "6379"
+      MODEL_SERVER_HOST: "{{services.inference_model_server}}"
+      INDEXING_MODEL_SERVER_HOST: "{{services.indexing_model_server}}"
+
+    ports:
+      - container_port: 8080
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/8080' || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 10
+      start_period: 300
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "relational_db"
+      - "opensearch"
+      - "cache"
+
+  web_server:
+    image: "onyxdotapp/onyx-web-server"
+    tag: "latest"
+    internal: false
+    # O Next.js web_server proxya chamadas de API ao backend. Nome da var pode
+    # variar entre versões; ajuste se a UI não alcançar a API.
+    environment:
+      BACKEND_HOST: "http://{{services.api_server}}:8080"
+
+    ports:
+      - container_port: 3000
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/3000' || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 10
+      start_period: 300
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "api_server"

@@ -1,0 +1,99 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "Metabase"
+  slug: "metabase"
+  version: "1.0.0"
+  description: "Open-source BI — ask questions over your databases, build dashboards and share insights, no SQL required."
+  long_description: |
+    Metabase is an open-source business-intelligence tool. Connect it to
+    PostgreSQL, MySQL, Snowflake, BigQuery and more, then ask questions in plain
+    language, build dashboards and share them with the whole team. Uses an
+    external PostgreSQL database (not the embedded H2) for production-grade
+    reliability. The first user becomes the admin through the setup wizard on
+    first launch.
+  category: "data"
+  icon: "BarChart3"
+  tags: ["bi", "analytics", "dashboards", "data"]
+
+gpu:
+  required: false
+  min_count: 0
+  max_count: 0
+  min_vram_gb: 0
+
+config:
+  - key: "site_url"
+    label: "Public Site URL"
+    type: "string"
+    default: "http://localhost"
+    required: false
+    description: "URL pública do Metabase (ex.: https://suite.aimization.com). Usada em links de e-mail e redirecionamentos."
+
+services:
+  postgres:
+    image: "postgres"
+    tag: "17-alpine"
+    internal: true
+
+    environment:
+      POSTGRES_DB: "metabase"
+      POSTGRES_USER: "metabase"
+      POSTGRES_PASSWORD: "ianoie-metabase-internal"
+
+    ports:
+      - container_port: 5432
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    volumes:
+      - name: "metabase-db"
+        mount_path: "/var/lib/postgresql/data"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metabase"]
+      interval: 15
+      timeout: 5
+      retries: 10
+      start_period: 30
+
+    restart: "unless-stopped"
+
+  metabase:
+    image: "metabase/metabase"
+    tag: "latest"
+    internal: false
+
+    environment:
+      MB_DB_TYPE: "postgres"
+      MB_DB_HOST: "{{services.postgres}}"
+      MB_DB_PORT: "5432"
+      MB_DB_DBNAME: "metabase"
+      MB_DB_USER: "metabase"
+      MB_DB_PASS: "ianoie-metabase-internal"
+      MB_SITE_URL: "{{config.site_url}}"
+
+    ports:
+      - container_port: 3000
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    volumes:
+      - name: "metabase-plugins"
+        mount_path: "/plugins"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/3000' || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 5
+      start_period: 120
+
+    restart: "unless-stopped"
+
+    depends_on:
+      - "postgres"
