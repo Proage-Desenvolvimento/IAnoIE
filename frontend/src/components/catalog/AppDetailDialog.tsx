@@ -9,6 +9,8 @@ import {
   Terminal,
   Check,
   Sparkles,
+  Github,
+  ExternalLink,
 } from "lucide-react";
 import {
   Dialog,
@@ -192,7 +194,21 @@ export function AppDetailDialog({ app, content, isInstalled, onClose }: AppDetai
             <Icon className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <DialogTitle>{app.name}</DialogTitle>
+            <div className="flex items-center gap-2">
+              <DialogTitle>{app.name}</DialogTitle>
+              {content?.repo_url && (
+                <a
+                  href={content.repo_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex shrink-0 items-center gap-1 rounded-md border border-zinc-200 px-2 py-0.5 text-xs font-medium text-zinc-500 transition-colors hover:border-zinc-300 hover:text-zinc-700"
+                >
+                  <Github className="h-3 w-3" />
+                  GitHub
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </div>
             <p className="mt-0.5 text-xs text-zinc-400">v{app.version} · {categoryLabel}</p>
           </div>
         </div>

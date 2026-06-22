@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { CheckCircle2, Cpu, ArrowRight, Check } from "lucide-react";
+import { CheckCircle2, Cpu, ArrowRight, Check, Github } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -50,7 +50,22 @@ export function AppCard({ app, content, isInstalled, onOpen }: AppCardProps) {
             <Icon className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-sm font-semibold text-zinc-900 leading-tight">{app.name}</h3>
+            <div className="flex items-center gap-1.5">
+              <h3 className="min-w-0 flex-1 truncate text-sm font-semibold text-zinc-900 leading-tight">
+                {app.name}
+              </h3>
+              {content?.repo_url && (
+                <a
+                  href={content.repo_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${app.name} no GitHub`}
+                  className="shrink-0 rounded-md p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
+                >
+                  <Github className="h-3.5 w-3.5" />
+                </a>
+              )}
+            </div>
             <p className="text-[11px] text-zinc-400">v{app.version}</p>
           </div>
         </div>

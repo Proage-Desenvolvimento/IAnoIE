@@ -4,6 +4,7 @@
  - `hero`  → caminho da imagem em /public (ex.: "/images/apps/open-webui.png").
  *          Deixe `undefined` para mostrar o placeholder até adicionar o arquivo.
  - `video` → URL do YouTube. Deixe `undefined` para o placeholder de vídeo.
+ - `repo_url` → URL do repositório upstream (GitHub). Omitir para não mostrar o link.
  *
  * O texto (tagline/description/benefits/useCases) é a parte central da entrega:
  * copy focada em gestor, em pt-br e en. Para editar, basta mudar este arquivo.
@@ -23,12 +24,15 @@ export interface LocalizedAppContent {
 export interface AppContent {
   hero?: string;
   video?: string;
+  /** URL do repositório upstream. Sem ele, nenhum link é renderizado. */
+  repo_url?: string;
   "pt-br": LocalizedAppContent;
   en: LocalizedAppContent;
 }
 
 export const APP_CONTENT: Record<string, AppContent> = {
   "open-webui": {
+    repo_url: "https://github.com/open-webui/open-webui",
     "pt-br": {
       tagline: "Chat no estilo ChatGPT rodando na sua própria infraestrutura.",
       description:
@@ -66,6 +70,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
   },
 
   jupyterlab: {
+    repo_url: "https://github.com/jupyterlab/jupyterlab",
     "pt-br": {
       tagline: "Notebooks interativos para ciência de dados e ML, com GPU.",
       description:
@@ -101,6 +106,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
   },
 
   comfyui: {
+    repo_url: "https://github.com/Comfy-Org/ComfyUI",
     "pt-br": {
       tagline: "Geração de imagens por IA com fluxo visual em nós.",
       description:
@@ -136,6 +142,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
   },
 
   n8n: {
+    repo_url: "https://github.com/n8n-io/n8n",
     "pt-br": {
       tagline: "Automação de fluxos de trabalho com um editor visual.",
       description:
@@ -171,6 +178,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
   },
 
   omnivoice: {
+    repo_url: "https://github.com/k2-fsa/OmniVoice",
     "pt-br": {
       tagline: "Clonagem e design de voz (TTS) para 600+ idiomas.",
       description:
@@ -206,6 +214,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
   },
 
   speakr: {
+    repo_url: "https://github.com/murtaza-nasir/speakr",
     "pt-br": {
       tagline: "Transcrição e anotações com IA, identificando quem fala.",
       description:
@@ -241,6 +250,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
   },
 
   voicebox: {
+    repo_url: "https://github.com/jamiepine/voicebox",
     "pt-br": {
       tagline: "Estúdio de voz com IA: clone vozes, gere fala e dite em qualquer app.",
       description:
@@ -280,6 +290,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
   },
 
   "open-notebook": {
+    repo_url: "https://github.com/lfnovo/open-notebook",
     "pt-br": {
       tagline: "Alternativa self-hosted ao NotebookLM.",
       description:
@@ -315,6 +326,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
   },
 
   scrapling: {
+    repo_url: "https://github.com/D4Vinci/Scrapling",
     "pt-br": {
       tagline: "Coleta de dados da web que dribla bloqueios — use no terminal ou deixe a IA usar.",
       description:
