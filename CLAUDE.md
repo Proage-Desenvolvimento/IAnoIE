@@ -11,13 +11,13 @@ Plataforma web tipo Softaculous para instalar e gerenciar aplicações de IA na 
 ## Arquitetura
 
 ```
-Browser (React) -> Traefik (:8888) -> FastAPI (:8000) -> PostgreSQL
+Browser (React) -> Traefik (:80/:443 TLS) -> FastAPI (:8000) -> PostgreSQL
                                             |-> Celery Worker -> Docker Engine (socket)
                                             |-> Celery Beat -> GPU Metrics (pynvml) + System Metrics (psutil)
                                    -> Redis (broker + backend)
 ```
 
-- Traefik (porta host 8888) descobre containers via labels Docker e faz roteamento por path `/app/{id}/`
+- Traefik (portas host 80/443) descobre containers via labels Docker e faz roteamento por path `/app/{id}/`
 - Celery tasks usam sessão síncrona (psycopg2); FastAPI usa async (asyncpg)
 - Templates YAML definem apps; renderer converte em configs Docker com labels Traefik + GPU device_requests
 - LLM Providers (OpenAI/Gemini/Anthropic/Ollama): chaves de API criptografadas com Fernet em `core/crypto.py`; o provider padrão é injetado como variável de ambiente no container da instalação
@@ -62,7 +62,7 @@ IAnoIE/
 │       └── lib/              # types.ts, utils.ts (cn, formatBytes), constants.ts
 ├── templates/                # 6 YAML app templates: open-webui, jupyterlab, comfyui, n8n, omnivoice, speakr
 ├── docker/
-│   ├── docker-compose.yml    # postgres, redis, api, worker, beat, frontend, traefik (porta host 8888)
+│   ├── docker-compose.yml    # postgres, redis, api, worker, beat, frontend, traefik (portas host 80/443)
 │   ├── docker-compose.dev.yml
 │   ├── docker-compose.prod.yml
 │   ├── traefik/              # config dinâmica do Traefik
@@ -115,7 +115,7 @@ IAnoIE/
 - [x] 8 hooks: useAuth, useApps, useInstallations, useGpuMetrics, useLogStream, useJobPolling, useLLMProviders, useSystemMetrics
 
 ### Infraestrutura (completo)
-- [x] docker-compose.yml com 7 serviços: postgres, redis, api, worker, beat, frontend, traefik (porta host 8888)
+- [x] docker-compose.yml com 7 serviços: postgres, redis, api, worker, beat, frontend, traefik (portas host 80/443)
 - [x] docker-compose.dev.yml (apenas infra p/ dev) e docker-compose.prod.yml (imagens GHCR)
 - [x] Compatível com SELinux enforcing (RHEL/AlmaLinux/Rocky): todos os bind mounts do host usam `:z` (`docker-compose.yml`, `.dev.yml`, `.prod.yml`); `setup-vps.sh` informa o modo do SELinux e checa `container-selinux`. Removido o mount morto `/proc:/host_proc:ro` do serviço `api` (nenhum código lê `/host_proc`)
 - [x] Dockerfiles para backend (python:3.11-slim + libpq), frontend (node build + nginx) e omnivoice (build próprio)
@@ -209,13 +209,13 @@ cp .env.example .env  # editar senhas/secret + ENCRYPTION_KEY (Fernet)
 docker compose -f docker/docker-compose.yml up -d
 # (produção: rode `sudo bash scripts/install.sh` — ele auto-gera JWT_SECRET e ENCRYPTION_KEY)
 
-# Acessar: http://<dgx-spark-ip>:8888
+# Acessar: https://${APP_DOMAIN}  (defina APP_DOMAIN + ACME_EMAIL no .env; Traefik emite cert Let's Encrypt)
 # Login: admin@aimization.com / admin
 ```
 
 ### Atualizar instalação de produção (deploy via git clone)
 
-O deploy da VPS (kano.make2.com.br) é **build from source** (git clone + `build:` no compose) — **não usa GHCR**. Atualize com `scripts/update.sh`, que faz `git pull` e rebuilda **só o que mudou**:
+O deploy da VPS (suite.AIMization.com, **HTTPS/443 via Traefik + Let's Encrypt**) é **build from source** (git clone + `build:` no compose) — **não usa GHCR**. O domínio/e-mail vêm de `APP_DOMAIN`/`ACME_EMAIL` no `.env`. Atualize com `scripts/update.sh`, que faz `git pull` e rebuilda **só o que mudou**:
 
 ```bash
 ./scripts/update.sh                  # pull + rebuild do que mudou
@@ -290,6 +290,8 @@ docker run --rm --gpus all ubuntu nvidia-smi -L
 |----------|---------|-----------|
 | `APP_NAME` | `IAnoIE` | Nome da aplicação |
 | `DEBUG` | `false` | Modo debug |
+| `APP_DOMAIN` | `suite.aimization.com` | Domínio público (regra `Host` do Traefik + cert TLS) — lowercase |
+| `ACME_EMAIL` | `admin@aimization.com` | E-mail do Let's Encrypt (emissão + aviso de expiração do cert) |
 | `POSTGRES_USER` | `ianoie` | Usuário do PostgreSQL |
 | `POSTGRES_PASSWORD` | `change-me-in-production` | Senha do PostgreSQL |
 | `POSTGRES_DB` | `ianoie` | Nome do banco |

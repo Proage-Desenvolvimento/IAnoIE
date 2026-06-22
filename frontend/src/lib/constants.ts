@@ -1,5 +1,9 @@
 export const API_URL = import.meta.env.VITE_API_URL || "";
-export const WS_URL = import.meta.env.VITE_WS_URL || `ws://${window.location.host}`;
+// Derive ws/wss from the page protocol: on https://, a ws:// socket is mixed content
+// and the browser blocks it (silently breaking the LogViewer). Default to wss on TLS.
+const _wsScheme =
+  typeof window !== "undefined" && window.location.protocol === "https:" ? "wss" : "ws";
+export const WS_URL = import.meta.env.VITE_WS_URL || `${_wsScheme}://${window.location.host}`;
 
 export const APP_CATEGORIES = [
   { value: "llm", label: "LLM & Chat" },

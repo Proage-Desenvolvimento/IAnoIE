@@ -73,8 +73,10 @@ services:
       - ianoie-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ianoie-api.rule=PathPrefix(`/api/`)"
-      - "traefik.http.routers.ianoie-api.entrypoints=web"
+      - "traefik.http.routers.ianoie-api.rule=Host(`${APP_DOMAIN}`) && PathPrefix(`/api/`)"
+      - "traefik.http.routers.ianoie-api.entrypoints=websecure"
+      - "traefik.http.routers.ianoie-api.tls=true"
+      - "traefik.http.routers.ianoie-api.tls.certresolver=le"
       - "traefik.http.services.ianoie-api.loadbalancer.server.port=8000"
     depends_on:
       postgres:
@@ -207,8 +209,10 @@ services:
       - ianoie-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ianoie-frontend.rule=PathPrefix(`/`)"
-      - "traefik.http.routers.ianoie-frontend.entrypoints=web"
+      - "traefik.http.routers.ianoie-frontend.rule=Host(`${APP_DOMAIN}`)"
+      - "traefik.http.routers.ianoie-frontend.entrypoints=websecure"
+      - "traefik.http.routers.ianoie-frontend.tls=true"
+      - "traefik.http.routers.ianoie-frontend.tls.certresolver=le"
       - "traefik.http.routers.ianoie-frontend.priority=1"
       - "traefik.http.services.ianoie-frontend.loadbalancer.server.port=80"
     logging:
@@ -226,16 +230,23 @@ services:
     container_name: ianoie-traefik
     restart: unless-stopped
     command:
-      - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.network=ianoie-proxy"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--certificatesresolvers.le.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.le.acme.storage=/acme/acme.json"
+      - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
+      - "--api.dashboard=true"
     ports:
-      - "8888:80"
-      - "8080:8080"
+      - "80:80"
+      - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro,z
+      - ianoie-acme:/acme
     networks:
       - ianoie-proxy
     logging:
@@ -251,6 +262,7 @@ services:
 volumes:
   ianoie-postgres:
   ianoie-redis:
+  ianoie-acme:
 
 networks:
   ianoie-proxy:
