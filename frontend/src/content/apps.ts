@@ -33,6 +33,7 @@ export interface AppContent {
 export const APP_CONTENT: Record<string, AppContent> = {
   "open-webui": {
     repo_url: "https://github.com/open-webui/open-webui",
+    hero: "/images/apps/open-webui.png",
     "pt-br": {
       tagline: "Chat no estilo ChatGPT rodando na sua própria infraestrutura.",
       description:
@@ -71,6 +72,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   jupyterlab: {
     repo_url: "https://github.com/jupyterlab/jupyterlab",
+    hero: "/images/apps/jupyterlab.png",
     "pt-br": {
       tagline: "Notebooks interativos para ciência de dados e ML, com GPU.",
       description:
@@ -107,6 +109,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   comfyui: {
     repo_url: "https://github.com/Comfy-Org/ComfyUI",
+    hero: "/images/apps/comfyui.png",
     "pt-br": {
       tagline: "Geração de imagens por IA com fluxo visual em nós.",
       description:
@@ -143,6 +146,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   n8n: {
     repo_url: "https://github.com/n8n-io/n8n",
+    hero: "/images/apps/n8n.png",
     "pt-br": {
       tagline: "Automação de fluxos de trabalho com um editor visual.",
       description:
@@ -179,6 +183,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   omnivoice: {
     repo_url: "https://github.com/k2-fsa/OmniVoice",
+    hero: "/images/apps/omnivoice.png",
     "pt-br": {
       tagline: "Clonagem e design de voz (TTS) para 600+ idiomas.",
       description:
@@ -215,6 +220,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   speakr: {
     repo_url: "https://github.com/murtaza-nasir/speakr",
+    hero: "/images/apps/speakr.png",
     "pt-br": {
       tagline: "Transcrição e anotações com IA, identificando quem fala.",
       description:
@@ -251,6 +257,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   voicebox: {
     repo_url: "https://github.com/jamiepine/voicebox",
+    hero: "/images/apps/voicebox.png",
     "pt-br": {
       tagline: "Estúdio de voz com IA: clone vozes, gere fala e dite em qualquer app.",
       description:
@@ -291,6 +298,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   "open-notebook": {
     repo_url: "https://github.com/lfnovo/open-notebook",
+    hero: "/images/apps/open-notebook.png",
     "pt-br": {
       tagline: "Alternativa self-hosted ao NotebookLM.",
       description:
@@ -327,6 +335,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   scrapling: {
     repo_url: "https://github.com/D4Vinci/Scrapling",
+    hero: "/images/apps/scrapling.png",
     "pt-br": {
       tagline: "Coleta de dados da web que dribla bloqueios — use no terminal ou deixe a IA usar.",
       description:

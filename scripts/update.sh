@@ -35,11 +35,16 @@ if [ ! -f "$REPO_DIR/docker/docker-compose.yml" ]; then
   exit 1
 fi
 
-# --project-directory points Compose at the repo root so it loads the repo's .env
-# for variable interpolation (APP_DOMAIN/ACME_EMAIL etc.). Without it, `docker compose
-# -f docker/docker-compose.yml` reads .env from the compose file's dir (docker/), which
-# has none, and ${VAR} substitutes to empty.
-COMPOSE=(docker compose --project-directory "$REPO_DIR" -f "$REPO_DIR/docker/docker-compose.yml")
+# Path resolution: Compose resolves relative paths (build context, volumes, env_file)
+# relative to the FIRST -f file's dir (docker/) by default. Do NOT pass
+# --project-directory="$REPO_DIR" — that rebases ../frontend and ../backend onto
+# REPO_DIR (e.g. /home/john/IAnoIE/../frontend = /home/john/frontend) and the build
+# fails with "path ... not found". The .env used for ${VAR} interpolation is loaded
+# from PWD (we `cd "$REPO_DIR"` below) and, when present, via the explicit --env-file.
+COMPOSE=(docker compose -f "$REPO_DIR/docker/docker-compose.yml")
+if [ -f "$REPO_DIR/.env" ]; then
+  COMPOSE+=(--env-file "$REPO_DIR/.env")
+fi
 PREV_FILE="$REPO_DIR/.ianoie-prev-commit"
 SOURCE_SERVICES=(api worker beat frontend)
 
@@ -119,7 +124,7 @@ elif [ -n "$PREV_COMMIT" ] && [ "$PREV_COMMIT" != "$NEW_COMMIT" ]; then
 fi
 
 # nothing new — and not the first run, and not forced?
-if [ "$FIRST_RUN" = false ] && [ -n "$PREV_COMMIT" ] && [ "$PREV_COMMIT" = "$NEW_COMMIT" ] && [ "$REBUILD_ALL" = false ]; then
+if [ "$FIRST_RUN" = false ] && [ -n "$PREV_COMMIT" ] && [ "$PREV_COMMIT" = "$NEW_COMMIT" ] && [ "$REBUILD_ALL" = false ] && [ -z "$SERVICES_OVERRIDE" ]; then
   ok "Already up to date ($(git rev-parse --short HEAD)). Nothing to do."
   exit 0
 fi
