@@ -35,7 +35,11 @@ if [ ! -f "$REPO_DIR/docker/docker-compose.yml" ]; then
   exit 1
 fi
 
-COMPOSE=(docker compose -f "$REPO_DIR/docker/docker-compose.yml")
+# --project-directory points Compose at the repo root so it loads the repo's .env
+# for variable interpolation (APP_DOMAIN/ACME_EMAIL etc.). Without it, `docker compose
+# -f docker/docker-compose.yml` reads .env from the compose file's dir (docker/), which
+# has none, and ${VAR} substitutes to empty.
+COMPOSE=(docker compose --project-directory "$REPO_DIR" -f "$REPO_DIR/docker/docker-compose.yml")
 PREV_FILE="$REPO_DIR/.ianoie-prev-commit"
 SOURCE_SERVICES=(api worker beat frontend)
 
