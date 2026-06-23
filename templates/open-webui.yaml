@@ -13,7 +13,7 @@ gpu:
   required: false
 
 llm:
-  supported_providers: ["openai", "gemini", "anthropic", "ollama"]
+  supported_providers: ["openai", "gemini", "anthropic", "ollama", "openrouter"]
   connection_env:
     openai:
       OPENAI_API_KEY: "{{llm.api_key}}"
@@ -28,6 +28,10 @@ llm:
     ollama:
       OLLAMA_BASE_URL: "{{llm.base_url}}"
       OLLAMA_MODEL: "{{llm.model}}"
+    openrouter:
+      OPENAI_API_KEY: "{{llm.api_key}}"
+      OPENAI_BASE_URL: "{{llm.base_url}}"
+      OPENAI_MODEL: "{{llm.model}}"
 
 config:
   - key: "ollama_base_url"

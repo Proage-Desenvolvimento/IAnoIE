@@ -25,10 +25,13 @@ gpu:
 # OSS só suporta OpenAI/Azure na camada de IA. O provider openai da IAnoIE injeta
 # AI_OPENAI_API_KEY no serviço `ai`.
 llm:
-  supported_providers: ["openai"]
+  supported_providers: ["openai", "openrouter"]
   connection_env:
     openai:
       AI_OPENAI_API_KEY: "{{llm.api_key}}"
+    openrouter:
+      AI_OPENAI_API_KEY: "{{llm.api_key}}"
+      OPENAI_API_BASE: "{{llm.base_url}}"
 
 config:
   - key: "jwt_secret"

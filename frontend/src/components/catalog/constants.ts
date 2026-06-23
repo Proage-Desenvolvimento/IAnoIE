@@ -82,4 +82,5 @@ export const PROVIDER_LABELS: Record<string, string> = {
   gemini: "Gemini",
   anthropic: "Anthropic",
   ollama: "Ollama (Local)",
+  openrouter: "OpenRouter",
 };

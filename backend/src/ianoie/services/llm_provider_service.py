@@ -115,6 +115,8 @@ class LLMProviderService:
                 return await self._test_anthropic(api_key)
             elif provider.provider_type == LLMProviderType.ollama:
                 return await self._test_ollama(provider.base_url)
+            elif provider.provider_type == LLMProviderType.openrouter:
+                return await self._test_openrouter(api_key, provider.base_url)
             else:
                 return LLMProviderTestResult(success=False, message="Unknown provider type")
         except Exception as e:
@@ -268,3 +270,42 @@ class LLMProviderService:
                     success=False,
                     message=f"Cannot connect to Ollama at {url}. Is it running?",
                 )
+
+    async def _test_openrouter(
+        self, api_key: str | None, base_url: str | None
+    ) -> LLMProviderTestResult:
+        if not api_key:
+            return LLMProviderTestResult(success=False, message="API key is required")
+        base = (base_url or "https://openrouter.ai/api/v1").rstrip("/")
+        async with httpx.AsyncClient(timeout=15) as client:
+            # /models is public (returns 200 regardless of key validity), so we
+            # validate the key against /key first.
+            key_resp = await client.get(
+                f"{base}/key",
+                headers={"Authorization": f"Bearer {api_key}"},
+            )
+            if key_resp.status_code == 401:
+                return LLMProviderTestResult(success=False, message="Invalid API key")
+            if key_resp.status_code != 200:
+                return LLMProviderTestResult(
+                    success=False,
+                    message=f"API returned {key_resp.status_code}: {key_resp.text[:200]}",
+                )
+
+            resp = await client.get(
+                f"{base}/models",
+                headers={"Authorization": f"Bearer {api_key}"},
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                models = [m["id"] for m in data.get("data", [])]
+                models.sort()
+                return LLMProviderTestResult(
+                    success=True,
+                    message=f"Connected — {len(models)} models available",
+                    models=models,
+                )
+            return LLMProviderTestResult(
+                success=False,
+                message=f"API returned {resp.status_code}: {resp.text[:200]}",
+            )

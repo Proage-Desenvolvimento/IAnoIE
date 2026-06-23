@@ -20,7 +20,7 @@ gpu:
   min_vram_gb: 0
 
 llm:
-  supported_providers: ["openai", "gemini", "anthropic"]
+  supported_providers: ["openai", "gemini", "anthropic", "openrouter"]
   connection_env:
     openai:
       TEXT_MODEL_API_KEY: "{{llm.api_key}}"
@@ -31,6 +31,10 @@ llm:
     anthropic:
       TEXT_MODEL_API_KEY: "{{llm.api_key}}"
       TEXT_MODEL_NAME: "{{llm.model}}"
+    openrouter:
+      TEXT_MODEL_API_KEY: "{{llm.api_key}}"
+      TEXT_MODEL_NAME: "{{llm.model}}"
+      TEXT_MODEL_BASE_URL: "{{llm.base_url}}"
 
 config:
   - key: "transcription_connector"

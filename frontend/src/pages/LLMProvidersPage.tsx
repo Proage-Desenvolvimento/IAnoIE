@@ -19,6 +19,7 @@ import {
   Brain,
   Zap,
   Globe,
+  Network,
   Sparkles,
   Server,
   Trash2,
@@ -37,6 +38,7 @@ const PROVIDER_CONFIG: Record<string, { label: string; icon: typeof Brain; color
   gemini: { label: "Google Gemini", icon: Sparkles, color: "bg-blue-50 text-blue-700 border-blue-200", needsApiKey: true, needsBaseUrl: false, defaultBaseUrl: "https://generativelanguage.googleapis.com" },
   anthropic: { label: "Anthropic", icon: Brain, color: "bg-orange-50 text-orange-700 border-orange-200", needsApiKey: true, needsBaseUrl: false, defaultBaseUrl: "https://api.anthropic.com" },
   ollama: { label: "Ollama (Local)", icon: Server, color: "bg-violet-50 text-violet-700 border-violet-200", needsApiKey: false, needsBaseUrl: true, defaultBaseUrl: "http://localhost:11434" },
+  openrouter: { label: "OpenRouter", icon: Network, color: "bg-rose-50 text-rose-700 border-rose-200", needsApiKey: true, needsBaseUrl: true, defaultBaseUrl: "https://openrouter.ai/api/v1" },
 };
 
 interface ProviderFormData {
@@ -157,7 +159,7 @@ export function LLMProvidersPage() {
       ) : !providers?.length ? (
         <EmptyState
           title="No LLM providers configured"
-          description="Add an OpenAI, Gemini, Anthropic, or Ollama provider to connect your apps to AI models"
+          description="Add an OpenAI, Gemini, Anthropic, Ollama, or OpenRouter provider to connect your apps to AI models"
           action={
             <Button onClick={handleOpenCreate} size="sm">
               <Plus className="h-3.5 w-3.5" />

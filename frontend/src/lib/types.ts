@@ -85,7 +85,7 @@ export interface SystemMetrics {
 export interface LLMProvider {
   id: number;
   name: string;
-  provider_type: "openai" | "gemini" | "anthropic" | "ollama";
+  provider_type: "openai" | "gemini" | "anthropic" | "ollama" | "openrouter";
   base_url: string | null;
   models: string[];
   is_default: boolean;

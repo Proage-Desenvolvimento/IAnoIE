@@ -13,6 +13,7 @@ class LLMProviderType(str, enum.Enum):
     gemini = "gemini"
     anthropic = "anthropic"
     ollama = "ollama"
+    openrouter = "openrouter"
 
 
 class LLMProvider(Base, TimestampMixin):

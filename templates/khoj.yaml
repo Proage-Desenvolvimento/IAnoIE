@@ -25,7 +25,7 @@ gpu:
 # O provider padrão da IAnoIE é injetado como as env vars correspondentes do Khoj.
 # (Khoj trata Ollama como endpoint OpenAI-compatible via OPENAI_BASE_URL.)
 llm:
-  supported_providers: ["openai", "anthropic", "gemini", "ollama"]
+  supported_providers: ["openai", "anthropic", "gemini", "ollama", "openrouter"]
   connection_env:
     openai:
       OPENAI_API_KEY: "{{llm.api_key}}"
@@ -36,6 +36,10 @@ llm:
     gemini:
       GEMINI_API_KEY: "{{llm.api_key}}"
     ollama:
+      OPENAI_API_KEY: "{{llm.api_key}}"
+      OPENAI_BASE_URL: "{{llm.base_url}}"
+      KHOJ_DEFAULT_CHAT_MODEL: "{{llm.model}}"
+    openrouter:
       OPENAI_API_KEY: "{{llm.api_key}}"
       OPENAI_BASE_URL: "{{llm.base_url}}"
       KHOJ_DEFAULT_CHAT_MODEL: "{{llm.model}}"

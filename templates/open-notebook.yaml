@@ -26,7 +26,7 @@ gpu:
 # O provider padrão da IAnoIE é injetado no container como env var correspondente.
 # (Ollama/local fica de fora: a base URL depende de onde o Ollama roda — configurar na UI do app.)
 llm:
-  supported_providers: ["openai", "anthropic", "gemini"]
+  supported_providers: ["openai", "anthropic", "gemini", "openrouter"]
   connection_env:
     openai:
       OPENAI_API_KEY: "{{llm.api_key}}"
@@ -34,6 +34,9 @@ llm:
       ANTHROPIC_API_KEY: "{{llm.api_key}}"
     gemini:
       GOOGLE_API_KEY: "{{llm.api_key}}"
+    openrouter:
+      OPENAI_API_KEY: "{{llm.api_key}}"
+      OPENAI_BASE_URL: "{{llm.base_url}}"
 
 config:
   - key: "encryption_key"

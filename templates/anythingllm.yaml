@@ -25,7 +25,7 @@ gpu:
 # O provider padrão da IAnoIE é injetado como as env vars correspondentes do
 # AnythingLLM. (LLM_PROVIDER seleciona o backend; cada provider tem seus vars.)
 llm:
-  supported_providers: ["openai", "anthropic", "gemini", "ollama"]
+  supported_providers: ["openai", "anthropic", "gemini", "ollama", "openrouter"]
   connection_env:
     openai:
       LLM_PROVIDER: "openai"
@@ -43,6 +43,11 @@ llm:
       LLM_PROVIDER: "ollama"
       OLLAMA_BASE_PATH: "{{llm.base_url}}"
       OLLAMA_MODEL_PREF: "{{llm.model}}"
+    openrouter:
+      LLM_PROVIDER: "genericopenai"
+      GENERIC_OPEN_AI_BASE_PATH: "{{llm.base_url}}"
+      GENERIC_OPEN_AI_API_KEY: "{{llm.api_key}}"
+      GENERIC_OPEN_AI_MODEL_PREF: "{{llm.model}}"
 
 config:
   - key: "auth_token"
