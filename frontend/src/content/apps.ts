@@ -4,6 +4,7 @@
  - `hero`  → caminho da imagem em /public (ex.: "/images/apps/open-webui.png").
  *          Deixe `undefined` para mostrar o placeholder até adicionar o arquivo.
  - `video` → URL do YouTube. Deixe `undefined` para o placeholder de vídeo.
+ - `logo` → URL do logo do app. Quando presente, aparece no card no lugar do ícone de categoria.
  - `repo_url` → URL do repositório upstream (GitHub). Omitir para não mostrar o link.
  *
  * O texto (tagline/description/benefits/useCases) é a parte central da entrega:
@@ -24,6 +25,8 @@ export interface LocalizedAppContent {
 export interface AppContent {
   hero?: string;
   video?: string;
+  /** Logo do app (URL). Quando presente, aparece no card no lugar do ícone de categoria. */
+  logo?: string;
   /** URL do repositório upstream. Sem ele, nenhum link é renderizado. */
   repo_url?: string;
   "pt-br": LocalizedAppContent;
@@ -410,6 +413,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   anythingllm: {
     repo_url: "https://github.com/Mintplex-Labs/anything-llm",
+    logo: "https://raw.githubusercontent.com/Mintplex-Labs/anything-llm/master/images/wordmark.png",
     "pt-br": {
       tagline: "Converse com seus documentos e monte agentes de IA.",
       description:
@@ -590,6 +594,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   superset: {
     repo_url: "https://github.com/apache/superset",
+    logo: "https://camo.githubusercontent.com/dc551298736c4cc5f9b23512ef7ca67e6a9304be4d2e06a0d3ff09b6491adb9b/68747470733a2f2f73757065727365742e6170616368652e6f72672f696d672f73757065727365742d6c6f676f2d686f72697a2d6170616368652e737667",
     "pt-br": {
       tagline: "Plataforma moderna de exploração e visualização de dados.",
       description:

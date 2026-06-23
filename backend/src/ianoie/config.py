@@ -7,7 +7,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
     )
 
-    app_name: str = "IAnoIE"
+    app_name: str = "Suite AIMization"
     debug: bool = False
 
     # PostgreSQL

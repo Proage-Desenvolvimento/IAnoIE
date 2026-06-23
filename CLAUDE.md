@@ -1,6 +1,8 @@
-# IAnoIE — GPU AI App Platform for NVIDIA DGX Spark
+# Suite AIMization — AI App Platform for NVIDIA DGX Spark
 
 Plataforma web tipo Softaculous para instalar e gerenciar aplicações de IA na NVIDIA DGX Spark com um clique. Usuário não precisa entender Docker, CUDA ou Linux.
+
+> **Marca pública:** "Suite AIMization" (domínio suite.aimization.com). O nome do repo/package — "IAnoIE" — é apenas técnico (module `ianoie`, rede `ianoie-proxy`, keys `ianoie_*`); não aparece em copy voltado ao usuário.
 
 **Hardware alvo:** NVIDIA DGX Spark (1x GB10 Grace Blackwell SoC, 128 GB unified memory, desktop)
 **Organização:** Proage-Desenvolvimento (Brasil)
@@ -35,7 +37,7 @@ IAnoIE/
 │       ├── main.py           # App factory, lifespan (create_all + seed)
 │       ├── config.py         # Pydantic Settings (.env)
 │       ├── database.py       # async engine (asyncpg) + sync engine (psycopg2) + session factories
-│       ├── api/v1/           # Rotas: auth, apps, installations, jobs, gpu, logs (ws), system, llm_providers
+│       ├── api/v1/           # Rotas: auth, apps, installations, jobs, gpu, logs (ws), system, llm_providers, worker
 │       ├── models/           # SQLAlchemy ORM: User, App, Installation, AppLog, GPUMetrics, Job, LLMProvider, SystemMetrics
 │       ├── schemas/          # Pydantic request/response
 │       ├── services/         # Camada de negócio: InstallationService, LLMProviderService (CRUD + teste + crypto)
@@ -43,7 +45,7 @@ IAnoIE/
 │       ├── templates/        # Template engine: loader.py (YAML), renderer.py (-> ContainerConfig)
 │       ├── workers/          # Celery: celery_app.py, tasks/{install,uninstall,gpu_monitor,system_monitor,reconfigure}.py
 │       ├── core/             # security.py (JWT+bcrypt), exceptions.py, middleware.py, crypto.py (Fernet)
-│       └── seed/             # seed_apps.py (6 apps + admin user)
+│       └── seed/             # seed_apps.py (19 apps + admin user)
 ├── frontend/                 # React 19 + TypeScript + Tailwind 4
 │   ├── package.json          # deps: react, react-router-dom, @tanstack/react-query, recharts, lucide-react, ky, zod, react-hook-form
 │   ├── vite.config.ts        # proxy /api -> localhost:8000
@@ -57,10 +59,10 @@ IAnoIE/
 │       │   ├── config/       # ConfigForm (formulário dinâmico a partir dos config_fields do template)
 │       │   └── catalog/      # AppCard, AppDetailDialog, AppMedia, YouTubeEmbed, LanguageToggle, constants (ícone/cor por categoria)
 │       ├── content/          # apps.ts — copy de marketing do catálogo por slug (tagline/benefits/useCases + hero/video) — pt-br + en
-│       ├── i18n/             # LanguageContext.tsx + messages.ts — i18n leve ESCOPADO ao catálogo (sem react-i18next)
+│       ├── i18n/             # LanguageContext.tsx + messages.ts — i18n leve escopado a /catalog e /terms (sem react-i18next)
 │       ├── pages/            # Login, Dashboard, Catalog, MyApps, AppDetail, GpuMonitor, LLMProviders, SystemMonitor
 │       └── lib/              # types.ts, utils.ts (cn, formatBytes), constants.ts
-├── templates/                # 6 YAML app templates: open-webui, jupyterlab, comfyui, n8n, omnivoice, speakr
+├── templates/                # 19 YAML app templates: open-webui, jupyterlab, comfyui, n8n, omnivoice, speakr, anythingllm, khoj, onyx, dify, flowise, metabase, superset, twenty, chatwoot, appflowy, scrapling, voicebox, open-notebook
 ├── docker/
 │   ├── docker-compose.yml    # postgres, redis, api, worker, beat, frontend, traefik (portas host 80/443)
 │   ├── docker-compose.dev.yml
@@ -96,15 +98,15 @@ IAnoIE/
 - [x] LLM Providers: CRUD + teste de conexão (OpenAI/Gemini/Anthropic/Ollama) + toggle de provider padrão, chaves de API criptografadas com Fernet (`core/crypto.py`)
 - [x] WebSocket endpoint para stream de logs de container
 - [x] SecurityHeadersMiddleware (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection)
-- [x] Seed de 6 apps + admin user padrão (admin@aimization.com / admin)
-- [x] 6 templates YAML de apps prontos (open-webui, jupyterlab, comfyui, n8n, omnivoice, speakr)
+- [x] Seed de 19 apps + admin user padrão (admin@aimization.com / admin)
+- [x] 19 templates YAML de apps prontos (open-webui, jupyterlab, comfyui, n8n, omnivoice, speakr, anythingllm, khoj, onyx, dify, flowise, metabase, superset, twenty, chatwoot, appflowy, scrapling, voicebox, open-notebook)
 
 ### Frontend (completo)
 - [x] 8 componentes UI reutilizáveis (Button, Badge, Card, Dialog, Progress, Spinner, EmptyState, StatusBadge)
 - [x] LogViewer terminal-style com WebSocket, filtro, pause, auto-scroll
 - [x] ConfigForm: formulário dinâmico gerado a partir dos config_fields do template (string/select/boolean/number)
-- [x] 8 páginas: Login, Dashboard, Catalog, MyApps, AppDetail, GpuMonitor, LLMProviders, SystemMonitor
-- [x] Catalog: busca + filtro por categoria, cards ricos bilíngues pt-br/en (tagline + benefícios em tópicos), dialog de detalhe com benefícios/casos de uso/requisitos + mídia (imagem/YouTube) e install com GPU selector + config form, progress bar em tempo real via polling de job. Conteúdo de marketing no frontend (`content/apps.ts`); i18n leve escopado ao catálogo (`i18n/`)
+- [x] 9 páginas: Login, Dashboard, Catalog, MyApps, AppDetail, GpuMonitor, LLMProviders, SystemMonitor, Terms
+- [x] Catalog: busca + filtro por categoria, cards ricos bilíngues pt-br/en (tagline + benefícios em tópicos), dialog de detalhe com benefícios/casos de uso/requisitos + mídia (imagem/YouTube) e install com GPU selector + config form, progress bar em tempo real via polling de job. Conteúdo de marketing no frontend (`content/apps.ts`); i18n leve escopado ao catálogo e à página de Termos (`i18n/`)
 - [x] MyApps: lista com status badge, lifecycle controls (start/stop/restart/uninstall), inline log viewer expandível, edição de config (reconfigure)
 - [x] AppDetail: detalhes da instalação + log viewer full + controls
 - [x] Dashboard: stats cards, running apps, GPU overview com bars
@@ -254,7 +256,7 @@ O script detecta sozinho o que rebuildar (compara o commit antigo com o novo):
 - **Auth:** JWT no header `Authorization: Bearer <token>`, armazenado em `localStorage` no frontend
 - **Rotas API:** tudo sob `/api/v1/`; WebSocket em `/api/v1/ws/logs/{id}?token=`
 - **Frontend API client:** ky com interceptor JWT e redirect 401 -> /login
-- **Catálogo bilíngue (pt-br/en):** a página `/catalog` é bilíngue e focada em gestor. O i18n é **leve e escopado SÓ ao catálogo** (`frontend/src/i18n/` — `LanguageContext.tsx` + `messages.ts`, React Context puro, **sem react-i18next**); o resto do app segue em inglês. O conteúdo de marketing (tagline, **benefícios em tópicos**, casos de uso, requisitos, mídia) vive no **frontend** em `frontend/src/content/apps.ts` (key por slug) — **não no modelo `App`/DB**. Motivo: o projeto usa `create_all` (sem Alembic), então adicionar colunas exigiria `ALTER TABLE` manual, e os apps são fixos (seed). Editar copy = editar este arquivo TS. Mídia: `hero` (path em `frontend/public/images/apps/<slug>.png`) e `video` (URL YouTube) — sem eles, `components/catalog/AppMedia.tsx` mostra um placeholder gradiente. Não proponha migrar i18n/conteúdo para o backend a menos que o usuário peça.
+- **Páginas bilíngues (pt-br/en):** as páginas `/catalog` e `/terms` são bilíngues e focadas em gestor. O i18n é **leve e escopado a essas páginas** (`frontend/src/i18n/` — `LanguageContext.tsx` + `messages.ts`, React Context puro, **sem react-i18next**); o resto do app segue em inglês. O conteúdo de marketing (tagline, **benefícios em tópicos**, casos de uso, requisitos, mídia) vive no **frontend** em `frontend/src/content/apps.ts` (key por slug) — **não no modelo `App`/DB**. Motivo: o projeto usa `create_all` (sem Alembic), então adicionar colunas exigiria `ALTER TABLE` manual, e os apps são fixos (seed). Editar copy = editar este arquivo TS. Mídia: `hero` (path em `frontend/public/images/apps/<slug>.png`) e `video` (URL YouTube) — sem eles, `components/catalog/AppMedia.tsx` mostra um placeholder gradiente. Não proponha migrar i18n/conteúdo para o backend a menos que o usuário peça.
 
 ---
 
@@ -288,7 +290,7 @@ docker run --rm --gpus all ubuntu nvidia-smi -L
 
 | Variável | Default | Descrição |
 |----------|---------|-----------|
-| `APP_NAME` | `IAnoIE` | Nome da aplicação |
+| `APP_NAME` | `Suite AIMization` | Nome da aplicação (marca pública exibida no título da API/system info) |
 | `DEBUG` | `false` | Modo debug |
 | `APP_DOMAIN` | `suite.aimization.com` | Domínio público (regra `Host` do Traefik + cert TLS) — lowercase |
 | `ACME_EMAIL` | `admin@aimization.com` | E-mail do Let's Encrypt (emissão + aviso de expiração do cert) |

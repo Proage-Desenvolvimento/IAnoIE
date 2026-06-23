@@ -1,6 +1,8 @@
-# IAnoIE — GPU AI App Platform for NVIDIA DGX
+# Suite AIMization — AI App Platform for NVIDIA DGX
 
 One-click AI app installer and manager for NVIDIA DGX machines. Like Softaculous, but for AI workloads — no Docker, CUDA, or Linux knowledge required.
+
+> The public product name is **Suite AIMization**. The repository keeps its original technical name `IAnoIE` (clone path, module `ianoie`, network `ianoie-proxy`).
 
 **Repository:** [github.com/Proage-Desenvolvimento/IAnoIE](https://github.com/Proage-Desenvolvimento/IAnoIE)
 
@@ -8,13 +10,13 @@ One-click AI app installer and manager for NVIDIA DGX machines. Like Softaculous
 
 ## 🇺🇸 English
 
-### What is IAnoIE?
+### What is Suite AIMization?
 
-IAnoIE is a web platform that lets you install and manage AI applications on NVIDIA DGX machines with a single click. Deploy ComfyUI, JupyterLab, and more without touching Docker or the command line.
+Suite AIMization is a web platform that lets you install and manage AI applications on NVIDIA DGX machines with a single click. Deploy ComfyUI, JupyterLab, and more without touching Docker or the command line.
 
 ### Features
 
-- **One-click installs** of 7 AI apps (Open WebUI, ComfyUI, JupyterLab, n8n, OmniVoice, Speakr, Open Notebook)
+- **One-click installs** of 19 AI apps (Open WebUI, JupyterLab, ComfyUI, n8n, Dify, Flowise, Metabase, and more — see the full list below)
 - **Bilingual catalog (PT/EN)** — manager-focused, with per-app benefits, use cases, and rich media (images, YouTube videos)
 - **GPU passthrough** with live GPU monitoring (utilization, VRAM, temperature, power)
 - **System monitoring** — CPU, RAM, disk, and network metrics with 24h history
@@ -25,7 +27,7 @@ IAnoIE is a web platform that lets you install and manage AI applications on NVI
 ### Architecture
 
 ```
-Browser (React) → Traefik (:8888) → FastAPI (:8000) → PostgreSQL
+Browser (React) → Traefik (:80/:443) → FastAPI (:8000) → PostgreSQL
                                           |→ Celery Worker → Docker Engine (socket)
                                           |→ Celery Beat → GPU Metrics (pynvml) + System Metrics (psutil)
                                  → Redis (broker + backend)
@@ -81,7 +83,7 @@ Edit `.env` and change at minimum:
 docker compose -f docker/docker-compose.yml up -d
 ```
 
-**4. Open in browser**: `http://<dgx-ip>:8888`
+**4. Open in browser**: `http://<dgx-ip>` (port 80; HTTPS on 443 once `APP_DOMAIN`/`ACME_EMAIL` are set)
 
 Default login: `admin@aimization.com` / `admin` (change the password after first login)
 
@@ -115,7 +117,7 @@ Edit `.env` and change at minimum:
 docker compose -f docker/docker-compose.yml up -d
 ```
 
-**4. Open in browser**: `http://localhost:8888`
+**4. Open in browser**: `http://localhost`
 
 Default login: `admin@aimization.com` / `admin` (change the password after first login)
 
@@ -150,13 +152,25 @@ Notes: `beat` shares the backend image, so it is rebuilt alongside `api`/`worker
 
 | App | Description |
 |-----|-------------|
-| **Open WebUI** | Web interface for local LLMs (ChatGPT-like) |
-| **JupyterLab** | Interactive notebooks for data science |
-| **ComfyUI** | Stable Diffusion workflow engine |
-| **n8n** | Visual workflow automation platform |
-| **OmniVoice** | Zero-shot TTS with voice cloning (600+ languages) |
-| **Speakr** | AI-powered transcription and note-taking |
-| **Open Notebook** | Self-hosted NotebookLM alternative (multi-modal research, podcasts) |
+| **AnythingLLM** | RAG app — chat with your documents, build agents, multi-workspace and multi-user |
+| **Apache Superset** | Data exploration and visualization — dashboards, charts and SQL editor over any DB |
+| **AppFlowy** | Open-source Notion alternative (workspaces, wikis, realtime, AI) |
+| **Chatwoot** | Omnichannel customer engagement — live chat, email and WhatsApp in one inbox |
+| **ComfyUI** | Node-based Stable Diffusion UI for image generation (GPU recommended) |
+| **Dify** | LLM app development platform — build agents, workflows, RAG and chatbots visually |
+| **Flowise** | Visual low-code builder for LLM apps — drag-and-drop LangChain/LlamaIndex flows |
+| **JupyterLab** | Interactive notebooks for data science (optional GPU) |
+| **Khoj** | AI second brain — chat with your notes, docs and the web, with deep research |
+| **Metabase** | Open-source BI — ask questions over your databases, no SQL required |
+| **n8n** | Visual node-based workflow automation platform |
+| **OmniVoice** | Zero-shot TTS with voice cloning and voice design for 600+ languages (GPU required) |
+| **Onyx** | Enterprise AI assistant — chat, agents and search across all your company data |
+| **Open Notebook** | Self-hosted NotebookLM alternative — multi-modal research, chat and podcasts |
+| **Open WebUI** | ChatGPT-style web interface for local and cloud LLMs |
+| **Scrapling** | Adaptive web scraping framework — stealth HTTP, real browsers, Cloudflare bypass |
+| **Speakr** | AI-powered transcription and note-taking with speaker identification |
+| **Twenty** | Open-source CRM — a modern alternative to Salesforce and Hubspot |
+| **Voicebox** | Open-source AI voice studio — voice cloning, TTS in 23 languages, MCP |
 
 ### Customizing the Catalog
 
@@ -221,7 +235,7 @@ IAnoIE/
 │       ├── components/       # UI components
 │       ├── pages/            # Page components
 │       └── lib/              # Types, utils, constants
-├── templates/                # 6 YAML app templates
+├── templates/                # 19 YAML app templates
 ├── docker/
 │   ├── docker-compose.yml    # Base compose (builds from source)
 │   ├── docker-compose.dev.yml # Infra-only for local dev
@@ -267,7 +281,7 @@ npm run dev    # http://localhost:5173, proxies /api → localhost:8000
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `APP_NAME` | `IAnoIE` | Application name |
+| `APP_NAME` | `Suite AIMization` | Application name (public brand, shown in API title and system info) |
 | `DEBUG` | `false` | Debug mode |
 | `POSTGRES_USER` | `ianoie` | PostgreSQL user |
 | `POSTGRES_PASSWORD` | `change-me-in-production` | PostgreSQL password |
@@ -319,13 +333,13 @@ cd frontend && npm run build
 
 ## 🇧🇷 Português
 
-### O que é o IAnoIE?
+### O que é a Suite AIMization?
 
-O IAnoIE é uma plataforma web que permite instalar e gerenciar aplicações de IA em máquinas DGX da NVIDIA com um clique. Deploy de ComfyUI, JupyterLab e mais, sem precisar tocar em Docker ou linha de comando.
+A Suite AIMization é uma plataforma web que permite instalar e gerenciar aplicações de IA em máquinas DGX da NVIDIA com um clique. Deploy de ComfyUI, JupyterLab e mais, sem precisar tocar em Docker ou linha de comando.
 
 ### Funcionalidades
 
-- **Instalação com um clique** de 7 apps de IA (Open WebUI, ComfyUI, JupyterLab, n8n, OmniVoice, Speakr, Open Notebook)
+- **Instalação com um clique** de 19 apps de IA (Open WebUI, JupyterLab, ComfyUI, n8n, Dify, Flowise, Metabase e mais — veja a lista completa abaixo)
 - **Catálogo bilíngue (PT/EN)** — focado em gestor, com benefícios por app, casos de uso e mídia (imagens, vídeos do YouTube)
 - **Passthrough de GPU** com monitoramento em tempo real (utilização, VRAM, temperatura, potência)
 - **Monitoramento de sistema** — métricas de CPU, RAM, disco e rede com histórico de 24h
@@ -336,7 +350,7 @@ O IAnoIE é uma plataforma web que permite instalar e gerenciar aplicações de 
 ### Arquitetura
 
 ```
-Browser (React) → Traefik (:8888) → FastAPI (:8000) → PostgreSQL
+Browser (React) → Traefik (:80/:443) → FastAPI (:8000) → PostgreSQL
                                           |→ Celery Worker → Docker Engine (socket)
                                           |→ Celery Beat → GPU Metrics (pynvml) + System Metrics (psutil)
                                  → Redis (broker + backend)
@@ -392,7 +406,7 @@ Edite o `.env` e altere no mínimo:
 docker compose -f docker/docker-compose.yml up -d
 ```
 
-**4. Abrir no navegador**: `http://<ip-da-dgx>:8888`
+**4. Abrir no navegador**: `http://<ip-da-dgx>` (porta 80; HTTPS na 443 quando `APP_DOMAIN`/`ACME_EMAIL` estiverem configurados)
 
 Login padrão: `admin@aimization.com` / `admin` (altere a senha após o primeiro login)
 
@@ -426,7 +440,7 @@ Edite o `.env` e altere no mínimo:
 docker compose -f docker/docker-compose.yml up -d
 ```
 
-**4. Abrir no navegador**: `http://localhost:8888`
+**4. Abrir no navegador**: `http://localhost`
 
 Login padrão: `admin@aimization.com` / `admin` (altere a senha após o primeiro login)
 
@@ -461,13 +475,25 @@ Observações: o `beat` compartilha a imagem do backend, então é rebuildado ju
 
 | App | Descrição |
 |-----|-----------|
-| **Open WebUI** | Interface web para LLMs locais (estilo ChatGPT) |
-| **JupyterLab** | Notebooks interativos para ciência de dados |
-| **ComfyUI** | Motor de workflows do Stable Diffusion |
-| **n8n** | Plataforma de automação de workflows visual |
-| **OmniVoice** | TTS zero-shot com clonagem de voz (600+ idiomas) |
-| **Speakr** | Transcrição e anotações com IA |
-| **Open Notebook** | Alternativa self-hosted ao NotebookLM (pesquisa multimodal, podcasts) |
+| **AnythingLLM** | App de RAG — converse com seus documentos, crie agentes, multi-workspace e multiusuário |
+| **Apache Superset** | Exploração e visualização de dados — dashboards, gráficos e SQL sobre qualquer banco |
+| **AppFlowy** | Alternativa open-source ao Notion (workspaces, wikis, tempo real, IA) |
+| **Chatwoot** | Engajamento de cliente omnichannel — chat, e-mail e WhatsApp numa só caixa |
+| **ComfyUI** | UI node-based do Stable Diffusion para geração de imagens (GPU recomendada) |
+| **Dify** | Plataforma de desenvolvimento de apps LLM — crie agentes, workflows, RAG e chatbots |
+| **Flowise** | Construtor visual low-code de apps LLM — fluxos LangChain/LlamaIndex em drag-and-drop |
+| **JupyterLab** | Notebooks interativos para ciência de dados (GPU opcional) |
+| **Khoj** | Segundo cérebro de IA — converse com suas notas, docs e a web, com pesquisa profunda |
+| **Metabase** | BI open-source — faça perguntas aos seus bancos de dados, sem SQL |
+| **n8n** | Plataforma de automação de workflows visual baseada em nós |
+| **OmniVoice** | TTS zero-shot com clonagem e design de voz para 600+ idiomas (requer GPU) |
+| **Onyx** | Assistente de IA empresarial — chat, agentes e busca sobre todos os dados da empresa |
+| **Open Notebook** | Alternativa self-hosted ao NotebookLM — pesquisa multimodal, chat e podcasts |
+| **Open WebUI** | Interface web estilo ChatGPT para LLMs locais e na nuvem |
+| **Scrapling** | Framework de web scraping adaptativo — HTTP stealth, navegadores reais, bypass de Cloudflare |
+| **Speakr** | Transcrição e anotações com IA, com identificação de falantes |
+| **Twenty** | CRM open-source — alternativa moderna a Salesforce e Hubspot |
+| **Voicebox** | Estúdio de voz com IA open-source — clonagem de voz, TTS em 23 idiomas, MCP |
 
 ### Customizando o Catálogo
 
@@ -532,7 +558,7 @@ IAnoIE/
 │       ├── components/       # Componentes UI
 │       ├── pages/            # Componentes de página
 │       └── lib/              # Tipos, utils, constantes
-├── templates/                # 6 templates YAML de apps
+├── templates/                # 19 templates YAML de apps
 ├── docker/
 │   ├── docker-compose.yml    # Compose base (builda do fonte)
 │   ├── docker-compose.dev.yml # Apenas infra p/ dev local
@@ -578,7 +604,7 @@ npm run dev    # http://localhost:5173, proxy /api → localhost:8000
 
 | Variável | Padrão | Descrição |
 |----------|--------|-----------|
-| `APP_NAME` | `IAnoIE` | Nome da aplicação |
+| `APP_NAME` | `Suite AIMization` | Nome da aplicação (marca pública, exibida no título da API e system info) |
 | `DEBUG` | `false` | Modo debug |
 | `POSTGRES_USER` | `ianoie` | Usuário do PostgreSQL |
 | `POSTGRES_PASSWORD` | `change-me-in-production` | Senha do PostgreSQL |

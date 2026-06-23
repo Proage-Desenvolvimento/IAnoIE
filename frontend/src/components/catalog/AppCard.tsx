@@ -1,9 +1,9 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle2, Cpu, ArrowRight, Check, Github } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { AppMedia } from "./AppMedia";
 import { getCategoryColor, getCategoryIcon } from "./constants";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { App } from "@/lib/types";
@@ -18,6 +18,7 @@ interface AppCardProps {
 
 export function AppCard({ app, content, isInstalled, onOpen }: AppCardProps) {
   const { lang, t } = useLanguage();
+  const [logoError, setLogoError] = useState(false);
   const Icon = getCategoryIcon(app.category);
   const colorClass = getCategoryColor(app.category);
 
@@ -29,26 +30,32 @@ export function AppCard({ app, content, isInstalled, onOpen }: AppCardProps) {
   const benefits = (loc?.benefits ?? []).slice(0, 3);
   const categoryLabel = t(`cat.${app.category}`);
 
-  return (
-    <Card className="flex flex-col overflow-hidden transition-shadow hover:shadow-md">
-      {/* Thumbnail / mídia */}
-      <button
-        type="button"
-        onClick={() => onOpen(app)}
-        className="block w-full text-left"
-        aria-label={`${t("card.learnMore")}: ${app.name}`}
-      >
-        <div className="p-3 pb-0">
-          <AppMedia content={content} category={app.category} name={app.name} variant="card" />
-        </div>
-      </button>
+  // Logo do app, quando houver — aparece no card no lugar do ícone de categoria.
+  // A imagem grande (hero/vídeo) só aparece no modal de detalhe.
+  const logo = content?.logo;
+  const showLogo = !!logo && !logoError;
 
-      <CardContent className="flex flex-1 flex-col gap-3 pt-3">
+  return (
+    <Card
+      className="flex cursor-pointer flex-col overflow-hidden transition-shadow hover:shadow-md"
+      onClick={() => onOpen(app)}
+    >
+      <CardContent className="flex flex-1 flex-col gap-3">
         {/* Identidade */}
         <div className="flex items-start gap-2.5">
-          <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${colorClass}`}>
-            <Icon className="h-4 w-4" />
-          </div>
+          {showLogo && logo ? (
+            <img
+              src={logo}
+              alt={app.name}
+              loading="lazy"
+              className="h-8 w-auto max-w-[120px] shrink-0 object-contain"
+              onError={() => setLogoError(true)}
+            />
+          ) : (
+            <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${colorClass}`}>
+              <Icon className="h-4 w-4" />
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
               <h3 className="min-w-0 flex-1 truncate text-sm font-semibold text-zinc-900 leading-tight">
@@ -60,6 +67,7 @@ export function AppCard({ app, content, isInstalled, onOpen }: AppCardProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`${app.name} no GitHub`}
+                  onClick={(e) => e.stopPropagation()}
                   className="shrink-0 rounded-md p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
                 >
                   <Github className="h-3.5 w-3.5" />
@@ -107,14 +115,21 @@ export function AppCard({ app, content, isInstalled, onOpen }: AppCardProps) {
 
       <CardFooter>
         {isInstalled ? (
-          <Link to="/my-apps" className="block w-full">
+          <Link to="/my-apps" className="block w-full" onClick={(e) => e.stopPropagation()}>
             <Button variant="secondary" className="w-full" size="sm">
               <CheckCircle2 className="h-3.5 w-3.5" />
               {t("card.manage")}
             </Button>
           </Link>
         ) : (
-          <Button onClick={() => onOpen(app)} className="w-full" size="sm">
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpen(app);
+            }}
+            className="w-full"
+            size="sm"
+          >
             {t("card.learnMore")}
             <ArrowRight className="h-3.5 w-3.5" />
           </Button>
