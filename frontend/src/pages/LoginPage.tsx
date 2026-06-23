@@ -28,7 +28,7 @@ export function LoginPage() {
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <a href="https://aimization.com/" target="_blank" rel="noopener noreferrer">
-            <img src="/logo-aimization.png" alt="IAnoIE" className="h-[200px] w-auto object-contain" />
+            <img src="/logo-aimization.png" alt="Suite AIMization" className="h-[200px] w-auto object-contain" />
           </a>
         </div>
 

@@ -111,7 +111,7 @@ const ptBR: Dict = {
 
   "terms.acceptance.title": "1. Aceitação dos termos",
   "terms.acceptance.body":
-    "Ao acessar e utilizar a plataforma IAnoIE (a “Plataforma”), você concorda com estes Termos de Uso. Caso não concorde com qualquer parte deles, não utilize a Plataforma.",
+    "Ao acessar e utilizar a plataforma Suite AIMization (a “Plataforma”), você concorda com estes Termos de Uso. Caso não concorde com qualquer parte deles, não utilize a Plataforma.",
 
   "terms.platform.title": "2. Sobre a Plataforma",
   "terms.platform.body":
@@ -248,7 +248,7 @@ const en: Dict = {
 
   "terms.acceptance.title": "1. Acceptance of the terms",
   "terms.acceptance.body":
-    "By accessing and using the IAnoIE platform (the “Platform”), you agree to these Terms of Use. If you do not agree with any part of them, you must not use the Platform.",
+    "By accessing and using the Suite AIMization platform (the “Platform”), you agree to these Terms of Use. If you do not agree with any part of them, you must not use the Platform.",
 
   "terms.platform.title": "2. About the Platform",
   "terms.platform.body":
