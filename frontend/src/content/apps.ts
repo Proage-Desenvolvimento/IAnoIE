@@ -75,7 +75,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   jupyterlab: {
     repo_url: "https://github.com/jupyterlab/jupyterlab",
-    logo: "https://jupyterlab.readthedocs.io/en/latest/_static/logo-rectangle-dark.svg",
+    logo: "https://jupyterlab.readthedocs.io/en/latest/_static/logo-rectangle.svg",
     hero: "/images/apps/jupyterlab.png",
     "pt-br": {
       tagline: "Notebooks interativos para ciência de dados e ML, com GPU.",
