@@ -75,6 +75,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   jupyterlab: {
     repo_url: "https://github.com/jupyterlab/jupyterlab",
+    logo: "https://jupyterlab.readthedocs.io/en/latest/_static/logo-rectangle-dark.svg",
     hero: "/images/apps/jupyterlab.png",
     "pt-br": {
       tagline: "Notebooks interativos para ciência de dados e ML, com GPU.",
@@ -112,6 +113,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   comfyui: {
     repo_url: "https://github.com/Comfy-Org/ComfyUI",
+    logo: "https://comfy.org/icons/logo.svg",
     hero: "/images/apps/comfyui.png",
     "pt-br": {
       tagline: "Geração de imagens por IA com fluxo visual em nós.",
@@ -149,6 +151,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   n8n: {
     repo_url: "https://github.com/n8n-io/n8n",
+    logo: "https://n8n.io/brandguidelines/logo-dark.svg",
     hero: "/images/apps/n8n.png",
     "pt-br": {
       tagline: "Automação de fluxos de trabalho com um editor visual.",
@@ -186,6 +189,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   omnivoice: {
     repo_url: "https://github.com/k2-fsa/OmniVoice",
+    logo: "https://camo.githubusercontent.com/f61a6b9528ca18d4c61d685716b58c72df8898e18f0978c0eb27e915f167b371/68747470733a2f2f7a68752d68616e2e6769746875622e696f2f6f6d6e69766f6963652f706963732f6f6d6e69766f6963652e6a7067",
     hero: "/images/apps/omnivoice.png",
     "pt-br": {
       tagline: "Clonagem e design de voz (TTS) para 600+ idiomas.",
@@ -223,6 +227,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   speakr: {
     repo_url: "https://github.com/murtaza-nasir/speakr",
+    logo: "https://raw.githubusercontent.com/murtaza-nasir/speakr/master/static/img/icon-32x32.png",
     hero: "/images/apps/speakr.png",
     "pt-br": {
       tagline: "Transcrição e anotações com IA, identificando quem fala.",
@@ -260,6 +265,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   voicebox: {
     repo_url: "https://github.com/jamiepine/voicebox",
+    logo: "https://raw.githubusercontent.com/jamiepine/voicebox/main/.github/assets/icon-dark.webp",
     hero: "/images/apps/voicebox.png",
     "pt-br": {
       tagline: "Estúdio de voz com IA: clone vozes, gere fala e dite em qualquer app.",
@@ -301,6 +307,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   "open-notebook": {
     repo_url: "https://github.com/lfnovo/open-notebook",
+    logo: "https://www.open-notebook.ai/hero.svg",
     hero: "/images/apps/open-notebook.png",
     "pt-br": {
       tagline: "Alternativa self-hosted ao NotebookLM.",
@@ -338,6 +345,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   scrapling: {
     repo_url: "https://github.com/D4Vinci/Scrapling",
+    logo: "https://scrapling.readthedocs.io/en/latest/assets/cover_dark.svg",
     hero: "/images/apps/scrapling.png",
     "pt-br": {
       tagline: "Coleta de dados da web que dribla bloqueios — use no terminal ou deixe a IA usar.",
@@ -377,6 +385,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   flowise: {
     repo_url: "https://github.com/FlowiseAI/Flowise",
+    logo: "https://flowiseai.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fworkday-flowise-logo-white.e4a24a3b.png&w=256&q=75",
     "pt-br": {
       tagline: "Monte apps de IA visualmente, arrastando e soltando.",
       description:
@@ -450,6 +459,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   metabase: {
     repo_url: "https://github.com/metabase/metabase",
+    logo: "https://www.metabase.com/images/logo-with-wordmark.svg",
     "pt-br": {
       tagline: "Business intelligence open-source, sem SQL.",
       description:
@@ -486,6 +496,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   khoj: {
     repo_url: "https://github.com/khoj-ai/khoj",
+    logo: "https://camo.githubusercontent.com/aceab34fe2adf75b48319e8893632fc4dcdace9cbb4e2910f7d4106f706f6b90/68747470733a2f2f6173736574732e6b686f6a2e6465762f6b686f6a2d6c6f676f2d73696465776179732d31323030783534302e706e67",
     "pt-br": {
       tagline: "Segundo cérebro com IA para suas notas, docs e a web.",
       description:
@@ -522,6 +533,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   twenty: {
     repo_url: "https://github.com/twentyhq/twenty",
+    logo: "https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-website/public/images/core/logo.svg",
     "pt-br": {
       tagline: "CRM open-source — alternativa moderna a Salesforce e Hubspot.",
       description:
@@ -558,6 +570,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   chatwoot: {
     repo_url: "https://github.com/chatwoot/chatwoot",
+    logo: "https://www.chatwoot.com/brand/on_white.png",
     "pt-br": {
       tagline: "Atendimento omnichannel open-source em uma só caixa.",
       description:
@@ -631,6 +644,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   onyx: {
     repo_url: "https://github.com/onyx-dot-app/onyx",
+    logo: "https://raw.githubusercontent.com/onyx-dot-app/onyx/logo/OnyxLogoCropped.jpg",
     "pt-br": {
       tagline: "Assistente de IA empresarial conectado ao conhecimento da empresa.",
       description:
@@ -667,6 +681,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   appflowy: {
     repo_url: "https://github.com/AppFlowy-IO/AppFlowy",
+    logo: "https://pbs.twimg.com/profile_images/1455082143315496961/hZt2DeOJ.jpg",
     "pt-br": {
       tagline: "Alternativa open-source ao Notion, self-hosted.",
       description:
@@ -703,6 +718,7 @@ export const APP_CONTENT: Record<string, AppContent> = {
 
   dify: {
     repo_url: "https://github.com/langgenius/dify",
+    logo: "https://pbs.twimg.com/profile_images/1998264604145963008/v__dR1kD.jpg",
     "pt-br": {
       tagline: "Plataforma open-source para desenvolver apps com LLM.",
       description:
