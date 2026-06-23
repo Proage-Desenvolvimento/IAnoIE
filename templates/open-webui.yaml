@@ -5,7 +5,7 @@ metadata:
   slug: "open-webui"
   version: "1.0.0"
   description: "ChatGPT-style web interface for local and cloud LLMs"
-  category: "llm"
+  category: "chat"
   icon: "MessageSquare"
   tags: ["chat", "webui", "llm"]
 

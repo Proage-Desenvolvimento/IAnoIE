@@ -9,7 +9,7 @@ metadata:
     Transform audio recordings into organized, searchable notes.
     Supports cloud APIs (OpenAI, Gemini) or local WhisperX (GPU) for transcription.
     Features: smart recording, AI transcription, voice profiles, semantic search, REST API.
-  category: "productivity"
+  category: "transcription"
   icon: "Mic"
   tags: ["transcription", "audio", "notes", "ai"]
 

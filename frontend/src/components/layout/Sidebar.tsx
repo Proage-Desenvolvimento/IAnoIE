@@ -69,6 +69,14 @@ export function Sidebar() {
         >
           Powered by Aimization
         </a>
+        <a
+          href="/terms"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 px-3 py-2 text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
+        >
+          Terms of Use
+        </a>
       </div>
     </aside>
   );

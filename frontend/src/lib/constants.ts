@@ -6,13 +6,18 @@ const _wsScheme =
 export const WS_URL = import.meta.env.VITE_WS_URL || `${_wsScheme}://${window.location.host}`;
 
 export const APP_CATEGORIES = [
-  { value: "llm", label: "LLM & Chat" },
-  { value: "inference", label: "Inference" },
-  { value: "notebook", label: "Notebooks" },
-  { value: "imaging", label: "Image Generation" },
-  { value: "data", label: "Data & Analytics" },
-  { value: "automation", label: "Automation" },
-  { value: "productivity", label: "Productivity" },
+  { value: "chat", label: "Aimization Chat" },
+  { value: "assistant", label: "Aimization Assistant" },
+  { value: "platform", label: "Aimization Platform" },
+  { value: "notebooks", label: "Aimization Notebooks" },
+  { value: "data", label: "Aimization Data" },
+  { value: "scraping", label: "Aimization Scraping" },
+  { value: "image", label: "Aimization Image" },
+  { value: "voice", label: "Aimization Voice" },
+  { value: "transcription", label: "Aimization Transcription" },
+  { value: "automation", label: "Aimization Automation" },
+  { value: "crm", label: "Aimization CRM" },
+  { value: "docs", label: "Aimization Docs" },
 ] as const;
 
 export const STATUS_COLORS: Record<string, string> = {

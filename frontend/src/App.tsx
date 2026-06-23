@@ -8,6 +8,7 @@ import { MyAppsPage } from "@/pages/MyAppsPage";
 import { AppDetailPage } from "@/pages/AppDetailPage";
 import { SystemMonitorPage } from "@/pages/SystemMonitorPage";
 import { LLMProvidersPage } from "@/pages/LLMProvidersPage";
+import { TermsPage } from "@/pages/TermsPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,6 +31,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/terms" element={<TermsPage />} />
           <Route
             element={
               <AuthGuard>

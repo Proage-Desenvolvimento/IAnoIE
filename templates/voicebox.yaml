@@ -13,7 +13,7 @@ metadata:
     Cursor, Cline) a voice you own. Ships a REST API and built-in MCP server.
     Runs entirely locally — models and voice data never leave the machine.
     (This template runs the upstream CPU build; GPU acceleration is a future option.)
-  category: "productivity"
+  category: "voice"
   icon: "AudioLines"
   tags: ["tts", "voice-cloning", "speech", "dictation", "mcp", "ai"]
 

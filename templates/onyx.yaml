@@ -13,7 +13,7 @@ metadata:
     (vector + keyword search) and Redis, with local model servers for embeddings.
     LLM providers (OpenAI, Anthropic, Gemini, any OpenAI-compatible endpoint)
     are configured in the admin UI.
-  category: "llm"
+  category: "assistant"
   icon: "Bot"
   tags: ["llm", "assistant", "rag", "enterprise", "search"]
 

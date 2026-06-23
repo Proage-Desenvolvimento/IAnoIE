@@ -13,7 +13,7 @@ metadata:
     Supports 16+ AI providers (OpenAI, Anthropic, Google, Ollama, LM Studio,
     Groq and more) configured through its own Settings UI. API keys are
     encrypted at rest with OPEN_NOTEBOOK_ENCRYPTION_KEY.
-  category: "notebook"
+  category: "notebooks"
   icon: "Notebook"
   tags: ["notebook", "research", "rag", "podcast", "knowledge"]
 

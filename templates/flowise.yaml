@@ -12,7 +12,7 @@ metadata:
     credentials centrally. Single container with built-in SQLite (PostgreSQL and
     Redis are optional for multi-user / queue mode). LLM providers (OpenAI,
     Anthropic, Google, Ollama, Azure and more) are wired per-node in the editor.
-  category: "automation"
+  category: "platform"
   icon: "Workflow"
   tags: ["llm", "automation", "langchain", "rag", "agents"]
 

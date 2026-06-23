@@ -11,7 +11,7 @@ metadata:
     speaker attributes (gender, age, pitch, accent, dialect), auto language
     detection, and non-verbal symbols. Built on diffusion language models by
     Xiaomi AI Lab / k2-fsa team.
-  category: "productivity"
+  category: "voice"
   icon: "AudioLines"
   tags: ["tts", "voice-cloning", "speech", "multilingual", "ai"]
 

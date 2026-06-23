@@ -5,7 +5,7 @@ metadata:
   slug: "scrapling"
   version: "0.4.1"
   description: "Adaptive web scraping framework — stealth HTTP, real browsers, Cloudflare bypass. Use it from a web terminal (CLI) or expose the MCP server to Claude/Cursor/Claude Code."
-  category: "data"
+  category: "scraping"
   icon: "Globe"
   tags: ["scraping", "mcp", "automation", "data", "extraction"]
   long_description: |

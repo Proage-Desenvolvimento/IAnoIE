@@ -11,7 +11,7 @@ metadata:
     workflows; and connect your mailbox and calendar. Built on PostgreSQL +
     Redis with a background worker. The first user to sign up becomes the
     workspace owner/admin.
-  category: "productivity"
+  category: "crm"
   icon: "Users"
   tags: ["crm", "productivity", "sales"]
 

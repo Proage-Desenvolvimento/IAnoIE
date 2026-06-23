@@ -11,7 +11,7 @@ metadata:
     campaigns; and track conversations across channels. Built on Rails + Sidekiq
     with PostgreSQL (pgvector) + Redis. Migrations run automatically on boot. The
     first account created via the onboarding wizard becomes the owner.
-  category: "productivity"
+  category: "crm"
   icon: "MessagesSquare"
   tags: ["support", "helpdesk", "crm", "omnichannel"]
 

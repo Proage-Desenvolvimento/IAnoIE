@@ -13,7 +13,7 @@ metadata:
     PostgreSQL, Redis and Weaviate (vector store). LLM providers are configured at
     runtime in the admin UI (Model Provider). Set an initial admin password at
     install via the console.
-  category: "llm"
+  category: "platform"
   icon: "Workflow"
   tags: ["llm", "agents", "workflow", "rag"]
 

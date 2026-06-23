@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useLogin } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
+import { PartnerLogo } from "@/components/layout/PartnerLogo";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
@@ -64,16 +66,23 @@ export function LoginPage() {
           </Button>
         </form>
 
-        {/* Powered by */}
-        <div className="mt-6 flex justify-center">
+        {/* Partner / Supporter */}
+        <PartnerLogo className="mt-6" />
+
+        {/* Powered by + Terms of Use */}
+        <div className="mt-6 flex items-center justify-center gap-2 text-xs text-zinc-400">
           <a
             href="https://aimization.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
+            className="hover:text-zinc-600 transition-colors"
           >
             Powered by Aimization
           </a>
+          <span className="text-zinc-300">·</span>
+          <Link to="/terms" className="hover:text-zinc-600 transition-colors">
+            Terms of Use
+          </Link>
         </div>
       </div>
     </div>

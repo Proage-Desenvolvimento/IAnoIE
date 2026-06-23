@@ -12,7 +12,7 @@ metadata:
     external DB required) and supports 30+ LLM providers (OpenAI, Anthropic,
     Gemini, Ollama, Azure, LocalAI and more). The default provider chosen at
     install is injected automatically; refine it later in the app settings.
-  category: "llm"
+  category: "chat"
   icon: "BookOpen"
   tags: ["llm", "rag", "documents", "agents"]
 

@@ -5,6 +5,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { PartnerLogo } from "@/components/layout/PartnerLogo";
 import { formatBytes } from "@/lib/utils";
 import {
   Box,
@@ -210,6 +211,13 @@ export function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Partner / Supporter */}
+      <Card>
+        <CardContent className="px-5 py-6">
+          <PartnerLogo imgClassName="h-20 w-auto object-contain" />
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -5,7 +5,7 @@ metadata:
   slug: "comfyui"
   version: "1.0.0"
   description: "Node-based Stable Diffusion UI for image generation (GPU recommended)"
-  category: "imaging"
+  category: "image"
   icon: "Image"
   tags: ["stable-diffusion", "image-generation", "ai-art"]
 

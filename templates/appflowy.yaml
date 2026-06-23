@@ -12,7 +12,7 @@ metadata:
     MinIO object storage, full-text + semantic search). Open-core: the free tier
     covers 1 user seat + 3 guests. The AppFlowy desktop/mobile client connects to
     this server; a web client is also available.
-  category: "productivity"
+  category: "docs"
   icon: "Notebook"
   tags: ["productivity", "notes", "wiki", "collaboration"]
 

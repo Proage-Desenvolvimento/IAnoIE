@@ -12,7 +12,7 @@ metadata:
     OpenAI-compatible endpoint (Ollama, vLLM). Requires PostgreSQL with the
     pgvector extension. The default LLM provider chosen at install is injected
     automatically; refine models/keys later in the /config wizard.
-  category: "llm"
+  category: "assistant"
   icon: "Sparkles"
   tags: ["llm", "assistant", "rag", "research"]
 
