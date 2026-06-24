@@ -1,0 +1,34 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "mkt22"
+  slug: "mkt22"
+  version: "1.0.0"
+  description: "AI marketing consultant — structures your marketing plan using external research to reduce uncertainty and sharpen the diagnosis."
+  category: "consultores"
+  icon: "Megaphone"
+  tags: ["marketing", "consultant", "ai", "strategy"]
+  long_description: |
+    mkt22 is an AI-powered marketing consultant. It structures your marketing
+    planning using external research whenever it helps reduce uncertainty and
+    improve the diagnosis of your business. Placeholder: installing deploys a
+    lightweight redirect to https://mkt22.com.
+
+gpu:
+  required: false
+
+services:
+  mkt22:
+    image: "nginx"
+    tag: "alpine"
+    internal: false
+    command:
+      - "sh"
+      - "-c"
+      - "printf 'server{listen 80 default_server;server_name _;return 301 https://mkt22.com;}' > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+    ports:
+      - container_port: 80
+        host_port: null
+        protocol: "tcp"
+        expose: true
+    restart: "unless-stopped"

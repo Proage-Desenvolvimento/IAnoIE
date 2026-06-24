@@ -11,6 +11,7 @@ import {
   Workflow,
   Users,
   FileText,
+  Megaphone,
   Wrench,
   type LucideIcon,
 } from "lucide-react";
@@ -29,6 +30,7 @@ export const CATEGORY_ICONS: Record<string, LucideIcon> = {
   automation: Workflow,
   crm: Users,
   docs: FileText,
+  consultores: Megaphone,
 };
 
 /** Classes Tailwind (fundo/texto/borda) por categoria, para badges e ícones. */
@@ -45,6 +47,7 @@ export const CATEGORY_COLORS: Record<string, string> = {
   automation: "bg-orange-50 text-orange-700 border-orange-200",
   crm: "bg-rose-50 text-rose-700 border-rose-200",
   docs: "bg-sky-50 text-sky-700 border-sky-200",
+  consultores: "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200",
 };
 
 export const FALLBACK_ICON: LucideIcon = Wrench;
@@ -71,6 +74,7 @@ export const CATEGORY_GRADIENTS: Record<string, string> = {
   automation: "from-orange-100 to-orange-50",
   crm: "from-rose-100 to-rose-50",
   docs: "from-sky-100 to-sky-50",
+  consultores: "from-fuchsia-100 to-fuchsia-50",
 };
 
 export function getCategoryGradient(category: string): string {

@@ -200,6 +200,16 @@ APPS = [
         "version": "1.14.2",
         "gpu_requirements": '{"min_gpu_count": 0, "min_vram_gb": 0, "gpu_required": false}',
     },
+    {
+        "name": "mkt22",
+        "slug": "mkt22",
+        "description": "AI marketing consultant — structures your marketing plan using external research to reduce uncertainty and sharpen the diagnosis.",
+        "category": "consultores",
+        "template_path": "mkt22.yaml",
+        "icon_url": None,
+        "version": "1.0.0",
+        "gpu_requirements": '{"min_gpu_count": 0, "min_vram_gb": 0, "gpu_required": false}',
+    },
 ]
 
 

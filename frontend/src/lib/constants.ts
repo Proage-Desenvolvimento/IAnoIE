@@ -18,6 +18,7 @@ export const APP_CATEGORIES = [
   { value: "automation", label: "Aimization Automation" },
   { value: "crm", label: "Aimization CRM" },
   { value: "docs", label: "Aimization Docs" },
+  { value: "consultores", label: "Aimization Consultores" },
 ] as const;
 
 export const STATUS_COLORS: Record<string, string> = {

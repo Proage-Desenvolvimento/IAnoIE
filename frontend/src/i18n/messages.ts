@@ -40,6 +40,7 @@ const ptBR: Dict = {
   "cat.automation": "Aimization Automação",
   "cat.crm": "Aimization CRM",
   "cat.docs": "Aimization Docs",
+  "cat.consultores": "Aimization Consultores",
 
   // Card
   "card.learnMore": "Saiba mais",
@@ -186,6 +187,7 @@ const en: Dict = {
   "cat.automation": "Aimization Automation",
   "cat.crm": "Aimization CRM",
   "cat.docs": "Aimization Docs",
+  "cat.consultores": "Aimization Consultants",
 
   "card.learnMore": "Learn more",
   "card.install": "Install",

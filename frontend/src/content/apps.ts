@@ -782,6 +782,33 @@ export const APP_CONTENT: Record<string, AppContent> = {
       ],
     },
   },
+
+  mkt22: {
+    logo: "https://mkt22.com/library/images/logo-mkt22-color.png",
+    hero: "https://mkt22.com/library/images/img-patos-mkt22.png",
+    "pt-br": {
+      tagline:
+        "Consultor de marketing com IA: estrutura seu planejamento com investigação externa para reduzir incertezas e melhorar o diagnóstico.",
+      description:
+        "O mkt22 é um consultor de marketing com inteligência artificial. Ele ajuda a estruturar seu planejamento de marketing usando investigação externa sempre que isso ajudar a reduzir incertezas e melhorar o diagnóstico do seu negócio.",
+      benefits: [
+        "Planejamento de marketing estruturado e orientado por IA",
+        "Investigação externa para reduzir incertezas antes de decidir",
+        "Diagnóstico de mercado mais sólido e fundamentado",
+      ],
+    },
+    en: {
+      tagline:
+        "AI marketing consultant: structures your planning using external research to cut uncertainty and sharpen the diagnosis.",
+      description:
+        "mkt22 is an AI-powered marketing consultant. It helps structure your marketing plan using external research whenever it helps reduce uncertainty and improve the diagnosis of your business.",
+      benefits: [
+        "Structured, AI-guided marketing planning",
+        "External research to reduce uncertainty before deciding",
+        "A more solid, evidence-based market diagnosis",
+      ],
+    },
+  },
 };
 
 /** Conteúdo rico de um app, ou undefined se não houver entrada para o slug. */
