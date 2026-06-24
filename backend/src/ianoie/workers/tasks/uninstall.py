@@ -3,6 +3,7 @@ import json
 import structlog
 
 from ianoie.workers.celery_app import celery_app
+from ianoie.workers.tasks._events import log_event
 
 logger = structlog.get_logger()
 
@@ -47,6 +48,7 @@ def uninstall_app(self, installation_id: int, job_id: int):
         installation = db.get(Installation, installation_id)
         installation.status = InstallationStatus.uninstalling
         db.commit()
+        log_event(installation_id, "info", "Desinstalação iniciada")
 
         container_ids = json.loads(installation.container_ids or "[]")
         if not container_ids and installation.container_id:
@@ -64,9 +66,13 @@ def uninstall_app(self, installation_id: int, job_id: int):
                 logger.info("container_removed", container_id=cid[:12])
             except Exception:
                 pass
+        _update_job(db, job_id, JobStatus.running, 0.6)
+        log_event(installation_id, "info", "Containers removidos")
 
         vol_mgr = VolumeManager(docker_client)
         vol_mgr.remove_installation_volumes(installation_id)
+        _update_job(db, job_id, JobStatus.running, 0.9)
+        log_event(installation_id, "info", "Volumes removidos")
 
         db.delete(installation)
         db.commit()

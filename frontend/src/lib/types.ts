@@ -36,6 +36,13 @@ export interface Installation {
     credentials: { label: string; value: string }[];
     note: string | null;
   } | null;
+  active_job?: {
+    id: number;
+    type: string;
+    status: Job["status"];
+    progress: number;
+    error: string | null;
+  } | null;
   created_at: string;
 }
 

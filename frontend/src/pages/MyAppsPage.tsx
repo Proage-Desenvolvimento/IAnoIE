@@ -2,12 +2,15 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useInstallations, useUninstallApp, useAppAction, useUpdateConfig } from "@/hooks/useInstallations";
 import { useJobPolling } from "@/hooks/useJobPolling";
+import { useInstallLogs } from "@/hooks/useInstallLogs";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
+import { Progress } from "@/components/ui/Progress";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LogViewer } from "@/components/logs/LogViewer";
+import { InstallLogs } from "@/components/logs/InstallLogs";
 import { ConfigForm } from "@/components/config/ConfigForm";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Dialog, DialogHeader, DialogTitle, DialogClose, DialogBody, DialogFooter } from "@/components/ui/Dialog";
@@ -24,6 +27,7 @@ import {
   CheckCircle2,
   XCircle,
   Brain,
+  Terminal,
 } from "lucide-react";
 import type { Installation, TemplateConfigField } from "@/lib/types";
 
@@ -362,6 +366,9 @@ function InstallationRow({
           </div>
         </div>
 
+        {/* Live progress + install/uninstall logs while a job is running */}
+        {isTransitioning && <InstallProgressPanel inst={inst} />}
+
         {/* Access info (URL + credentials declared in the template) */}
         {inst.access && (inst.access.credentials.length > 0 || inst.access.note || inst.access.url) && (
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 border-t border-zinc-100 bg-zinc-50/60 px-5 py-2.5 text-xs">
@@ -395,5 +402,63 @@ function InstallationRow({
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function InstallProgressPanel({ inst }: { inst: Installation }) {
+  const { currentStatus, logs } = useInstallLogs(inst.id);
+  const [showLogs, setShowLogs] = useState(true);
+
+  const job = inst.active_job ?? null;
+  const progress = job?.progress ?? 0;
+  const done = job?.status === "completed";
+  const failed = job?.status === "failed";
+  const isUninstall = inst.status === "uninstalling";
+
+  return (
+    <div className="space-y-3 border-t border-zinc-200 px-5 py-4">
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-zinc-600">
+            {failed
+              ? isUninstall
+                ? "Uninstall failed"
+                : "Install failed"
+              : done
+                ? "Ready"
+                : isUninstall
+                  ? "Uninstalling…"
+                  : "Installing…"}
+          </span>
+          <span className="font-mono text-zinc-500">{(progress * 100).toFixed(0)}%</span>
+        </div>
+        <Progress
+          value={progress}
+          indicatorClassName={done ? "bg-emerald-500" : failed ? "bg-red-500" : undefined}
+        />
+        {!done && !failed && (
+          <p className="flex items-center gap-1.5 text-xs text-zinc-500">
+            <Spinner size="sm" />
+            <span className="truncate">{currentStatus?.message ?? "Preparing…"}</span>
+          </p>
+        )}
+        {job?.error && (
+          <p className="rounded-lg bg-red-50 p-2 text-xs text-red-600">{job.error}</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowLogs((v) => !v)}
+          className="h-7 px-2 text-zinc-500 hover:text-zinc-700"
+        >
+          <Terminal className="h-3.5 w-3.5" />
+          {showLogs ? "Hide logs" : "View logs"}
+        </Button>
+        {showLogs && <InstallLogs logs={logs} />}
+      </div>
+    </div>
   );
 }

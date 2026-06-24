@@ -11,6 +11,20 @@ export function useInstallations(page = 1) {
   return useQuery({
     queryKey: ["installations", page],
     queryFn: () => getInstallations(page),
+    // Auto-refresh while any installation is mid-transition (install/uninstall) or has a
+    // non-terminal active job, so status badges + progress update live. Stops when idle.
+    refetchInterval: (query) => {
+      const items = query.state.data?.items ?? [];
+      const busy = items.some(
+        (i) =>
+          i.status === "pending" ||
+          i.status === "installing" ||
+          i.status === "uninstalling" ||
+          (i.active_job != null &&
+            (i.active_job.status === "pending" || i.active_job.status === "running")),
+      );
+      return busy ? 2000 : false;
+    },
   });
 }
 

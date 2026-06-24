@@ -10,7 +10,7 @@ from ianoie.models.installation import Installation, InstallationStatus
 from ianoie.models.job import Job, JobStatus, JobType
 from ianoie.models.user import User
 from ianoie.schemas.common import PaginatedResponse
-from ianoie.schemas.installation import AccessCredential, AccessInfo, InstallationResponse
+from ianoie.schemas.installation import AccessCredential, AccessInfo, InstallationResponse, JobSummary
 
 
 class InstallationService:
@@ -34,15 +34,18 @@ class InstallationService:
         result = await self.db.execute(query.offset((page - 1) * per_page).limit(per_page))
         installations = result.scalars().all()
 
+        active_jobs = await self._active_jobs_map([i.id for i in installations])
+
         items = []
         for inst in installations:
-            items.append(await self._to_response(inst))
+            items.append(await self._to_response(inst, active_job=active_jobs.get(inst.id)))
 
         return PaginatedResponse(items=items, total=total, page=page, per_page=per_page)
 
     async def get_installation(self, installation_id: int, user: User) -> InstallationResponse:
         inst = await self._get_owned(installation_id, user.id)
-        return await self._to_response(inst)
+        active_jobs = await self._active_jobs_map([inst.id])
+        return await self._to_response(inst, active_job=active_jobs.get(inst.id))
 
     async def create_installation(
         self,
@@ -213,7 +216,38 @@ class InstallationService:
             raise InstallationNotFound(installation_id)
         return inst
 
-    async def _to_response(self, inst: Installation) -> InstallationResponse:
+    async def _active_jobs_map(self, installation_ids: list[int]) -> dict[int, Job]:
+        """Latest non-terminal (pending/running) job per installation_id, in a single query.
+        Drives the live progress bar on the UI without an N+1."""
+        if not installation_ids:
+            return {}
+        stmt = (
+            select(Job)
+            .distinct(Job.installation_id)  # DISTINCT ON (installation_id) — Postgres
+            .where(
+                Job.installation_id.in_(installation_ids),
+                Job.status.in_([JobStatus.pending, JobStatus.running]),
+            )
+            .order_by(Job.installation_id, Job.created_at.desc())
+        )
+        rows = (await self.db.execute(stmt)).scalars().all()
+        return {j.installation_id: j for j in rows}
+
+    @staticmethod
+    def _job_summary(job: Optional[Job]) -> Optional[JobSummary]:
+        if job is None:
+            return None
+        return JobSummary(
+            id=job.id,
+            type=job.type.value,
+            status=job.status.value,
+            progress=job.progress,
+            error=job.error,
+        )
+
+    async def _to_response(
+        self, inst: Installation, active_job: Optional[Job] = None
+    ) -> InstallationResponse:
         app_result = await self.db.execute(select(App).where(App.id == inst.app_id))
         app = app_result.scalar_one()
 
@@ -249,6 +283,7 @@ class InstallationService:
             llm_provider_type=llm_provider_type,
             llm_model=inst.llm_model,
             access=access,
+            active_job=self._job_summary(active_job),
             created_at=inst.created_at,
         )
 

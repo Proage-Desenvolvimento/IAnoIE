@@ -28,6 +28,18 @@ class AccessInfo(BaseModel):
     note: Optional[str] = None
 
 
+class JobSummary(BaseModel):
+    """Active (non-terminal) job for an installation — drives the live progress bar on the UI."""
+
+    id: int
+    type: str
+    status: str
+    progress: float
+    error: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
 class InstallationResponse(BaseModel):
     id: int
     app_id: int
@@ -45,6 +57,7 @@ class InstallationResponse(BaseModel):
     llm_provider_type: Optional[str] = None
     llm_model: Optional[str] = None
     access: Optional[AccessInfo] = None
+    active_job: Optional[JobSummary] = None
     created_at: datetime.datetime
 
     model_config = {"from_attributes": True}
