@@ -27,7 +27,7 @@ export function AppCard({ app, content, isInstalled, onOpen }: AppCardProps) {
 
   const loc = content ? content[lang] : undefined;
   const tagline = loc?.tagline ?? app.description;
-  const benefits = (loc?.benefits ?? []).slice(0, 3);
+  const benefits = loc?.benefits ?? [];
   const categoryLabel = t(`cat.${app.category}`);
 
   // Logo do app, quando houver — aparece no card no lugar do ícone de categoria.
@@ -100,7 +100,7 @@ export function AppCard({ app, content, isInstalled, onOpen }: AppCardProps) {
           )}
         </div>
 
-        {/* Benefícios (até 3) */}
+        {/* Benefícios */}
         {benefits.length > 0 && (
           <ul className="mt-auto space-y-1.5">
             {benefits.map((b) => (
