@@ -49,6 +49,8 @@ interface ProviderFormData {
   is_default: boolean;
 }
 
+type TestResult = { success: boolean; message: string; models: string[] };
+
 const emptyForm: ProviderFormData = {
   name: "",
   provider_type: "openai",
@@ -61,7 +63,7 @@ export function LLMProvidersPage() {
   const [showDialog, setShowDialog] = useState(false);
   const [editingProvider, setEditingProvider] = useState<LLMProvider | null>(null);
   const [form, setForm] = useState<ProviderFormData>(emptyForm);
-  const [testResult, setTestResult] = useState<{ success: boolean; message: string; models: string[] } | null>(null);
+  const [testResults, setTestResults] = useState<Record<number, TestResult>>({});
   const [testingId, setTestingId] = useState<number | null>(null);
   const [showModels, setShowModels] = useState<number | null>(null);
 
@@ -75,7 +77,6 @@ export function LLMProvidersPage() {
   const handleOpenCreate = () => {
     setEditingProvider(null);
     setForm(emptyForm);
-    setTestResult(null);
     setShowDialog(true);
   };
 
@@ -88,7 +89,6 @@ export function LLMProvidersPage() {
       base_url: provider.base_url || PROVIDER_CONFIG[provider.provider_type]?.defaultBaseUrl || "",
       is_default: provider.is_default,
     });
-    setTestResult(null);
     setShowDialog(true);
   };
 
@@ -117,12 +117,14 @@ export function LLMProvidersPage() {
 
   const handleTest = async (id: number) => {
     setTestingId(id);
-    setTestResult(null);
     try {
       const result = await testConnection.mutateAsync(id);
-      setTestResult(result);
+      setTestResults((prev) => ({ ...prev, [id]: result }));
     } catch {
-      setTestResult({ success: false, message: "Connection test failed", models: [] });
+      setTestResults((prev) => ({
+        ...prev,
+        [id]: { success: false, message: "Connection test failed", models: [] },
+      }));
     }
     setTestingId(null);
   };
@@ -134,6 +136,24 @@ export function LLMProvidersPage() {
   };
 
   const selectedTypeConfig = PROVIDER_CONFIG[form.provider_type];
+
+  const renderTestResult = (result: TestResult) => (
+    <div
+      className={`rounded-lg border p-3 text-sm ${
+        result.success
+          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+          : "border-red-200 bg-red-50 text-red-700"
+      }`}
+    >
+      <div className="flex items-center gap-2 font-medium">
+        {result.success ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+        {result.message}
+      </div>
+      {result.models.length > 0 && (
+        <p className="mt-1 text-xs opacity-80">{result.models.length} models available</p>
+      )}
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -256,7 +276,7 @@ export function LLMProvidersPage() {
                         </Button>
                       )}
                     </div>
-                    {testingId === null && testResult && testingId !== provider.id && null}
+                    {testResults[provider.id] && renderTestResult(testResults[provider.id])}
                     {showModels === provider.id && provider.models.length > 0 && (
                       <div className="mt-2 max-h-32 overflow-y-auto rounded-lg border border-zinc-200 p-2">
                         {provider.models.map((m) => (
@@ -354,23 +374,12 @@ export function LLMProvidersPage() {
           </label>
 
           {/* Test result inside dialog */}
-          {testResult && (
-            <div className={`rounded-lg border p-3 text-sm ${
-              testResult.success
-                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                : "border-red-200 bg-red-50 text-red-700"
-            }`}>
-              <div className="flex items-center gap-2 font-medium">
-                {testResult.success ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                {testResult.message}
-              </div>
-              {testResult.models.length > 0 && (
-                <p className="mt-1 text-xs opacity-80">
-                  {testResult.models.length} models available
-                </p>
-              )}
+          {editingProvider && (
+            <div className="text-xs text-zinc-400">
+              Tests use the <strong>saved</strong> key — Save Changes first to test new credentials.
             </div>
           )}
+          {editingProvider && testResults[editingProvider.id] && renderTestResult(testResults[editingProvider.id])}
         </DialogBody>
         <DialogFooter>
           <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
