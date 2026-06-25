@@ -89,19 +89,9 @@ const ptBR: Dict = {
   // Instalação — configuração
   "install.configTitle": "Configuração",
 
-  // Progresso
-  "progress.installing": "Instalando...",
-  "progress.done": "Instalado com sucesso",
-  "progress.failed": "Falha na instalação",
-  "progress.preparing": "Preparando...",
-  "progress.ready": "Pronto para uso",
-  "progress.viewLogs": "Ver logs",
-  "progress.hideLogs": "Ocultar logs",
-
   // Botões do dialog
   "btn.cancel": "Cancelar",
   "btn.close": "Fechar",
-  "btn.hide": "Ocultar",
   "btn.installNow": "Instalar agora",
   "btn.installing": "Instalando...",
 
@@ -229,17 +219,8 @@ const en: Dict = {
 
   "install.configTitle": "Configuration",
 
-  "progress.installing": "Installing...",
-  "progress.done": "Installed successfully",
-  "progress.failed": "Installation failed",
-  "progress.preparing": "Preparing...",
-  "progress.ready": "Ready to use",
-  "progress.viewLogs": "View logs",
-  "progress.hideLogs": "Hide logs",
-
   "btn.cancel": "Cancel",
   "btn.close": "Close",
-  "btn.hide": "Hide",
   "btn.installNow": "Install now",
   "btn.installing": "Installing...",
 

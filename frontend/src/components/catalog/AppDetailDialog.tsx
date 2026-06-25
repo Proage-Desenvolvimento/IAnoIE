@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Download,
   Cpu,
   CheckCircle2,
-  XCircle,
   Brain,
-  Terminal,
   Check,
   Sparkles,
   Github,
@@ -21,18 +19,14 @@ import {
   DialogFooter,
 } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
-import { Progress } from "@/components/ui/Progress";
 import { Spinner } from "@/components/ui/Spinner";
 import { ConfigForm } from "@/components/config/ConfigForm";
-import { InstallLogs } from "@/components/logs/InstallLogs";
 import { AppMedia } from "./AppMedia";
 import { getCategoryColor, getCategoryIcon, PROVIDER_LABELS } from "./constants";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useGpuMetrics } from "@/hooks/useGpuMetrics";
 import { useLLMProviders } from "@/hooks/useLLMProviders";
 import { useInstallApp } from "@/hooks/useInstallations";
-import { useJobPolling } from "@/hooks/useJobPolling";
-import { useInstallLogs } from "@/hooks/useInstallLogs";
 import { getTemplateConfig } from "@/api/apps";
 import type { App, TemplateConfigField, TemplateConfig } from "@/lib/types";
 import type { AppContent } from "@/content/apps";
@@ -46,11 +40,9 @@ interface AppDetailDialogProps {
 
 export function AppDetailDialog({ app, content, isInstalled, onClose }: AppDetailDialogProps) {
   const { lang, t } = useLanguage();
+  const navigate = useNavigate();
 
   const [gpuIndices, setGpuIndices] = useState<number[]>([0]);
-  const [activeJobId, setActiveJobId] = useState<number | null>(null);
-  const [activeInstallationId, setActiveInstallationId] = useState<number | null>(null);
-  const [showInstallLogs, setShowInstallLogs] = useState(false);
   const [templateConfigFields, setTemplateConfigFields] = useState<TemplateConfigField[]>([]);
   const [templateLlmConfig, setTemplateLlmConfig] = useState<TemplateConfig["llm"] | null>(null);
   const [templateGpuConfig, setTemplateGpuConfig] = useState<TemplateConfig["gpu"] | null>(null);
@@ -61,22 +53,6 @@ export function AppDetailDialog({ app, content, isInstalled, onClose }: AppDetai
   const { data: gpuStatus } = useGpuMetrics();
   const { data: llmProviders } = useLLMProviders();
   const installApp = useInstallApp();
-
-  const isInstalling = activeJobId !== null;
-
-  const jobQuery = useJobPolling(activeJobId, () => {
-    // Auto-fechar 2s após concluir, como no fluxo original.
-    window.setTimeout(() => onClose(), 2000);
-  });
-
-  const jobDone = jobQuery.data?.status === "completed";
-  const jobFailed = jobQuery.data?.status === "failed";
-  const jobTerminal = jobDone || jobFailed;
-  const closeDisabled = isInstalling && !jobTerminal;
-
-  const { logs: installLogLines, currentStatus } = useInstallLogs(
-    isInstalling ? activeInstallationId : null,
-  );
 
   const selectedProvider = llmProviders?.find((p) => p.id === selectedProviderId);
   const availableModels = selectedProvider?.models ?? [];
@@ -93,9 +69,6 @@ export function AppDetailDialog({ app, content, isInstalled, onClose }: AppDetai
     if (!app) return;
     let cancelled = false;
     setGpuIndices([0]);
-    setActiveJobId(null);
-    setActiveInstallationId(null);
-    setShowInstallLogs(false);
     setConfigValues({});
     setTemplateConfigFields([]);
     setTemplateLlmConfig(null);
@@ -171,10 +144,9 @@ export function AppDetailDialog({ app, content, isInstalled, onClose }: AppDetai
         llm_model: selectedModel || null,
       },
       {
-        onSuccess: (res) => {
-          setActiveJobId(res.job_id);
-          setActiveInstallationId(res.installation_id);
-          setShowInstallLogs(false);
+        onSuccess: () => {
+          onClose();
+          navigate("/my-apps");
         },
       },
     );
@@ -183,9 +155,7 @@ export function AppDetailDialog({ app, content, isInstalled, onClose }: AppDetai
   return (
     <Dialog
       open={!!app}
-      onClose={() => {
-        if (!closeDisabled) onClose();
-      }}
+      onClose={onClose}
       panelClassName="max-w-2xl"
     >
       <DialogHeader>
@@ -212,11 +182,7 @@ export function AppDetailDialog({ app, content, isInstalled, onClose }: AppDetai
             <p className="mt-0.5 text-xs text-zinc-400">v{app.version} · {categoryLabel}</p>
           </div>
         </div>
-        <DialogClose
-          onClose={() => {
-            if (!closeDisabled) onClose();
-          }}
-        />
+        <DialogClose onClose={onClose} />
       </DialogHeader>
 
       <DialogBody className="max-h-[72vh] space-y-5 overflow-y-auto">
@@ -289,7 +255,7 @@ export function AppDetailDialog({ app, content, isInstalled, onClose }: AppDetai
         </section>
 
         {/* Já instalado */}
-        {isInstalled && !isInstalling && (
+        {isInstalled && (
           <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 p-3">
             <div className="flex items-center gap-2 text-sm text-emerald-700">
               <CheckCircle2 className="h-4 w-4" />
@@ -301,62 +267,10 @@ export function AppDetailDialog({ app, content, isInstalled, onClose }: AppDetai
           </div>
         )}
 
-        {/* Instalação — controles (configurar) vs progresso */}
+        {/* Instalação — configuração (GPU / provedor de IA / config) */}
         {!isInstalled && (
-          isInstalling ? (
-            <div className="space-y-3 border-t border-zinc-200 pt-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-zinc-600">
-                    {jobDone ? t("progress.done") : jobFailed ? t("progress.failed") : t("progress.installing")}
-                  </span>
-                  <span className="font-mono text-zinc-500">
-                    {jobQuery.data ? `${(jobQuery.data.progress * 100).toFixed(0)}%` : "0%"}
-                  </span>
-                </div>
-                <Progress
-                  value={jobQuery.data?.progress ?? 0}
-                  indicatorClassName={jobDone ? "bg-emerald-500" : jobFailed ? "bg-red-500" : undefined}
-                />
-                {!jobDone && !jobFailed && (
-                  <p className="flex items-center gap-1.5 text-xs text-zinc-500">
-                    <Spinner size="sm" />
-                    <span className="truncate">{currentStatus?.message ?? t("progress.preparing")}</span>
-                  </p>
-                )}
-                {jobQuery.data?.error && (
-                  <p className="rounded-lg bg-red-50 p-2 text-xs text-red-600">{jobQuery.data.error}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowInstallLogs((v) => !v)}
-                  className="h-7 px-2 text-zinc-500 hover:text-zinc-700"
-                >
-                  <Terminal className="h-3.5 w-3.5" />
-                  {showInstallLogs ? t("progress.hideLogs") : t("progress.viewLogs")}
-                </Button>
-                {showInstallLogs && <InstallLogs logs={installLogLines} />}
-              </div>
-              {jobDone && (
-                <div className="flex items-center gap-2 text-emerald-600">
-                  <CheckCircle2 className="h-5 w-5" />
-                  <span className="text-sm font-medium">{t("progress.ready")}</span>
-                </div>
-              )}
-              {jobFailed && (
-                <div className="flex items-center gap-2 text-red-600">
-                  <XCircle className="h-5 w-5" />
-                  <span className="text-sm font-medium">{t("progress.failed")}</span>
-                </div>
-              )}
-            </div>
-          ) : (
-            <>
-              {/* Atribuição de GPU */}
+          <>
+            {/* Atribuição de GPU */}
               {(hasGpus || gpuRequired) && (
                 <div className="border-t border-zinc-200 pt-4">
                   <label className="text-sm font-medium text-zinc-700">{t("install.gpuAssignment")}</label>
@@ -466,16 +380,11 @@ export function AppDetailDialog({ app, content, isInstalled, onClose }: AppDetai
                 </div>
               )}
             </>
-          )
         )}
       </DialogBody>
 
       <DialogFooter>
-        {isInstalling ? (
-          <Button variant="outline" onClick={onClose}>
-            {jobTerminal ? t("btn.close") : t("btn.hide")}
-          </Button>
-        ) : isInstalled ? (
+        {isInstalled ? (
           <Button variant="outline" onClick={onClose}>{t("btn.close")}</Button>
         ) : (
           <>
