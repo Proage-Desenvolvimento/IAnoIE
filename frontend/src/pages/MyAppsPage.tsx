@@ -25,6 +25,7 @@ import {
   Box,
   Settings,
   CheckCircle2,
+  Download,
   XCircle,
   Brain,
   Terminal,
@@ -142,6 +143,12 @@ export function MyAppsPage() {
                 setPendingActionId(inst.id);
                 action.mutate({ id: inst.id, action: "restart" }, { onSettled: () => setPendingActionId(null) });
               }}
+              onUpdate={() => {
+                if (confirm(`Update ${inst.app_name} to the latest version? Your data and settings are preserved. There's a brief restart.`)) {
+                  setPendingActionId(inst.id);
+                  action.mutate({ id: inst.id, action: "update" }, { onSettled: () => setPendingActionId(null) });
+                }
+              }}
               onUninstall={() => {
                 if (confirm(`Uninstall ${inst.app_name}? This will remove all data.`)) {
                   uninstall.mutate(inst.id);
@@ -248,6 +255,7 @@ interface InstallationRowProps {
   onStart: () => void;
   onStop: () => void;
   onRestart: () => void;
+  onUpdate: () => void;
   onUninstall: () => void;
   isPending: boolean;
 }
@@ -260,12 +268,18 @@ function InstallationRow({
   onStart,
   onStop,
   onRestart,
+  onUpdate,
   onUninstall,
   isPending,
 }: InstallationRowProps) {
   const isRunning = inst.status === "running";
   const isStopped = inst.status === "stopped";
   const isTransitioning = inst.status === "installing" || inst.status === "uninstalling" || inst.status === "pending";
+  // A non-terminal job (e.g. a long image pull during "update") keeps the row busy
+  // — spinner + disabled actions — for the whole job, not just the POST ack.
+  const jobBusy =
+    !!inst.active_job && (inst.active_job.status === "pending" || inst.active_job.status === "running");
+  const rowBusy = isPending || jobBusy;
   const dateStr = new Date(inst.created_at).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
@@ -306,7 +320,7 @@ function InstallationRow({
 
           {/* Actions */}
           <div className="flex items-center gap-1">
-            {isPending && <Spinner size="sm" />}
+            {rowBusy && <Spinner size="sm" />}
 
             {/* Open link */}
             {isRunning && (
@@ -339,27 +353,34 @@ function InstallationRow({
               </Button>
             )}
 
+            {/* Update — pull latest image and recreate (available unless mid-transition) */}
+            {!isTransitioning && (
+              <Button variant="ghost" size="icon" title="Atualizar" onClick={onUpdate} disabled={rowBusy}>
+                <Download className="h-4 w-4" />
+              </Button>
+            )}
+
             {/* Lifecycle controls */}
             {isRunning && (
               <>
-                <Button variant="ghost" size="icon" title="Stop" onClick={onStop} disabled={isPending}>
+                <Button variant="ghost" size="icon" title="Stop" onClick={onStop} disabled={rowBusy}>
                   <Square className="h-3.5 w-3.5" />
                 </Button>
-                <Button variant="ghost" size="icon" title="Restart" onClick={onRestart} disabled={isPending}>
+                <Button variant="ghost" size="icon" title="Restart" onClick={onRestart} disabled={rowBusy}>
                   <RotateCw className="h-3.5 w-3.5" />
                 </Button>
               </>
             )}
 
             {isStopped && (
-              <Button variant="ghost" size="icon" title="Start" onClick={onStart} disabled={isPending}>
+              <Button variant="ghost" size="icon" title="Start" onClick={onStart} disabled={rowBusy}>
                 <Play className="h-4 w-4 text-emerald-600" />
               </Button>
             )}
 
             {/* Uninstall */}
             {!isTransitioning && (
-              <Button variant="ghost" size="icon" title="Uninstall" onClick={onUninstall} disabled={isPending} className="text-red-500 hover:text-red-600 hover:bg-red-50">
+              <Button variant="ghost" size="icon" title="Uninstall" onClick={onUninstall} disabled={rowBusy} className="text-red-500 hover:text-red-600 hover:bg-red-50">
                 <Trash2 className="h-4 w-4" />
               </Button>
             )}

@@ -12,6 +12,7 @@ celery_app = Celery(
         "ianoie.workers.tasks.install",
         "ianoie.workers.tasks.uninstall",
         "ianoie.workers.tasks.reconfigure",
+        "ianoie.workers.tasks.update",
     ],
 )
 

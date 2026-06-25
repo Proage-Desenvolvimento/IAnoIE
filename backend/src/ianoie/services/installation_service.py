@@ -164,6 +164,28 @@ class InstallationService:
 
         return {"installation_id": inst.id, "job_id": job.id}
 
+    async def update(self, installation_id: int, user: User) -> dict:
+        """Pull the latest image(s) and recreate the containers.
+
+        Unlike ``update_config``, this does NOT touch the stored config — the
+        task reuses the existing settings and only refreshes the images.
+        """
+        inst = await self._get_owned(installation_id, user.id)
+
+        job = Job(
+            type=JobType.update,
+            installation_id=inst.id,
+            status=JobStatus.pending,
+        )
+        self.db.add(job)
+        await self.db.commit()
+        await self.db.refresh(job)
+
+        from ianoie.workers.tasks.update import update_app
+        update_app.delay(inst.id, job.id)
+
+        return {"installation_id": inst.id, "job_id": job.id}
+
     async def update_config(
         self, installation_id: int, user: User, config: dict,
         llm_provider_id: Optional[int] = None,

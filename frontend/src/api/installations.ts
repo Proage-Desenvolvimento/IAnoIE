@@ -22,7 +22,7 @@ export async function deleteInstallation(id: number) {
   return api.delete(`api/v1/installations/${id}`).json<{ installation_id: number; job_id: number }>();
 }
 
-export async function actionInstallation(id: number, action: "start" | "stop" | "restart") {
+export async function actionInstallation(id: number, action: "start" | "stop" | "restart" | "update") {
   return api.post(`api/v1/installations/${id}/${action}`).json<{ installation_id: number; job_id: number }>();
 }
 

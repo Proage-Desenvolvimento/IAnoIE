@@ -62,7 +62,7 @@ export function useUninstallApp() {
 export function useAppAction() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, action }: { id: number; action: "start" | "stop" | "restart" }) =>
+    mutationFn: ({ id, action }: { id: number; action: "start" | "stop" | "restart" | "update" }) =>
       actionInstallation(id, action),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["installations"] });

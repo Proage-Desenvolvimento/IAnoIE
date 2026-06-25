@@ -113,6 +113,16 @@ async def restart_installation(
     return await svc.restart(installation_id, current_user)
 
 
+@router.post("/{installation_id}/update", status_code=202)
+async def update_installation(
+    installation_id: int,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    svc = InstallationService(db)
+    return await svc.update(installation_id, current_user)
+
+
 @router.patch("/{installation_id}/config", status_code=202)
 async def update_installation_config(
     installation_id: int,

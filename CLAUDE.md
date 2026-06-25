@@ -163,7 +163,7 @@ IAnoIE/
 ### Funcionalidades — Fase 2
 - [ ] Multi-user com roles (admin/user/viewer)
 - [ ] Backup/restore de volumes
-- [ ] App update flow (pull new image, recreate container)
+- [x] App update flow (pull new image, recreate container) — botão "Atualizar" no MyApps → `POST /api/v1/installations/{id}/update` → task `update_app` (`workers/tasks/update.py`): baixa a imagem (`docker pull`) **antes** de remover o container antigo e recria preservando config + volumes; logs ao vivo via `log_event`
 - [ ] Custom domain por app
 - [x] HTTPS com Let's Encrypt (Traefik TLS + cert resolver) — já no `docker-compose.yml` (certresolver `le`, HTTP-01); emite um cert por subdomínio de app também
 - [ ] Dashboard de uso de recursos (CPU/memória por container)
