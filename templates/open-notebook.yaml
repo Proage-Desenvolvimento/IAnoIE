@@ -89,6 +89,10 @@ services:
     user: "0:0"
 
     environment:
+      # Required behind a reverse proxy: tells the Next.js frontend its public
+      # origin so it can proxy /api/* to the FastAPI backend (port 5055).
+      # No /api suffix — Open Notebook appends it automatically.
+      API_URL: "{{public_url}}"
       OPEN_NOTEBOOK_ENCRYPTION_KEY: "{{config.encryption_key}}"
       SURREAL_URL: "ws://{{services.surrealdb}}:8000/rpc"
       SURREAL_USER: "root"

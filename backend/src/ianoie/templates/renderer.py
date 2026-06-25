@@ -41,6 +41,10 @@ class TemplateRenderer:
         # network, so templates can reference a sibling service with
         # {{services.<name>}} (e.g. ws://{{services.surrealdb}}:8000/rpc).
         service_hosts = {name: f"ianoie-{installation_id}-{name}" for name in services}
+        # Public HTTPS origin for this installation — single source of truth shared
+        # with the Traefik Host rule (same {app_slug}-{installation_id}.{APP_DOMAIN}),
+        # so templates can reference it via {{public_url}} (e.g. API_URL).
+        public_url = f"https://{app_slug}-{installation_id}.{_APP_DOMAIN}"
         configs = []
 
         # Extract LLM connection env from template if present
@@ -62,7 +66,9 @@ class TemplateRenderer:
             config = ContainerConfig(
                 name=f"ianoie-{installation_id}-{svc_name}",
                 image=f"{svc['image']}:{svc.get('tag', 'latest')}",
-                environment=self._render_env(environment, user_config, llm_config, service_hosts),
+                environment=self._render_env(
+                    environment, user_config, llm_config, service_hosts, public_url,
+                ),
                 labels=self._build_labels(svc_name, svc, installation_id, user_config, app_slug),
                 network="ianoie-proxy",
                 restart_policy=svc.get("restart", "unless-stopped"),
@@ -86,7 +92,7 @@ class TemplateRenderer:
 
     def _render_env(
         self, env: dict, user_config: dict, llm_config: dict | None = None,
-        service_hosts: dict | None = None,
+        service_hosts: dict | None = None, public_url: str | None = None,
     ) -> dict[str, str]:
         rendered = {}
         for key, value in env.items():
@@ -103,6 +109,9 @@ class TemplateRenderer:
                 if "{{services." in value and service_hosts:
                     for svc_name, host in service_hosts.items():
                         value = value.replace(f"{{{{services.{svc_name}}}}}", host)
+                # {{public_url}} -> the installation's public HTTPS origin (no trailing slash)
+                if public_url and "{{public_url}}" in value:
+                    value = value.replace("{{public_url}}", public_url)
             rendered[key] = str(value)
         return rendered
 
