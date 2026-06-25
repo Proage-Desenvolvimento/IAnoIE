@@ -1,7 +1,12 @@
 import base64
 import hashlib
+import os
 
 from ianoie.docker_ops.container_manager import ContainerConfig
+
+# Produção é HTTPS-only em websecure (:443); :80 é redirecionado p/ :443.
+# Routers de app precisam ancorar no host público p/ o Traefik selecionar o cert TLS.
+_APP_DOMAIN = os.environ.get("APP_DOMAIN", "").strip()
 
 
 def _sha1_basic_auth_hash(password: str) -> str:
@@ -132,10 +137,15 @@ class TemplateRenderer:
             middlewares = f"{router_name}-strip"
             if auth_mw:
                 middlewares = f"{middlewares},{auth_mw}"
+            path_rule = f"PathPrefix(`/app/{inst_id}/`)"
+            rule = f"Host(`{_APP_DOMAIN}`) && {path_rule}" if _APP_DOMAIN else path_rule
             labels.update({
                 "traefik.enable": "true",
-                f"traefik.http.routers.{router_name}.rule": f"PathPrefix(`/app/{inst_id}/`)",
-                f"traefik.http.routers.{router_name}.entrypoints": "web",
+                f"traefik.http.routers.{router_name}.rule": rule,
+                f"traefik.http.routers.{router_name}.entrypoints": "websecure",
+                f"traefik.http.routers.{router_name}.tls": "true",
+                f"traefik.http.routers.{router_name}.tls.certresolver": "le",
+                f"traefik.http.routers.{router_name}.priority": "100",
                 f"traefik.http.services.{router_name}.loadbalancer.server.port": (
                     str(port_cfg["container_port"])
                 ),
@@ -156,6 +166,7 @@ class TemplateRenderer:
         base = f"/app/{inst_id}"
         sibling_paths = [r["path"] for r in svc["routes"] if r.get("path")]
         labels["traefik.enable"] = "true"
+        host_prefix = f"Host(`{_APP_DOMAIN}`) && " if _APP_DOMAIN else ""
         for route in svc["routes"]:
             path = route.get("path", "") or ""
             port = route["port"]
@@ -163,16 +174,19 @@ class TemplateRenderer:
             router = f"ianoie-{inst_id}-{svc_name}-{slug}"
             prefix = f"{base}/{path}" if path else base
             if path:
-                rule = f"PathPrefix(`{prefix}`)"
+                rule = f"{host_prefix}PathPrefix(`{prefix}`)"
             else:
                 exclusions = "".join(f" && !PathPrefix(`{base}/{p}`)" for p in sibling_paths)
-                rule = f"PathPrefix(`{base}/`){exclusions}"
+                rule = f"{host_prefix}PathPrefix(`{base}/`){exclusions}"
             middlewares = f"{router}-strip"
             if auth_mw:
                 middlewares = f"{middlewares},{auth_mw}"
             labels.update({
                 f"traefik.http.routers.{router}.rule": rule,
-                f"traefik.http.routers.{router}.entrypoints": "web",
+                f"traefik.http.routers.{router}.entrypoints": "websecure",
+                f"traefik.http.routers.{router}.tls": "true",
+                f"traefik.http.routers.{router}.tls.certresolver": "le",
+                f"traefik.http.routers.{router}.priority": "100",
                 f"traefik.http.services.{router}.loadbalancer.server.port": str(port),
                 f"traefik.http.middlewares.{router}-strip.stripprefix.prefixes": prefix,
                 f"traefik.http.routers.{router}.middlewares": middlewares,
