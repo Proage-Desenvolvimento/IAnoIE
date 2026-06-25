@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     app_name: str = "Suite AIMization"
     debug: bool = False
 
+    # Public domain — installed apps are routed as {slug}-{id}.<app_domain>
+    app_domain: str = "suite.aimization.com"
+
     # PostgreSQL
     database_url: str = "postgresql+asyncpg://ianoie:ianoie@localhost:5432/ianoie"
     database_url_sync: str = "postgresql+psycopg2://ianoie:ianoie@localhost:5432/ianoie"

@@ -26,6 +26,7 @@ class TemplateRenderer:
         user_config: dict,
         installation_id: int,
         gpu_uuids: list[str],
+        app_slug: str,
         llm_config: dict | None = None,
     ) -> list[ContainerConfig]:
         services = template["services"]
@@ -62,7 +63,7 @@ class TemplateRenderer:
                 name=f"ianoie-{installation_id}-{svc_name}",
                 image=f"{svc['image']}:{svc.get('tag', 'latest')}",
                 environment=self._render_env(environment, user_config, llm_config, service_hosts),
-                labels=self._build_labels(svc_name, svc, installation_id, user_config),
+                labels=self._build_labels(svc_name, svc, installation_id, user_config, app_slug),
                 network="ianoie-proxy",
                 restart_policy=svc.get("restart", "unless-stopped"),
                 healthcheck=self._build_healthcheck(svc.get("healthcheck")),
@@ -107,6 +108,7 @@ class TemplateRenderer:
 
     def _build_labels(
         self, svc_name: str, svc: dict, inst_id: int, user_config: dict | None = None,
+        app_slug: str = "",
     ) -> dict[str, str]:
         labels = {
             "ianoie.managed": "true",
@@ -121,27 +123,30 @@ class TemplateRenderer:
         auth_mw = self._build_auth_labels(svc, svc_name, inst_id, user_config, labels)
 
         if svc.get("routes"):
-            self._build_route_labels(svc_name, svc, inst_id, auth_mw, labels)
+            self._build_route_labels(svc_name, svc, inst_id, app_slug, auth_mw, labels)
         else:
-            self._build_port_labels(svc_name, svc, inst_id, auth_mw, labels)
+            self._build_port_labels(svc_name, svc, inst_id, app_slug, auth_mw, labels)
         return labels
 
     def _build_port_labels(
-        self, svc_name: str, svc: dict, inst_id: int, auth_mw: str | None, labels: dict[str, str],
+        self, svc_name: str, svc: dict, inst_id: int, app_slug: str,
+        auth_mw: str | None, labels: dict[str, str],
     ) -> None:
-        """Legacy single-path exposure via ``ports`` (one Traefik router). Backward compatible."""
+        """Expose a service on its own subdomain ``{app_slug}-{inst_id}.{APP_DOMAIN}``.
+
+        The app runs at the root of its subdomain, so no StripPrefix is needed and
+        assets referenced with absolute paths (``/assets/...``) resolve correctly.
+        """
         for port_cfg in svc.get("ports", []):
             if not port_cfg.get("expose", True):
                 continue
             router_name = f"ianoie-{inst_id}-{svc_name}"
-            middlewares = f"{router_name}-strip"
-            if auth_mw:
-                middlewares = f"{middlewares},{auth_mw}"
-            path_rule = f"PathPrefix(`/app/{inst_id}/`)"
-            rule = f"Host(`{_APP_DOMAIN}`) && {path_rule}" if _APP_DOMAIN else path_rule
+            subdomain = f"{app_slug}-{inst_id}"
             labels.update({
                 "traefik.enable": "true",
-                f"traefik.http.routers.{router_name}.rule": rule,
+                f"traefik.http.routers.{router_name}.rule": (
+                    f"Host(`{subdomain}.{_APP_DOMAIN}`)"
+                ),
                 f"traefik.http.routers.{router_name}.entrypoints": "websecure",
                 f"traefik.http.routers.{router_name}.tls": "true",
                 f"traefik.http.routers.{router_name}.tls.certresolver": "le",
@@ -149,38 +154,42 @@ class TemplateRenderer:
                 f"traefik.http.services.{router_name}.loadbalancer.server.port": (
                     str(port_cfg["container_port"])
                 ),
-                f"traefik.http.middlewares.{router_name}-strip.stripprefix.prefixes": (
-                    f"/app/{inst_id}"
-                ),
-                f"traefik.http.routers.{router_name}.middlewares": middlewares,
             })
+            if auth_mw:
+                labels[f"traefik.http.routers.{router_name}.middlewares"] = auth_mw
 
     def _build_route_labels(
-        self, svc_name: str, svc: dict, inst_id: int, auth_mw: str | None, labels: dict[str, str],
+        self, svc_name: str, svc: dict, inst_id: int, app_slug: str,
+        auth_mw: str | None, labels: dict[str, str],
     ) -> None:
         """Multi-path exposure via ``routes`` — one Traefik router per ``{path, port}``.
 
-        Each router gets its own StripPrefix middleware so the backend sees the request at ``/``.
-        The root route (``path: ""``) excludes its sibling sub-paths so it doesn't shadow them.
+        All routes share the installation's subdomain ``{app_slug}-{inst_id}.{APP_DOMAIN}``.
+        Each non-root route keeps its own StripPrefix so the backend sees it at ``/``;
+        the root route (``path: ""``) excludes its sibling sub-paths so it doesn't shadow them.
         """
-        base = f"/app/{inst_id}"
+        subdomain = f"{app_slug}-{inst_id}"
+        host = f"Host(`{subdomain}.{_APP_DOMAIN}`)"
         sibling_paths = [r["path"] for r in svc["routes"] if r.get("path")]
         labels["traefik.enable"] = "true"
-        host_prefix = f"Host(`{_APP_DOMAIN}`) && " if _APP_DOMAIN else ""
         for route in svc["routes"]:
             path = route.get("path", "") or ""
             port = route["port"]
             slug = path or "root"
             router = f"ianoie-{inst_id}-{svc_name}-{slug}"
-            prefix = f"{base}/{path}" if path else base
             if path:
-                rule = f"{host_prefix}PathPrefix(`{prefix}`)"
+                prefix = f"/{path}"
+                rule = f"{host} && PathPrefix(`{prefix}`)"
+                labels[f"traefik.http.middlewares.{router}-strip.stripprefix.prefixes"] = prefix
+                middlewares = f"{router}-strip"
+                if auth_mw:
+                    middlewares = f"{middlewares},{auth_mw}"
+                labels[f"traefik.http.routers.{router}.middlewares"] = middlewares
             else:
-                exclusions = "".join(f" && !PathPrefix(`{base}/{p}`)" for p in sibling_paths)
-                rule = f"{host_prefix}PathPrefix(`{base}/`){exclusions}"
-            middlewares = f"{router}-strip"
-            if auth_mw:
-                middlewares = f"{middlewares},{auth_mw}"
+                exclusions = "".join(f" && !PathPrefix(`/{p}`)" for p in sibling_paths)
+                rule = f"{host}{exclusions}"
+                if auth_mw:
+                    labels[f"traefik.http.routers.{router}.middlewares"] = auth_mw
             labels.update({
                 f"traefik.http.routers.{router}.rule": rule,
                 f"traefik.http.routers.{router}.entrypoints": "websecure",
@@ -188,8 +197,6 @@ class TemplateRenderer:
                 f"traefik.http.routers.{router}.tls.certresolver": "le",
                 f"traefik.http.routers.{router}.priority": "100",
                 f"traefik.http.services.{router}.loadbalancer.server.port": str(port),
-                f"traefik.http.middlewares.{router}-strip.stripprefix.prefixes": prefix,
-                f"traefik.http.routers.{router}.middlewares": middlewares,
             })
 
     def _build_auth_labels(

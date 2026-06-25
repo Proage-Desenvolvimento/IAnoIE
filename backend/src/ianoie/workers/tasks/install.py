@@ -153,7 +153,8 @@ def install_app(self, installation_id: int, job_id: int):
         # Render container configs from template
         renderer = TemplateRenderer()
         container_configs = renderer.render(
-            template, user_config, installation_id, gpu_uuids, llm_config=llm_config,
+            template, user_config, installation_id, gpu_uuids,
+            app_slug=app.slug, llm_config=llm_config,
         )
 
         # Pull images and create containers in dependency order

@@ -67,7 +67,7 @@ export function AppDetailPage() {
         <div className="flex items-center gap-1.5">
           {isRunning && (
             <>
-              <Button variant="outline" size="sm" onClick={() => window.open(`/app/${inst.id}/`, "_blank")}>
+              <Button variant="outline" size="sm" onClick={() => inst.access?.url && window.open(inst.access.url, "_blank")}>
                 <ExternalLink className="h-3.5 w-3.5" /> Open
               </Button>
               <Button variant="outline" size="sm" onClick={() => action.mutate({ id: inst.id, action: "stop" })}>

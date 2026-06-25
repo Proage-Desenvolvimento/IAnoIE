@@ -310,7 +310,7 @@ function InstallationRow({
 
             {/* Open link */}
             {isRunning && (
-              <Button variant="ghost" size="icon" title="Open application" onClick={() => window.open(`/app/${inst.id}/`, "_blank")}>
+              <Button variant="ghost" size="icon" title="Open application" onClick={() => inst.access?.url && window.open(inst.access.url, "_blank")}>
                 <ExternalLink className="h-4 w-4" />
               </Button>
             )}

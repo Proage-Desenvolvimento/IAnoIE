@@ -4,6 +4,7 @@ from typing import Optional
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ianoie.config import settings
 from ianoie.core.exceptions import AppNotFound, InstallationConflict, InstallationNotFound
 from ianoie.models.app import App
 from ianoie.models.installation import Installation, InstallationStatus
@@ -265,6 +266,13 @@ class InstallationService:
                 llm_provider_type = provider.provider_type.value
 
         access = self._resolve_access(app, inst.id, json.loads(inst.config) if inst.config else {})
+        # Apps are routed by subdomain ({slug}-{id}.<app_domain>), not by path —
+        # the subdomain is the source of truth for the access URL.
+        app_url = f"https://{app.slug}-{inst.id}.{settings.app_domain}/"
+        if access is None:
+            access = AccessInfo(url=app_url)
+        else:
+            access.url = app_url
 
         return InstallationResponse(
             id=inst.id,
