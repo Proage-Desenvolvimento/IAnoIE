@@ -1,12 +1,29 @@
 import base64
 import hashlib
 import os
+import platform
 
 from ianoie.docker_ops.container_manager import ContainerConfig
 
 # Produção é HTTPS-only em websecure (:443); :80 é redirecionado p/ :443.
 # Routers de app precisam ancorar no host público p/ o Traefik selecionar o cert TLS.
 _APP_DOMAIN = os.environ.get("APP_DOMAIN", "").strip()
+
+# Map the host's CPU architecture onto the docker image arch labels used by a
+# template's optional `arch.<arch>` override block (e.g. amd64 vs arm64 images).
+# The api/worker containers run the host's native arch, so platform.machine()
+# reflects the host an installed app will actually run on.
+_ARCH_BY_MACHINE = {
+    "x86_64": "amd64",
+    "amd64": "amd64",
+    "aarch64": "arm64",
+    "arm64": "arm64",
+}
+
+
+def _detect_host_arch() -> str:
+    """Return ``amd64`` or ``arm64`` for the current host (default ``amd64``)."""
+    return _ARCH_BY_MACHINE.get(platform.machine().lower(), "amd64")
 
 
 def _sha1_basic_auth_hash(password: str) -> str:
@@ -50,8 +67,16 @@ class TemplateRenderer:
         # Extract LLM connection env from template if present
         llm_connection_env = template.get("llm", {}).get("connection_env", {})
 
+        host_arch = _detect_host_arch()
         for svc_name in ordered:
-            svc = services[svc_name]
+            svc = dict(services[svc_name])
+            # Optional per-arch override (e.g. amd64 vs arm64 images). Keys in
+            # the override replace the base service's (image, environment,
+            # volumes, ports, healthcheck, ...); templates without an `arch`
+            # block are unaffected. Popped so it never reaches ContainerConfig.
+            arch_override = svc.pop("arch", {}).get(host_arch)
+            if arch_override:
+                svc.update(arch_override)
 
             # Build environment: start with service env, merge LLM connection env
             environment = dict(svc.get("environment", {}))

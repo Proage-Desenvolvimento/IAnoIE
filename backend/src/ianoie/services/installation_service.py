@@ -347,16 +347,23 @@ class InstallationService:
             if key and "default" in field and cfg.get(key) in (None, ""):
                 cfg[key] = field["default"]
 
+        # Public subdomain URL for this installation — same construction as the
+        # Traefik Host label (templates.renderer), so access blocks can reference
+        # {{public_url}} (e.g. an MCP endpoint at {{public_url}}/mcp). access.url
+        # is overridden with this URL by the caller anyway; this mainly lets
+        # note/credentials resolve to the real subdomain.
+        public_url = f"https://{app.slug}-{installation_id}.{settings.app_domain}"
+
         def _interp(value):
             if not isinstance(value, str):
                 return value
+            value = value.replace("{{public_url}}", public_url)
+            value = value.replace("{installation_id}", str(installation_id))
             for config_key, config_val in cfg.items():
                 value = value.replace(f"{{{{config.{config_key}}}}}", str(config_val))
             return value
 
         url = _interp(raw.get("url"))
-        if url:
-            url = url.replace("{installation_id}", str(installation_id))
         credentials = [
             AccessCredential(label=c.get("label", ""), value=_interp(c.get("value")) or "")
             for c in raw.get("credentials", [])

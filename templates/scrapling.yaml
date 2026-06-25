@@ -72,7 +72,7 @@ services:
     restart: "unless-stopped"
 
 access:
-  url: "/app/{installation_id}/"
+  url: "{{public_url}}/"
   credentials:
     - label: "Username"
       value: "{{config.username}}"
@@ -81,5 +81,5 @@ access:
   note: |
     Browser: open this app → a web terminal. Run `scrapling shell` (interactive) or
     `scrapling extract get <url> out.md`. For Claude Desktop / Cursor / Claude Code: add an
-    MCP server with transport "Streamable HTTP", URL
-    http://<your-host>:8888/app/{installation_id}/mcp and these username:token credentials.
+    MCP server with transport "Streamable HTTP", URL {{public_url}}/mcp and these
+    username:token credentials.

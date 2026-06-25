@@ -132,9 +132,13 @@ fi
 # --- decide which services to rebuild ---
 SERVICES=()
 RECREATE_ALL=false
+BUILD_APPS=()
 if [ -n "$SERVICES_OVERRIDE" ]; then
   SERVICES=( $SERVICES_OVERRIDE )
-elif [ "$REBUILD_ALL" = true ] || [ "$FIRST_RUN" = true ] || [ -z "$PREV_COMMIT" ]; then
+elif [ "$REBUILD_ALL" = true ]; then
+  SERVICES=( "${SOURCE_SERVICES[@]}" )
+  BUILD_APPS=( scrapling omnivoice voicebox )
+elif [ "$FIRST_RUN" = true ] || [ -z "$PREV_COMMIT" ]; then
   SERVICES=( "${SOURCE_SERVICES[@]}" )
   [ "$FIRST_RUN" = true ] && info "First update.sh run — rebuilding all source services to establish the baseline."
 else
@@ -142,7 +146,12 @@ else
   if echo "$CHANGED" | grep -q '^backend/';  then SERVICES+=(api worker beat); fi
   if echo "$CHANGED" | grep -q '^frontend/'; then SERVICES+=(frontend); fi
   if echo "$CHANGED" | grep -qE '^(docker/|\.env)'; then RECREATE_ALL=true; fi
-  if [ ${#SERVICES[@]} -eq 0 ] && [ "$RECREATE_ALL" = false ]; then
+  # Custom app images are NOT built by compose (only their Dockerfiles ship in
+  # docker/<app>/), so a Dockerfile change needs an explicit image rebuild.
+  echo "$CHANGED" | grep -q '^docker/scrapling/' && BUILD_APPS+=(scrapling)
+  echo "$CHANGED" | grep -q '^docker/omnivoice/' && BUILD_APPS+=(omnivoice)
+  echo "$CHANGED" | grep -q '^docker/voicebox/' && BUILD_APPS+=(voicebox)
+  if [ ${#SERVICES[@]} -eq 0 ] && [ "$RECREATE_ALL" = false ] && [ ${#BUILD_APPS[@]} -eq 0 ]; then
     ok "Changes only in non-build files (templates/scripts/docs)."
     ok "Templates are bind-mounted → already live. Nothing to rebuild."
     exit 0
@@ -158,6 +167,15 @@ fi
 if [ "$RECREATE_ALL" = true ]; then
   info "docker-compose.yml / .env changed — recreating all services ..."
   "${COMPOSE[@]}" up -d --remove-orphans
+fi
+
+# --- rebuild custom app images whose Dockerfile changed (not handled by compose) ---
+# These images (scrapling/omnivoice/voicebox) aren't compose services, so `up -d`
+# never builds them. BUILD_APPS is set above on --rebuild-all or when docker/<app>/
+# changed between commits. Skips gracefully if build-apps.sh isn't present.
+if [ ${#BUILD_APPS[@]} -gt 0 ] && [ -f "$REPO_DIR/scripts/build-apps.sh" ]; then
+  info "Rebuilding custom app images: ${BUILD_APPS[*]} ..."
+  bash "$REPO_DIR/scripts/build-apps.sh" "${BUILD_APPS[@]}" || warn "One or more app image builds failed — see above."
 fi
 
 # --- health check ---

@@ -275,6 +275,20 @@ cd "$INSTALL_DIR"
 docker compose up -d
 ok "Services started"
 
+# --- Step 11b: Build custom app images (scrapling/omnivoice/voicebox) ---
+# These apps reference operator-built images that docker-compose/CI never produce.
+# The curl-bootstrap layout only carries templates/ + docker-compose.yml, so the
+# docker/<app>/ Dockerfiles (and build-apps.sh) exist only when INSTALL_DIR is a
+# full git clone. Gate on BUILD_APPS (default on) and on the Dockerfiles being
+# present; otherwise just tell the operator how to build them later.
+if [ "${BUILD_APPS:-1}" = "1" ] && [ -f "${INSTALL_DIR}/docker/scrapling/Dockerfile" ] && [ -f "${INSTALL_DIR}/scripts/build-apps.sh" ]; then
+  info "Building custom app images (scrapling/omnivoice/voicebox) ..."
+  bash "${INSTALL_DIR}/scripts/build-apps.sh" || warn "Some custom app images failed to build — fix and rebuild before installing those apps"
+else
+  info "Custom app images (scrapling/omnivoice/voicebox) are not auto-built in this layout."
+  info "  To enable them, clone the repo and run: ./scripts/build-apps.sh"
+fi
+
 # --- Step 12: Wait for Health ---
 echo ""
 info "Waiting for services to become healthy..."

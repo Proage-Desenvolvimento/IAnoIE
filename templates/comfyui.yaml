@@ -3,7 +3,7 @@ $schema: "ianoie-template/v1"
 metadata:
   name: "ComfyUI"
   slug: "comfyui"
-  version: "1.0.0"
+  version: "1.1.0"
   description: "Node-based Stable Diffusion UI for image generation (GPU recommended)"
   category: "image"
   icon: "Image"
@@ -19,12 +19,18 @@ config: []
 
 services:
   comfyui:
-    image: "ghcr.io/ai-dock/comfyui"
-    tag: "latest"
+    # Clean, no-auth ComfyUI image. Replaces ghcr.io/ai-dock/comfyui, which
+    # bundles the AI-Dock auth "Service Portal" and 302'd to
+    # http://localhost:1111/login behind the reverse proxy. This image serves
+    # ComfyUI directly on :8188 — no login, no internal portal.
+    #
+    # Default = amd64 hosts (x86 VPS with NVIDIA). yanwk/comfyui-boot already
+    # launches ComfyUI with `--listen --port 8188` (binds 0.0.0.0:8188), so no
+    # environment is required. ComfyUI is installed at /root/ComfyUI.
+    # On x86 Blackwell (RTX 50xx) or driver >=580 hosts, prefer tag cu130-slim-v2.
+    image: "yanwk/comfyui-boot"
+    tag: "cu126-slim"
     internal: false
-
-    environment:
-      CLI_ARGS: "--listen 0.0.0.0"
 
     ports:
       - container_port: 8188
@@ -34,21 +40,42 @@ services:
 
     volumes:
       - name: "comfyui-models"
-        mount_path: "/opt/ComfyUI/models"
+        mount_path: "/root/ComfyUI/models"
         mode: "rw"
       - name: "comfyui-output"
-        mount_path: "/opt/ComfyUI/output"
+        mount_path: "/root/ComfyUI/output"
         mode: "rw"
 
     gpu:
       enabled: true
       count: 1
 
+    # python3 one-liner instead of curl: these slim images may not ship curl,
+    # but ComfyUI is Python so the interpreter is present.
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8188"]
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8188/', timeout=5)"]
       interval: 30
       timeout: 10
       retries: 5
-      start_period: 60
+      start_period: 90
 
     restart: "unless-stopped"
+
+    # ---- aarch64 hosts (e.g. NVIDIA DGX Spark / GB10 Grace Blackwell) ----
+    # yanwk is amd64-only, so override the image here. The renderer selects this
+    # block automatically from the host arch (see renderer._detect_host_arch).
+    # Only image/tag are overridden; ports/volumes/healthcheck/gpu are inherited.
+    #
+    # DGX SPARK CAVEAT: the GB10 is compute capability sm_121 and needs CUDA
+    # 13.0+ kernels. A CUDA-12.x arm64 image fails at runtime with
+    # "no kernel image is available for execution on the device".
+    # `howeszy/comfyui-arm64` claims Grace/Blackwell support but is UNVERIFIED
+    # (no public docs; in-container path and listen behaviour unknown). For a
+    # guaranteed-working DGX Spark setup, build SparkyUI on the Spark
+    # (https://github.com/ecarmen16/SparkyUI -> image `sparkyui:cu130`) and set
+    # image/tag below to that locally-built image, adding environment/volume
+    # overrides if its layout differs from /root/ComfyUI.
+    arch:
+      arm64:
+        image: "howeszy/comfyui-arm64"
+        tag: "0.3.65-root"
