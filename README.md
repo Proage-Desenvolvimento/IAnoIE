@@ -33,7 +33,7 @@ Browser (React) → Traefik (:80/:443) → FastAPI (:8000) → PostgreSQL
                                  → Redis (broker + backend)
 ```
 
-- **Traefik** discovers containers via Docker labels and routes by path `/app/{id}/`
+- **Traefik** discovers containers via Docker labels. The UI/API run on `Host(${APP_DOMAIN})`; each installed app gets its own subdomain `{slug}-{id}.${APP_DOMAIN}` with HTTPS via Let's Encrypt (one cert per app). Requires a wildcard DNS record `*.${APP_DOMAIN}` → your host, set to **DNS only (no Cloudflare proxy)** so the ACME HTTP-01 challenge on port 80 isn't intercepted
 - **Celery** tasks use a synchronous session (psycopg2); FastAPI uses async (asyncpg)
 - **YAML templates** define apps; a renderer converts them into Docker configs with Traefik labels + GPU device requests
 - **LLM Providers** (OpenAI/Gemini/Anthropic/Ollama) are managed with API keys encrypted via Fernet; the default provider is injected into each app container
@@ -282,6 +282,8 @@ npm run dev    # http://localhost:5173, proxies /api → localhost:8000
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `APP_NAME` | `Suite AIMization` | Application name (public brand, shown in API title and system info) |
+| `APP_DOMAIN` | `suite.aimization.com` | Public domain — base of each app's subdomain (`{slug}-{id}.${APP_DOMAIN}`) and the Traefik `Host` for the UI/API. Requires wildcard DNS `*.` → your host (lowercase) |
+| `ACME_EMAIL` | `admin@aimization.com` | Let's Encrypt email (certificate issuance + expiry notices) |
 | `DEBUG` | `false` | Debug mode |
 | `POSTGRES_USER` | `ianoie` | PostgreSQL user |
 | `POSTGRES_PASSWORD` | `change-me-in-production` | PostgreSQL password |
@@ -356,7 +358,7 @@ Browser (React) → Traefik (:80/:443) → FastAPI (:8000) → PostgreSQL
                                  → Redis (broker + backend)
 ```
 
-- O **Traefik** descobre containers via labels Docker e faz roteamento por path `/app/{id}/`
+- O **Traefik** descobre containers via labels Docker. A UI/API rodam em `Host(${APP_DOMAIN})`; cada app instalado ganha seu próprio subdomínio `{slug}-{id}.${APP_DOMAIN}` com HTTPS via Let's Encrypt (um cert por app). Requer DNS wildcard `*.${APP_DOMAIN}` → seu host, em **DNS only (sem proxy do Cloudflare)** para o challenge ACME HTTP-01 na porta 80 não ser interceptado
 - As tasks do **Celery** usam sessão síncrona (psycopg2); o FastAPI usa async (asyncpg)
 - **Templates YAML** definem as apps; um renderer converte em configs Docker com labels Traefik + device requests de GPU
 - **LLM Providers** (OpenAI/Gemini/Anthropic/Ollama) são gerenciados com chaves de API criptografadas via Fernet; o provider padrão é injetado no container de cada app
@@ -605,6 +607,8 @@ npm run dev    # http://localhost:5173, proxy /api → localhost:8000
 | Variável | Padrão | Descrição |
 |----------|--------|-----------|
 | `APP_NAME` | `Suite AIMization` | Nome da aplicação (marca pública, exibida no título da API e system info) |
+| `APP_DOMAIN` | `suite.aimization.com` | Domínio público — base do subdomínio de cada app (`{slug}-{id}.${APP_DOMAIN}`) e `Host` do Traefik para UI/API. Requer DNS wildcard `*.` → seu host (lowercase) |
+| `ACME_EMAIL` | `admin@aimization.com` | E-mail do Let's Encrypt (emissão + aviso de expiração do certificado) |
 | `DEBUG` | `false` | Modo debug |
 | `POSTGRES_USER` | `ianoie` | Usuário do PostgreSQL |
 | `POSTGRES_PASSWORD` | `change-me-in-production` | Senha do PostgreSQL |

@@ -19,7 +19,7 @@ Browser (React) -> Traefik (:80/:443 TLS) -> FastAPI (:8000) -> PostgreSQL
                                    -> Redis (broker + backend)
 ```
 
-- Traefik (portas host 80/443) descobre containers via labels Docker e faz roteamento por path `/app/{id}/`
+- Traefik (portas host 80/443, redirect 80→443) descobre containers via labels Docker. A UI/API rodam em `Host(${APP_DOMAIN})`; cada app instalado roda em seu próprio subdomínio `{slug}-{id}.${APP_DOMAIN}` (label `Host(...)` em `websecure`, com cert Let's Encrypt)
 - Celery tasks usam sessão síncrona (psycopg2); FastAPI usa async (asyncpg)
 - Templates YAML definem apps; renderer converte em configs Docker com labels Traefik + GPU device_requests
 - LLM Providers (OpenAI/Gemini/Anthropic/Ollama): chaves de API criptografadas com Fernet em `core/crypto.py`; o provider padrão é injetado como variável de ambiente no container da instalação
@@ -165,7 +165,7 @@ IAnoIE/
 - [ ] Backup/restore de volumes
 - [ ] App update flow (pull new image, recreate container)
 - [ ] Custom domain por app
-- [ ] HTTPS com Let's Encrypt (Traefik TLS + cert resolver)
+- [x] HTTPS com Let's Encrypt (Traefik TLS + cert resolver) — já no `docker-compose.yml` (certresolver `le`, HTTP-01); emite um cert por subdomínio de app também
 - [ ] Dashboard de uso de recursos (CPU/memória por container)
 
 ### Funcionalidades — Fase 3
@@ -255,6 +255,7 @@ O script detecta sozinho o que rebuildar (compara o commit antigo com o novo):
 - **LLM Providers:** chaves de API nunca ficam em texto plano — `core/crypto.py` (Fernet) grava na coluna `api_key_encrypted` de `LLMProvider`; o provider marcado como padrão é injetado como variável de ambiente no container da instalação
 - **Auth:** JWT no header `Authorization: Bearer <token>`, armazenado em `localStorage` no frontend
 - **Rotas API:** tudo sob `/api/v1/`; WebSocket em `/api/v1/ws/logs/{id}?token=`
+- **Roteamento dos apps instalados:** cada instalação é exposta no subdomínio `{slug}-{id}.${APP_DOMAIN}` (o renderer gera label `Host(...)` em `websecure`, **sem StripPrefix** — o app roda na raiz, então assets de path absoluto tipo `/assets/...` funcionam; sub-path quebrava SPAs como n8n). `APP_DOMAIN` vem de `settings.app_domain` (`config.py`); `access.url` da `InstallationResponse` é `https://{slug}-{id}.{APP_DOMAIN}/`. TLS por **HTTP-01 por host** (certresolver `le` no compose; um cert por subdomínio). **Pré-requisito de deploy:** DNS wildcard `*.${APP_DOMAIN}` (A record → VPS) em **DNS only (grey cloud)** no Cloudflare — proxy laranja quebra o challenge ACME na porta 80. Sem API token de DNS-01, não há wildcard cert; limite ~50 apps novos/semana (renovação automática/silenciosa). Bug conhecido: `404 Certificate not found` no log do Traefik = order ACME stale → `docker restart ianoie-traefik` (ou reconfigure do app) força order nova. Labels de container são imutáveis: apps instalados antes de uma mudança no renderer precisam de **reconfigure** pra pegar os labels novos.
 - **Frontend API client:** ky com interceptor JWT e redirect 401 -> /login
 - **Páginas bilíngues (pt-br/en):** as páginas `/catalog` e `/terms` são bilíngues e focadas em gestor. O i18n é **leve e escopado a essas páginas** (`frontend/src/i18n/` — `LanguageContext.tsx` + `messages.ts`, React Context puro, **sem react-i18next**); o resto do app segue em inglês. O conteúdo de marketing (tagline, **benefícios em tópicos**, casos de uso, requisitos, mídia) vive no **frontend** em `frontend/src/content/apps.ts` (key por slug) — **não no modelo `App`/DB**. Motivo: o projeto usa `create_all` (sem Alembic), então adicionar colunas exigiria `ALTER TABLE` manual, e os apps são fixos (seed). Editar copy = editar este arquivo TS. Mídia: `hero` (path em `frontend/public/images/apps/<slug>.png`) e `video` (URL YouTube) — sem eles, `components/catalog/AppMedia.tsx` mostra um placeholder gradiente. Não proponha migrar i18n/conteúdo para o backend a menos que o usuário peça.
 
@@ -292,7 +293,7 @@ docker run --rm --gpus all ubuntu nvidia-smi -L
 |----------|---------|-----------|
 | `APP_NAME` | `Suite AIMization` | Nome da aplicação (marca pública exibida no título da API/system info) |
 | `DEBUG` | `false` | Modo debug |
-| `APP_DOMAIN` | `suite.aimization.com` | Domínio público (regra `Host` do Traefik + cert TLS) — lowercase |
+| `APP_DOMAIN` | `suite.aimization.com` | Domínio público — base do subdomínio de cada app (`{slug}-{id}.${APP_DOMAIN}`) e `Host` do Traefik para UI/API + cert TLS. Requer DNS wildcard `*.` → VPS (lowercase) |
 | `ACME_EMAIL` | `admin@aimization.com` | E-mail do Let's Encrypt (emissão + aviso de expiração do cert) |
 | `POSTGRES_USER` | `ianoie` | Usuário do PostgreSQL |
 | `POSTGRES_PASSWORD` | `change-me-in-production` | Senha do PostgreSQL |
