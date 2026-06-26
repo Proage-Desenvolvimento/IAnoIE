@@ -9,6 +9,7 @@ import { AppDetailDialog } from "@/components/catalog/AppDetailDialog";
 import { LanguageToggle } from "@/components/catalog/LanguageToggle";
 import { LanguageProvider, useLanguage } from "@/i18n/LanguageContext";
 import { APP_CATEGORIES } from "@/lib/constants";
+import { getCategoryIcon, getCategoryColor } from "@/components/catalog/constants";
 import { getAppContent } from "@/content/apps";
 import type { App } from "@/lib/types";
 
@@ -21,6 +22,15 @@ function CatalogContent() {
   const { data, isLoading, isError, refetch } = useApps({ category, search: search || undefined });
   const { data: installationsData } = useInstallations();
   const installedAppIds = new Set((installationsData?.items ?? []).map((i) => i.app_id));
+
+  // Apps retornados pela API (já filtrados por categoria/search no backend).
+  const items = data?.items ?? [];
+
+  // Agrupa por categoria na ordem de APP_CATEGORIES. Se uma categoria está
+  // selecionada, só ela aparece (mantendo o cabeçalho). Seções sem apps somem.
+  const sections = APP_CATEGORIES.filter((cat) => !category || cat.value === category)
+    .map((cat) => ({ cat, apps: items.filter((a) => a.category === cat.value) }))
+    .filter((section) => section.apps.length > 0);
 
   return (
     <div className="space-y-6">
@@ -68,28 +78,55 @@ function CatalogContent() {
         </div>
       </div>
 
-      {/* Grid de apps */}
+      {/* Seções por categoria (cabeçalho + grid de apps) */}
       {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-72 animate-pulse rounded-xl border border-zinc-200 bg-zinc-50" />
+        <div className="space-y-10">
+          {[0, 1].map((s) => (
+            <div key={s} className="space-y-4">
+              <div className="h-6 w-56 animate-pulse rounded bg-zinc-100" />
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-72 animate-pulse rounded-xl border border-zinc-200 bg-zinc-50" />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       ) : isError ? (
         <ErrorState onRetry={() => refetch()} />
-      ) : (data?.items.length ?? 0) === 0 ? (
+      ) : sections.length === 0 ? (
         <EmptyState title={t("catalog.noResults")} description={t("catalog.noResultsHint")} />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {data?.items.map((app) => (
-            <AppCard
-              key={app.id}
-              app={app}
-              content={getAppContent(app.slug)}
-              isInstalled={installedAppIds.has(app.id)}
-              onOpen={setSelectedApp}
-            />
-          ))}
+        <div className="space-y-10">
+          {sections.map(({ cat, apps }) => {
+            const Icon = getCategoryIcon(cat.value);
+            return (
+              <section key={cat.value} className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${getCategoryColor(cat.value)}`}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <h2 className="text-lg font-semibold text-zinc-900">{t(`cat.${cat.value}`)}</h2>
+                    <p className="text-sm text-zinc-500">{t(`cat.${cat.value}.desc`)}</p>
+                  </div>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {apps.map((app) => (
+                    <AppCard
+                      key={app.id}
+                      app={app}
+                      content={getAppContent(app.slug)}
+                      isInstalled={installedAppIds.has(app.id)}
+                      onOpen={setSelectedApp}
+                    />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
         </div>
       )}
 

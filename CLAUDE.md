@@ -45,7 +45,7 @@ IAnoIE/
 │       ├── templates/        # Template engine: loader.py (YAML), renderer.py (-> ContainerConfig)
 │       ├── workers/          # Celery: celery_app.py, tasks/{install,uninstall,gpu_monitor,system_monitor,reconfigure}.py
 │       ├── core/             # security.py (JWT+bcrypt), exceptions.py, middleware.py, crypto.py (Fernet)
-│       └── seed/             # seed_apps.py (19 apps + admin user)
+│       └── seed/             # seed_apps.py (20 apps via UPSERT no startup + admin user)
 ├── frontend/                 # React 19 + TypeScript + Tailwind 4
 │   ├── package.json          # deps: react, react-router-dom, @tanstack/react-query, recharts, lucide-react, ky, zod, react-hook-form
 │   ├── vite.config.ts        # proxy /api -> localhost:8000
@@ -62,7 +62,7 @@ IAnoIE/
 │       ├── i18n/             # LanguageContext.tsx + messages.ts — i18n leve escopado a /catalog e /terms (sem react-i18next)
 │       ├── pages/            # Login, Dashboard, Catalog, MyApps, AppDetail, GpuMonitor, LLMProviders, SystemMonitor
 │       └── lib/              # types.ts, utils.ts (cn, formatBytes), constants.ts
-├── templates/                # 19 YAML app templates: open-webui, jupyterlab, comfyui, n8n, omnivoice, speakr, anythingllm, khoj, onyx, dify, flowise, metabase, superset, twenty, chatwoot, appflowy, scrapling, voicebox, open-notebook
+├── templates/                # 20 YAML app templates: open-webui, jupyterlab, comfyui, n8n, omnivoice, speakr, anythingllm, khoj, onyx, dify, flowise, metabase, superset, twenty, chatwoot, appflowy, scrapling, voicebox, open-notebook, mkt22
 ├── docker/
 │   ├── docker-compose.yml    # postgres, redis, api, worker, beat, frontend, traefik (portas host 80/443)
 │   ├── docker-compose.dev.yml
@@ -98,15 +98,15 @@ IAnoIE/
 - [x] LLM Providers: CRUD + teste de conexão (OpenAI/Gemini/Anthropic/Ollama) + toggle de provider padrão, chaves de API criptografadas com Fernet (`core/crypto.py`)
 - [x] WebSocket endpoint para stream de logs de container
 - [x] SecurityHeadersMiddleware (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection)
-- [x] Seed de 19 apps + admin user padrão (admin@aimization.com / admin)
-- [x] 19 templates YAML de apps prontos (open-webui, jupyterlab, comfyui, n8n, omnivoice, speakr, anythingllm, khoj, onyx, dify, flowise, metabase, superset, twenty, chatwoot, appflowy, scrapling, voicebox, open-notebook)
+- [x] Seed de 20 apps + admin user padrão (admin@aimization.com / admin). `seed_apps.py` roda a cada startup (lifespan) via `sync_apps()` — UPSERT por slug: cria os novos, atualiza `category`/descrição/versão dos existentes em DB já populado (idempotente), e remove obsoletos só se não tiverem instalações
+- [x] 20 templates YAML de apps prontos (open-webui, jupyterlab, comfyui, n8n, omnivoice, speakr, anythingllm, khoj, onyx, dify, flowise, metabase, superset, twenty, chatwoot, appflowy, scrapling, voicebox, open-notebook, mkt22)
 
 ### Frontend (completo)
 - [x] 8 componentes UI reutilizáveis (Button, Badge, Card, Dialog, Progress, Spinner, EmptyState, StatusBadge)
 - [x] LogViewer terminal-style com WebSocket, filtro, pause, auto-scroll
 - [x] ConfigForm: formulário dinâmico gerado a partir dos config_fields do template (string/select/boolean/number)
 - [x] 9 páginas: Login, Dashboard, Catalog, MyApps, AppDetail, GpuMonitor, LLMProviders, SystemMonitor, Terms
-- [x] Catalog: busca + filtro por categoria, cards ricos bilíngues pt-br/en (tagline + benefícios em tópicos), dialog de detalhe com benefícios/casos de uso/requisitos + mídia (imagem/YouTube) e install com GPU selector + config form, progress bar em tempo real via polling de job. Conteúdo de marketing no frontend (`content/apps.ts`); i18n leve escopado ao catálogo e à página de Termos (`i18n/`)
+- [x] Catalog: apps agrupados em **5 categorias de negócio** (Vendas, Estúdio, Inteligência, Produtividade, Consultores), cada seção com cabeçalho (ícone + título + descrição bilíngue) acima dos seus cards. Busca + filtro por categoria, cards ricos bilíngues pt-br/en (tagline + benefícios em tópicos), dialog de detalhe com benefícios/casos de uso/requisitos + mídia (imagem/YouTube) e install com GPU selector + config form, progress bar em tempo real via polling de job. Conteúdo de marketing no frontend (`content/apps.ts`); títulos/descrições de categoria em `i18n/messages.ts` (`cat.*` + `cat.*.desc`); i18n leve escopado ao catálogo e à página de Termos (`i18n/`)
 - [x] MyApps: lista com status badge, lifecycle controls (start/stop/restart/uninstall), inline log viewer expandível, edição de config (reconfigure)
 - [x] AppDetail: detalhes da instalação + log viewer full + controls
 - [x] Dashboard: stats cards, running apps, GPU overview com bars
@@ -239,7 +239,7 @@ O script detecta sozinho o que rebuildar (compara o commit antigo com o novo):
 
 > **Sempre inclua o `beat`** no rebuild de backend — ele compartilha a imagem do backend e importa os módulos de task no startup; sem rebuild, fica com código velho.
 >
-> **Seed (`seed_apps.py`)** só roda em banco vazio — mudanças (descrição, lista de apps) **não se aplicam** a um DB já populado; use `UPDATE`/`INSERT` manual.
+> **Seed (`seed_apps.py`)** roda a cada startup via `sync_apps()` (UPSERT por slug): mudanças em `category`, descrição, versão ou na lista de apps **aplicam-se** a um DB já populado — basta reiniciar a API. Exceção: **nova coluna em modelo SQLAlchemy** ainda exige `ALTER TABLE` manual (o app usa `create_all`, sem Alembic).
 >
 > Os dados dos volumes do PostgreSQL/Redis são preservados entre updates.
 
@@ -258,6 +258,7 @@ O script detecta sozinho o que rebuildar (compara o commit antigo com o novo):
 - **Roteamento dos apps instalados:** cada instalação é exposta no subdomínio `{slug}-{id}.${APP_DOMAIN}` (o renderer gera label `Host(...)` em `websecure`, **sem StripPrefix** — o app roda na raiz, então assets de path absoluto tipo `/assets/...` funcionam; sub-path quebrava SPAs como n8n). `APP_DOMAIN` vem de `settings.app_domain` (`config.py`); `access.url` da `InstallationResponse` é `https://{slug}-{id}.{APP_DOMAIN}/`. TLS por **HTTP-01 por host** (certresolver `le` no compose; um cert por subdomínio). **Pré-requisito de deploy:** DNS wildcard `*.${APP_DOMAIN}` (A record → VPS) em **DNS only (grey cloud)** no Cloudflare — proxy laranja quebra o challenge ACME na porta 80. Sem API token de DNS-01, não há wildcard cert; limite ~50 apps novos/semana (renovação automática/silenciosa). Bug conhecido: `404 Certificate not found` no log do Traefik = order ACME stale → `docker restart ianoie-traefik` (ou reconfigure do app) força order nova. Labels de container são imutáveis: apps instalados antes de uma mudança no renderer precisam de **reconfigure** pra pegar os labels novos.
 - **Frontend API client:** ky com interceptor JWT e redirect 401 -> /login
 - **Páginas bilíngues (pt-br/en):** as páginas `/catalog` e `/terms` são bilíngues e focadas em gestor. O i18n é **leve e escopado a essas páginas** (`frontend/src/i18n/` — `LanguageContext.tsx` + `messages.ts`, React Context puro, **sem react-i18next**); o resto do app segue em inglês. O conteúdo de marketing (tagline, **benefícios em tópicos**, casos de uso, requisitos, mídia) vive no **frontend** em `frontend/src/content/apps.ts` (key por slug) — **não no modelo `App`/DB**. Motivo: o projeto usa `create_all` (sem Alembic), então adicionar colunas exigiria `ALTER TABLE` manual, e os apps são fixos (seed). Editar copy = editar este arquivo TS. Mídia: `hero` (path em `frontend/public/images/apps/<slug>.png`) e `video` (URL YouTube) — sem eles, `components/catalog/AppMedia.tsx` mostra um placeholder gradiente. Não proponha migrar i18n/conteúdo para o backend a menos que o usuário peça.
+- **Categorias do catálogo:** 5 grupos de negócio — `vendas` / `estudio` / `inteligencia` / `produtividade` / `consultores` (slugs lowercase sem acento; label pública "AIMization X"). O `category` de cada app é definido no dict `APPS` (`backend/src/ianoie/seed/seed_apps.py`, `String(100)` livre — **sem enum**) e sincronizado pelo `sync_apps()` no startup. No frontend a categoria é "stringly-typed" e vive em **4 lugares que devem ficar em sincronia**: lista/ordem em `lib/constants.ts` (`APP_CATEGORIES`), visual (ícone/cor/gradiente) em `components/catalog/constants.ts` (`CATEGORY_ICONS`/`COLORS`/`GRADIENTS`), e rótulos+descrições bilíngues em `i18n/messages.ts` (`cat.*` + `cat.*.desc`). `AppCard`/`AppDetailDialog`/`AppMedia` leem `app.category` dinamicamente — então renomear/adicionar uma categoria exige editar esses 4 lugares (e o seed) juntos.
 
 ---
 

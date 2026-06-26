@@ -3,9 +3,9 @@
  *
  - `hero`  → caminho da imagem em /public (ex.: "/images/apps/open-webui.png").
  *          Deixe `undefined` para mostrar o placeholder até adicionar o arquivo.
- - `video` → URL do YouTube. Deixe `undefined` para o placeholder de vídeo.
- - `logo` → URL do logo do app. Quando presente, aparece no card no lugar do ícone de categoria.
- - `repo_url` → URL do repositório upstream (GitHub). Omitir para não mostrar o link.
+ * - `video` → URL do YouTube. Deixe `undefined` para o placeholder de vídeo.
+ * - `logo` → URL do logo do app. Quando presente, aparece no card no lugar do ícone de categoria.
+ * - `repo_url` → URL do repositório upstream (GitHub). Omitir para não mostrar o link.
  *
  * O texto (tagline/description/benefits/useCases) é a parte central da entrega:
  * copy focada em gestor, em pt-br e en. Para editar, basta mudar este arquivo.
@@ -38,77 +38,73 @@ export const APP_CONTENT: Record<string, AppContent> = {
     repo_url: "https://github.com/open-webui/open-webui",
     hero: "/images/apps/open-webui.png",
     "pt-br": {
-      tagline: "O ChatGPT da sua empresa: mesma experiência, mas os dados nunca saem da sua rede.",
+      tagline: "O ChatGPT da sua empresa, com a diferença de que nada sai para fora.",
       description:
-        "A equipe quer usar IA como usa o ChatGPT, mas colocar dado de cliente e informação confidencial num serviço externo é risco que muita empresa não pode correr. O Open WebUI entrega a mesma experiência de conversa na sua própria infraestrutura, com vários modelos no mesmo lugar e a opção de rodar modelo local para cortar a conta por token.",
+        "A equipe quer usar inteligência artificial como usa o ChatGPT, mas colocar informação de cliente e dado sigiloso num serviço de fora é um risco que muita empresa não pode correr. Aqui a experiência é a mesma, só que tudo acontece dentro da sua empresa — e dá para reduzir bastante o custo.",
       benefits: [
-        "Conversa nunca sai da sua rede: dado de cliente e confidencial fica dentro",
-        "Modelo local corta a conta por token das APIs externas",
-        "OpenAI, Anthropic e modelos locais no mesmo lugar, sem trocar de ferramenta",
-        "A equipe pergunta sobre os próprios documentos da empresa",
-        "Sobe com um clique, sem precisar de equipe de infraestrutura",
+        "As conversas nunca saem da sua empresa: dado de cliente fica protegido",
+        "Custa bem menos do que pagar por uso lá fora",
+        "A equipe pode perguntar sobre os documentos da própria empresa",
+        "Simples de instalar, sem equipe técnica",
       ],
       useCases: [
-        "IA para a equipe sem expor dado a serviço externo",
-        "Assistente de pesquisa sobre documentos da empresa",
-        "Chat privado para áreas que lidam com informação sensível",
+        "Inteligência artificial para a equipe sem expor informação para fora",
+        "Assistente de pesquisa sobre os documentos da empresa",
+        "Conversa protegida para áreas que lidam com dado sigiloso",
       ],
     },
     en: {
-      tagline: "Your company's ChatGPT: same experience, but the data never leaves your network.",
+      tagline: "Your company's ChatGPT, with the difference that nothing goes out.",
       description:
-        "The team wants to use AI the way they use ChatGPT, but putting customer data and confidential information on an outside service is a risk many companies can't take. Open WebUI delivers the same chat experience on your own infrastructure, with multiple models in one place and the option to run a local model to cut the per-token bill.",
+        "The team wants to use artificial intelligence the way they use ChatGPT, but putting customer information and confidential data on an outside service is a risk many companies can't take. Here the experience is the same, except everything happens inside your company — and you can cut the cost considerably.",
       benefits: [
-        "Conversations never leave your network: customer and confidential data stays inside",
-        "A local model cuts the per-token bill of external APIs",
-        "OpenAI, Anthropic and local models in one place, no tool switching",
-        "The team asks questions over the company's own documents",
-        "Deploys in one click, no infrastructure team needed",
+        "Conversations never leave your company: customer data stays protected",
+        "Costs far less than paying for usage outside",
+        "The team can ask about the company's own documents",
+        "Simple to install, no technical team",
       ],
       useCases: [
-        "AI for the team without exposing data to an outside service",
+        "Artificial intelligence for the team without exposing information outside",
         "A research assistant over company documents",
-        "Private chat for teams handling sensitive information",
+        "Protected chat for areas handling confidential data",
       ],
     },
   },
 
   jupyterlab: {
     repo_url: "https://github.com/jupyterlab/jupyterlab",
-    logo: "https://jupyterlab.readthedocs.io/en/latest/_static/logo-rectangle.svg",
+    logo: "https://jupyterlab.readthedocs.io/en/latest/_static/logo-rectangle-dark.svg",
     hero: "/images/apps/jupyterlab.png",
     "pt-br": {
-      tagline:
-        "O ambiente onde sua equipe de dados analisa números e testa modelos — padrão do mercado, na sua GPU.",
+      tagline: "O espaço onde sua equipe trabalha com dados e inteligência artificial.",
       description:
-        "Esta é a bancada de trabalho de quem mexe com dados e modelos na empresa. Por ser o padrão do mercado, você contrata gente que já sabe usar, sem treinamento do zero, e o processamento pesado roda na sua própria GPU em vez de virar conta de nuvem no fim do mês.",
+        "Esta é a bancada de trabalho de quem mexe com dados e cria modelos de inteligência artificial na empresa. Por ser a ferramenta que o mercado todo usa, você contrata gente que já sabe usar, sem treinar do zero, e o trabalho pesado roda nos computadores da empresa em vez de virar conta no fim do mês.",
       benefits: [
-        "Padrão do mercado: você contrata quem já domina, sem curva de treinamento",
-        "Processamento pesado roda na sua GPU, não em conta de nuvem variável",
-        "Experimentos ficam registrados e reproduzíveis, não na cabeça de um analista",
-        "Mesma ferramenta para Python, R e outras linguagens da equipe",
+        "Quem você contrata já sabe usar, sem treinamento do zero",
+        "O trabalho pesado roda nos computadores da empresa, sem custo extra de fora",
+        "Os trabalhos ficam registrados e podem ser refeitos, não somem com a pessoa",
+        "Serve para os vários tipos de trabalho da equipe de dados",
       ],
       useCases: [
-        "Análise de dados do negócio pela equipe interna",
-        "Treino e teste de modelos sob seu controle",
-        "Provas de conceito antes de investir em projeto grande",
+        "Análise dos dados do negócio pela equipe interna",
+        "Criar e testar modelos de inteligência artificial",
+        "Testar ideias antes de investir num projeto grande",
       ],
     },
     en: {
-      tagline:
-        "Where your data team analyzes numbers and tests models — the market standard, on your GPU.",
+      tagline: "The space where your team works with data and artificial intelligence.",
       description:
-        "This is the workbench for whoever works with data and models at the company. Because it's the market standard, you hire people who already know it, with no training from scratch, and heavy processing runs on your own GPU instead of becoming a cloud bill at month's end.",
+        "This is the workbench for whoever works with data and builds artificial-intelligence models at the company. Because it's the tool the whole market uses, you hire people who already know it, with no training from scratch, and the heavy work runs on the company's computers instead of becoming a bill at month's end.",
       benefits: [
-        "Market standard: you hire people who already know it, with no learning curve",
-        "Heavy processing runs on your GPU, not a variable cloud bill",
-        "Experiments stay recorded and reproducible, not in one analyst's head",
-        "One tool for Python, R and the team's other languages",
+        "The people you hire already know how to use it, no training from scratch",
+        "The heavy work runs on the company's computers, with no extra outside cost",
+        "The work stays recorded and can be redone, instead of leaving with the person",
+        "It serves the data team's many kinds of work",
       ],
       useCases: [
-        "Business data analysis by the in-house team",
-        "Training and testing models under your control",
-        "Proofs of concept before committing to a big project",
+        "Analysis of business data by the in-house team",
+        "Building and testing artificial-intelligence models",
+        "Testing ideas before investing in a big project",
       ],
     },
   },
@@ -118,37 +114,35 @@ export const APP_CONTENT: Record<string, AppContent> = {
     logo: "https://comfy.org/icons/logo.svg",
     hero: "/images/apps/comfyui.png",
     "pt-br": {
-      tagline:
-        "Material visual da empresa gerado por IA, na sua máquina, sem custo por imagem nem fila de agência.",
+      tagline: "Crie as imagens do seu marketing sem depender de designer nem pagar por foto.",
       description:
-        "Cada peça de marketing que depende de designer externo ou banco de imagem custa dinheiro e tempo de espera. O ComfyUI gera imagem e arte na sua própria GPU, com fluxos que mantêm a identidade da marca consistente. Depois de instalado, não há custo por imagem — você gera quantas precisar.",
+        "Cada peça de marketing que depende de um designer de fora ou de comprar foto pronta custa dinheiro e tempo de espera. Aqui você cria imagens e arte no seu próprio computador, seguindo o estilo da sua marca. Depois de instalado, criar mais imagens não custa nada a mais.",
       benefits: [
-        "Material visual sem depender de fila de designer ou de banco de imagem pago",
-        "Custo por imagem some: depois de rodando, gerar mais não custa a mais",
-        "Fluxos repetíveis mantêm a marca consistente entre as peças",
-        "As imagens nunca saem da sua máquina",
+        "Crie imagens sem esperar na fila do designer nem pagar por foto pronta",
+        "Depois de instalado, gerar mais imagens não custa a mais",
+        "Mantém o mesmo estilo em todas as peças da marca",
+        "As imagens ficam no seu computador",
       ],
       useCases: [
-        "Banco de imagens para marketing e redes",
-        "Protótipos visuais antes de fechar com agência",
-        "Geração de conteúdo visual em volume",
+        "Imagens para marketing e redes sociais",
+        "Testar ideias visuais antes de contratar uma agência",
+        "Criar muito conteúdo visual em pouco tempo",
       ],
     },
     en: {
-      tagline:
-        "Company visuals generated by AI, on your own machine, with no per-image cost and no agency queue.",
+      tagline: "Create your marketing images without relying on a designer or paying per photo.",
       description:
-        "Every marketing piece that depends on an outside designer or stock library costs money and waiting time. ComfyUI generates images and art on your own GPU, with workflows that keep the brand consistent. Once it's running, there's no per-image cost — you generate as many as you need.",
+        "Every marketing piece that depends on an outside designer or buying stock photos costs money and waiting time. Here you create images and art on your own computer, following your brand's style. Once it's set up, creating more images costs nothing extra.",
       benefits: [
-        "Visuals without waiting on a designer's queue or paying for stock",
-        "Per-image cost disappears: once it's running, more images cost no more",
-        "Repeatable workflows keep the brand consistent across pieces",
-        "Images never leave your machine",
+        "Create images without waiting on a designer or paying for stock photos",
+        "Once set up, generating more images costs no more",
+        "Keeps the same style across all your brand pieces",
+        "The images stay on your computer",
       ],
       useCases: [
-        "An image library for marketing and social",
-        "Visual prototypes before committing to an agency",
-        "Visual content at volume",
+        "Images for marketing and social media",
+        "Testing visual ideas before hiring an agency",
+        "Creating a lot of visual content quickly",
       ],
     },
   },
@@ -158,37 +152,35 @@ export const APP_CONTENT: Record<string, AppContent> = {
     logo: "https://n8n.io/brandguidelines/logo-dark.svg",
     hero: "/images/apps/n8n.png",
     "pt-br": {
-      tagline:
-        "Tarefa repetitiva entre sistemas feita sozinha, sem erro de digitação e sem programar.",
+      tagline: "Tarefas repetitivas feitas sozinhas, sem ninguém perdendo tempo e sem erro.",
       description:
-        "Hora de gente cara é gasta copiando dado de um sistema para outro, e cada passo manual é uma chance de erro. O n8n conecta os aplicativos que a empresa já usa — e-mail, CRM, banco de dados, IA — e faz esse trabalho rodar sozinho. Self-hosted, então o dado não passa por serviço de terceiro.",
+        "Boa parte do tempo da equipe vai embora copiando informação de um programa para outro, e cada passo manual é uma chance de erro. Aqui esse trabalho passa a acontecer sozinho, ligando os programas que a empresa já usa. A informação não passa por outras empresas no caminho.",
       benefits: [
-        "Trabalho repetitivo entre sistemas deixa de consumir hora de equipe",
-        "Menos erro manual: o processo roda igual toda vez",
-        "Conecta o que a empresa já usa, sem trocar de ferramenta",
-        "Self-hosted: o dado da operação não passa por serviço externo",
+        "O trabalho repetitivo deixa de ocupar o tempo da equipe",
+        "Menos erro: o processo acontece igual toda vez",
+        "Liga os programas que a empresa já usa, sem trocar nada",
+        "A informação não passa por outras empresas no caminho",
       ],
       useCases: [
-        "Integração entre sistemas que hoje é feita na mão",
-        "Relatórios e avisos automáticos",
-        "Processar dados com IA dentro do fluxo",
+        "Ligar programas que hoje a equipe atualiza na mão",
+        "Relatórios e avisos enviados sozinhos",
+        "Organizar informações automaticamente",
       ],
     },
     en: {
-      tagline:
-        "Repetitive work between systems done on its own, with no typos and no coding.",
+      tagline: "Repetitive tasks done on their own, with no one wasting time and no errors.",
       description:
-        "Expensive staff time gets spent copying data from one system to another, and every manual step is a chance for error. n8n connects the apps the company already uses — email, CRM, databases, AI — and makes that work run on its own. Self-hosted, so the data doesn't pass through a third-party service.",
+        "A good part of the team's time disappears copying information from one program to another, and every manual step is a chance for error. Here that work starts happening on its own, connecting the programs the company already uses. The information doesn't pass through other companies along the way.",
       benefits: [
-        "Repetitive work between systems stops eating team hours",
-        "Fewer manual errors: the process runs the same every time",
-        "Connects what the company already uses, no tool switch",
-        "Self-hosted: operational data doesn't pass through an external service",
+        "Repetitive work stops taking up the team's time",
+        "Fewer errors: the process happens the same every time",
+        "Connects the programs the company already uses, with nothing to switch",
+        "The information doesn't pass through other companies along the way",
       ],
       useCases: [
-        "Integration between systems that's done by hand today",
-        "Automated reports and alerts",
-        "Processing data with AI inside the flow",
+        "Connecting programs the team updates by hand today",
+        "Reports and alerts sent on their own",
+        "Organizing information automatically",
       ],
     },
   },
@@ -198,36 +190,34 @@ export const APP_CONTENT: Record<string, AppContent> = {
     logo: "https://camo.githubusercontent.com/f61a6b9528ca18d4c61d685716b58c72df8898e18f0978c0eb27e915f167b371/68747470733a2f2f7a68752d68616e2e6769746875622e696f2f6f6d6e69766f6963652f706963732f6f6d6e69766f6963652e6a7067",
     hero: "/images/apps/omnivoice.png",
     "pt-br": {
-      tagline:
-        "Narração e locução em mais de 600 idiomas, sem estúdio nem custo por minuto de gravação.",
+      tagline: "Narração pronta em qualquer idioma, sem estúdio e sem pagar por hora de gravação.",
       description:
-        "Narrar vídeo, treinamento ou material em vários idiomas costuma significar estúdio, locutor e custo por hora. O OmniVoice gera a voz por IA, clona uma voz a partir de poucos segundos de áudio e cobre mais de 600 idiomas. Conteúdo multilíngue deixa de depender de orçamento de gravação.",
+        "Gravar a narração de um vídeo ou treinamento em vários idiomas costuma exigir estúdio, locutor e custo por hora. Aqui a voz é criada na hora, em mais de 600 idiomas, e dá até para manter sempre a mesma voz. Conteúdo em vários idiomas deixa de depender de orçamento de gravação.",
       benefits: [
-        "Narração em escala sem reservar estúdio nem locutor",
-        "Conteúdo em vários idiomas sem multiplicar o custo de gravação",
-        "Clona uma voz com poucos segundos de áudio, para manter consistência",
-        "Cobre mais de 600 idiomas e sotaques",
+        "Narração pronta na hora, sem reservar estúdio nem locutor",
+        "Conteúdo em vários idiomas sem multiplicar o custo",
+        "Mantém sempre a mesma voz nos seus materiais",
+        "Mais de 600 idiomas e sotaques",
       ],
       useCases: [
         "Narração de vídeos e treinamentos",
-        "Versões do mesmo material em vários idiomas",
+        "O mesmo material em vários idiomas",
         "Voz para acessibilidade e audiolivros",
       ],
     },
     en: {
-      tagline:
-        "Narration and voiceover in 600+ languages, with no studio and no per-minute recording cost.",
+      tagline: "Ready narration in any language, with no studio and no per-hour recording cost.",
       description:
-        "Narrating a video, training or material in several languages usually means a studio, a voice actor and an hourly cost. OmniVoice generates the voice with AI, clones a voice from a few seconds of audio, and covers more than 600 languages. Multilingual content stops depending on a recording budget.",
+        "Recording the narration for a video or training in several languages usually requires a studio, a voice actor and an hourly cost. Here the voice is created on the spot, in more than 600 languages, and you can even keep the same voice throughout. Content in several languages stops depending on a recording budget.",
       benefits: [
-        "Narration at scale without booking a studio or a voice actor",
-        "Content in several languages without multiplying recording cost",
-        "Clones a voice from a few seconds of audio, to keep it consistent",
-        "Covers more than 600 languages and accents",
+        "Narration ready on the spot, without booking a studio or voice actor",
+        "Content in several languages without multiplying the cost",
+        "Keeps the same voice across your materials",
+        "More than 600 languages and accents",
       ],
       useCases: [
         "Narration for videos and training",
-        "Versions of the same material in several languages",
+        "The same material in several languages",
         "Voice for accessibility and audiobooks",
       ],
     },
@@ -238,37 +228,35 @@ export const APP_CONTENT: Record<string, AppContent> = {
     logo: "https://raw.githubusercontent.com/murtaza-nasir/speakr/master/static/img/icon-32x32.png",
     hero: "/images/apps/speakr.png",
     "pt-br": {
-      tagline:
-        "Reunião vira texto pesquisável com quem falou cada coisa — sem alguém anotando ata.",
+      tagline: "Toda reunião vira texto pronto pra buscar, sem ninguém perdendo tempo com ata.",
       description:
-        "Produzir ata e resumo de reunião gasta horas de alguém, e o que foi dito some quando ninguém anotou. O Speakr transforma áudio em texto pesquisável e identifica cada participante automaticamente. O motor de transcrição é à sua escolha, inclusive um Whisper rodando na sua própria infraestrutura.",
+        "Escrever a ata e o resumo de uma reunião toma horas de alguém, e o que foi dito some quando ninguém anota. Aqui a gravação vira texto que dá para pesquisar, já indicando quem disse cada coisa. Você escolhe como a transcrição é feita, inclusive mantendo tudo dentro da empresa.",
       benefits: [
-        "Ata e resumo deixam de consumir horas de alguém depois da reunião",
-        "Identifica quem falou cada coisa, sem confusão de versões",
-        "O que foi dito fica pesquisável, não perdido na memória",
-        "Motor de transcrição à sua escolha, inclusive local e privado",
+        "A ata e o resumo deixam de tomar horas de alguém",
+        "Mostra quem disse cada coisa, sem confusão",
+        "O que foi dito fica fácil de encontrar depois",
+        "Você escolhe como é feito, inclusive mantendo tudo dentro da empresa",
       ],
       useCases: [
-        "Ata e resumo automáticos de reunião",
-        "Transcrição de entrevistas e pesquisa",
-        "Legendagem e busca dentro de áudios",
+        "Ata e resumo de reunião feitos sozinhos",
+        "Transcrição de entrevistas e conversas",
+        "Encontrar trechos dentro de gravações",
       ],
     },
     en: {
-      tagline:
-        "A meeting becomes searchable text with who said what — no one taking minutes.",
+      tagline: "Every meeting becomes searchable text, with no one wasting time on minutes.",
       description:
-        "Producing minutes and a summary of a meeting eats someone's hours, and what was said vanishes when nobody wrote it down. Speakr turns audio into searchable text and identifies each participant automatically. The transcription engine is your choice, including a Whisper running on your own infrastructure.",
+        "Writing the minutes and summary of a meeting takes someone hours, and what was said vanishes when nobody writes it down. Here the recording becomes searchable text, already showing who said what. You choose how the transcription is done, including keeping everything inside the company.",
       benefits: [
-        "Minutes and summaries stop eating someone's hours after the meeting",
-        "Identifies who said what, no confusion over versions",
-        "What was said stays searchable, not lost to memory",
-        "Transcription engine of your choice, including local and private",
+        "Minutes and summaries stop taking someone hours",
+        "Shows who said what, with no confusion",
+        "What was said stays easy to find later",
+        "You choose how it's done, including keeping everything inside the company",
       ],
       useCases: [
-        "Automatic minutes and summaries of meetings",
-        "Transcribing interviews and research",
-        "Captioning and search inside audio",
+        "Meeting minutes and summaries done on their own",
+        "Transcribing interviews and conversations",
+        "Finding passages inside recordings",
       ],
     },
   },
@@ -278,37 +266,35 @@ export const APP_CONTENT: Record<string, AppContent> = {
     logo: "https://raw.githubusercontent.com/jamiepine/voicebox/main/.github/assets/icon-dark.webp",
     hero: "/images/apps/voicebox.png",
     "pt-br": {
-      tagline:
-        "Estúdio de voz local: clona voz, gera narração e dita em qualquer app, sem mensalidade por uso.",
+      tagline: "Crie narração e vozes para seus vídeos no seu computador, sem pagar por uso.",
       description:
-        "Ferramentas como o ElevenLabs cobram por uso e mandam seu áudio para fora. O Voicebox junta clonagem de voz, narração em 23 idiomas e ditado em qualquer campo de texto rodando localmente. A voz e o áudio nunca saem da máquina, e não há conta por minuto gerado.",
+        "As ferramentas conhecidas de voz cobram por uso e mandam o seu áudio para fora. Aqui você cria narração em 23 idiomas e até dita textos por voz em qualquer lugar do computador, e tudo acontece na sua própria máquina. A voz e o áudio nunca saem dali, e não há cobrança por minuto.",
       benefits: [
-        "Sem conta por uso das ferramentas de voz de mercado",
-        "Voz e áudio rodam localmente e nunca saem da máquina",
-        "Narração em 23 idiomas para conteúdo multilíngue",
-        "Ditado por atalho em qualquer aplicativo, sem assinatura à parte",
+        "Sem cobrança por uso das ferramentas conhecidas de voz",
+        "Tudo acontece no seu computador; o áudio nunca sai dali",
+        "Narração em 23 idiomas para conteúdo em vários idiomas",
+        "Dite textos por voz em qualquer programa",
       ],
       useCases: [
         "Narração e dublagem de vídeo em vários idiomas",
-        "Acessibilidade: voz para quem não pode falar",
-        "Ditado para acelerar quem escreve muito",
+        "Voz para quem não pode falar",
+        "Ditar textos por voz para escrever mais rápido",
       ],
     },
     en: {
-      tagline:
-        "A local voice studio: clone voices, generate narration and dictate in any app, with no per-use fee.",
+      tagline: "Create narration and voices for your videos on your computer, with no per-use fee.",
       description:
-        "Tools like ElevenLabs charge per use and send your audio out. Voicebox combines voice cloning, narration in 23 languages and dictation into any text field, running locally. The voice and audio never leave the machine, and there's no bill per minute generated.",
+        "The well-known voice tools charge per use and send your audio out. Here you create narration in 23 languages and can even dictate text by voice anywhere on the computer, and everything happens on your own machine. The voice and audio never leave it, and there's no charge per minute.",
       benefits: [
-        "No per-use bill like the market voice tools",
-        "Voice and audio run locally and never leave the machine",
+        "No per-use charge like the well-known voice tools",
+        "Everything happens on your computer; the audio never leaves it",
         "Narration in 23 languages for multilingual content",
-        "Dictation by hotkey in any application, no separate subscription",
+        "Dictate text by voice in any program",
       ],
       useCases: [
         "Video narration and dubbing in several languages",
-        "Accessibility: a voice for people who can't speak",
-        "Dictation to speed up heavy writers",
+        "A voice for people who can't speak",
+        "Dictating text by voice to write faster",
       ],
     },
   },
@@ -318,37 +304,35 @@ export const APP_CONTENT: Record<string, AppContent> = {
     logo: "https://www.open-notebook.ai/hero.svg",
     hero: "/images/apps/open-notebook.png",
     "pt-br": {
-      tagline:
-        "Alternativa ao NotebookLM na sua infraestrutura: converse com seus documentos e vire relatório em podcast.",
+      tagline: "Converse com seus relatórios e transforme os mais longos em áudio pra ouvir.",
       description:
-        "Relatório e documento empilham mais rápido do que alguém consegue ler. O Open Notebook deixa pesquisar e conversar com as próprias fontes, com busca semântica no acervo inteiro, e ainda transforma material denso em podcast com mais de um locutor. Roda na sua infraestrutura, sem GPU obrigatória.",
+        "Relatório e documento se acumulam mais rápido do que dá para ler. Aqui você conversa com esse material e pergunta o que quiser, e ainda transforma os textos mais longos em áudio, como um programa de rádio, para ouvir no trânsito ou na academia. Tudo fica com você.",
       benefits: [
-        "Converse com o acervo de documentos em vez de ler tudo página a página",
-        "Busca por sentido, não só por palavra exata, em todo o material",
-        "Vira relatório em podcast para quem aprende ouvindo",
-        "Na sua infraestrutura e sem GPU obrigatória",
+        "Converse com seus documentos em vez de ler tudo do começo ao fim",
+        "Encontra a resposta pelo sentido, não só pela palavra exata",
+        "Transforma relatórios longos em áudio para ouvir em qualquer lugar",
+        "Tudo fica dentro da sua empresa",
       ],
       useCases: [
-        "Pesquisa interna sobre bases de documentos",
+        "Pesquisa nos documentos da empresa",
         "Resumo de relatórios em texto ou áudio",
-        "Onboarding guiado por material próprio",
+        "Material de estudo para a equipe",
       ],
     },
     en: {
-      tagline:
-        "A self-hosted NotebookLM alternative: chat with your documents and turn a report into a podcast.",
+      tagline: "Chat with your reports and turn the long ones into audio to listen to.",
       description:
-        "Reports and documents pile up faster than anyone can read them. Open Notebook lets you research and chat with your own sources, with semantic search across the whole collection, and turns dense material into a multi-speaker podcast. It runs on your infrastructure, with no GPU required.",
+        "Reports and documents pile up faster than you can read them. Here you chat with that material and ask whatever you want, and you can even turn the longest texts into audio, like a radio show, to listen to in traffic or at the gym. Everything stays with you.",
       benefits: [
-        "Chat with the document collection instead of reading every page",
-        "Search by meaning, not just exact words, across all the material",
-        "Turns a report into a podcast for people who learn by listening",
-        "On your infrastructure and with no GPU required",
+        "Chat with your documents instead of reading everything front to back",
+        "Finds the answer by meaning, not just the exact word",
+        "Turns long reports into audio to listen to anywhere",
+        "Everything stays inside your company",
       ],
       useCases: [
-        "Internal research over document collections",
+        "Research across company documents",
         "Report summaries in text or audio",
-        "Onboarding guided by your own material",
+        "Study material for the team",
       ],
     },
   },
@@ -358,37 +342,35 @@ export const APP_CONTENT: Record<string, AppContent> = {
     logo: "https://scrapling.readthedocs.io/en/latest/assets/cover_dark.svg",
     hero: "/images/apps/scrapling.png",
     "pt-br": {
-      tagline:
-        "Coleta de dados da web que dribla bloqueio — para monitorar preço de concorrente sem fazer na mão.",
+      tagline: "Acompanhe os preços e o catálogo dos concorrentes sem ninguém fazendo na mão.",
       description:
-        "Acompanhar preço e catálogo de concorrente na unha consome tempo e fica desatualizado no dia seguinte. O Scrapling coleta esses dados mesmo de sites que bloqueiam ferramentas comuns, e dá para deixar a IA fazer a coleta sozinha. O acesso é protegido por chave, então só quem você autoriza usa.",
+        "Acompanhar o preço e o catálogo dos concorrentes na mão consome tempo e fica desatualizado no dia seguinte. Aqui essa coleta acontece sozinha, inclusive em sites que costumam barrar esse tipo de busca, e só quem você autoriza tem acesso.",
       benefits: [
-        "Monitora preço e catálogo de concorrente sem alguém copiando na mão",
-        "Funciona em sites que bloqueiam ferramentas comuns de coleta",
-        "A IA coleta sozinha e já filtra o que importa",
-        "Acesso protegido por chave: só quem você autoriza usa",
+        "Acompanhe os preços dos concorrentes sem ninguém copiando na mão",
+        "Funciona até em sites que barram esse tipo de busca",
+        "A coleta acontece sozinha e já separa o que interessa",
+        "Só quem você autoriza tem acesso",
       ],
       useCases: [
-        "Monitoramento de preço e catálogo de concorrentes",
-        "Alimentar planilha e banco com dados de sites",
-        "Coletar conteúdo para abastecer IA e relatórios",
+        "Acompanhar preços e catálogos de concorrentes",
+        "Alimentar planilhas com informações de sites",
+        "Reunir informação para relatórios",
       ],
     },
     en: {
-      tagline:
-        "Web data collection that gets past blocks — to track competitor pricing without doing it by hand.",
+      tagline: "Track competitors' prices and catalog without anyone doing it by hand.",
       description:
-        "Tracking a competitor's prices and catalog by hand eats time and is out of date the next day. Scrapling collects that data even from sites that block common tools, and you can let the AI do the collecting on its own. Access is protected by a key, so only who you authorize can use it.",
+        "Tracking competitors' prices and catalog by hand eats time and is out of date the next day. Here that collection happens on its own, even on sites that tend to block this kind of search, and only who you authorize has access.",
       benefits: [
-        "Track competitor prices and catalog without someone copying by hand",
-        "Works on sites that block common collection tools",
-        "The AI collects on its own and filters what matters",
-        "Access protected by a key: only who you authorize uses it",
+        "Track competitors' prices without anyone copying by hand",
+        "Works even on sites that block this kind of search",
+        "The collection happens on its own and already sorts what matters",
+        "Only who you authorize has access",
       ],
       useCases: [
-        "Monitoring competitor pricing and catalogs",
-        "Feeding spreadsheets and databases with site data",
-        "Collecting content to feed AI and reports",
+        "Tracking competitors' prices and catalogs",
+        "Feeding spreadsheets with information from websites",
+        "Gathering information for reports",
       ],
     },
   },
@@ -397,37 +379,35 @@ export const APP_CONTENT: Record<string, AppContent> = {
     repo_url: "https://github.com/FlowiseAI/Flowise",
     logo: "https://flowiseai.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fworkday-flowise-logo-white.e4a24a3b.png&w=256&q=75",
     "pt-br": {
-      tagline:
-        "Monta assistentes de IA arrastando blocos e publica como chat no seu site, sem programar.",
+      tagline: "Monte um atendente automático para o seu site sem precisar saber programar.",
       description:
-        "Para experimentar IA, muita empresa trava esperando alguém saber programar. No Flowise você monta o assistente arrastando blocos, e cada fluxo já sai como API ou widget de chat pronto para colocar no site. Roda leve, sem exigir GPU nem equipe de infraestrutura.",
+        "Para experimentar inteligência artificial, muita empresa para de esperar alguém que saiba programar. Aqui você monta um assistente encaixando blocos, como um quebra-cabeça, e ele já fica pronto para colocar no seu site. Roda leve, sem precisar de equipe técnica para começar.",
       benefits: [
-        "Cria assistente sem programar e sem esperar disponibilidade de TI",
-        "Cada fluxo vira chat no site ou API pronta, sem etapa técnica extra",
-        "Conecta os principais provedores e também modelos locais",
-        "Leve: não pede GPU nem time de infraestrutura para começar",
+        "Monte um assistente sem programar e sem esperar a TI ter tempo",
+        "Fica pronto para colocar no seu site na hora",
+        "Funciona com as principais inteligências artificiais do mercado",
+        "Leve e simples de começar",
       ],
       useCases: [
-        "Chat de atendimento no site",
-        "Assistente que responde sobre seus documentos",
-        "Testar uma ideia de IA antes de investir pesado",
+        "Atendente automático no site",
+        "Assistente que responde sobre os seus documentos",
+        "Testar uma ideia com inteligência artificial antes de investir",
       ],
     },
     en: {
-      tagline:
-        "Builds AI assistants by dragging blocks and publishes them as a chat on your site, no coding.",
+      tagline: "Build an automatic assistant for your website without knowing how to code.",
       description:
-        "To try AI, many companies stall waiting for someone who can code. In Flowise you build the assistant by dragging blocks, and each flow comes out as an API or chat widget ready to drop on your site. It runs light, with no GPU or infrastructure team required.",
+        "To try artificial intelligence, many companies stop waiting for someone who can code. Here you build an assistant by snapping blocks together, like a puzzle, and it comes out ready to put on your website. It runs light, with no technical team needed to start.",
       benefits: [
-        "Build an assistant without coding and without waiting on IT availability",
-        "Each flow becomes site chat or a ready API, no extra technical step",
-        "Connects the main providers and local models too",
-        "Light: no GPU or infrastructure team to get started",
+        "Build an assistant without coding and without waiting on IT to have time",
+        "Comes out ready to put on your website right away",
+        "Works with the main artificial intelligences on the market",
+        "Light and simple to get started",
       ],
       useCases: [
-        "Support chat on your website",
-        "An assistant that answers from your documents",
-        "Testing an AI idea before investing heavily",
+        "An automatic assistant on your website",
+        "An assistant that answers about your documents",
+        "Testing an AI idea before investing",
       ],
     },
   },
@@ -436,37 +416,35 @@ export const APP_CONTENT: Record<string, AppContent> = {
     repo_url: "https://github.com/Mintplex-Labs/anything-llm",
     logo: "https://raw.githubusercontent.com/Mintplex-Labs/anything-llm/master/images/wordmark.png",
     "pt-br": {
-      tagline:
-        "Transforme a papelada da empresa em respostas. A equipe pergunta, a IA responde — sem vasculhar pasta atrás de pasta.",
+      tagline: "As respostas já estão nos seus documentos. Sua equipe só precisa perguntar.",
       description:
-        "O conhecimento da empresa costuma ficar preso em PDFs, contratos e manuais que ninguém tem tempo de ler. O AnythingLLM deixa qualquer pessoa perguntar em português e receber a resposta com a fonte, sem depender de quem 'sabe onde está o arquivo'. Roda na sua infraestrutura, então documento sensível não sai da empresa.",
+        "Muita informação importante fica perdida em contratos, manuais e relatórios que ninguém tem tempo de ler — e quando alguém precisa, depende de quem 'sabe onde está o arquivo'. Aqui qualquer pessoa pergunta e recebe a resposta na hora, com a indicação de onde ela saiu. Tudo fica dentro da sua empresa: documento sigiloso não vai para fora.",
       benefits: [
-        "Conhecimento que hoje está na cabeça de poucos vira algo que qualquer um consulta",
-        "Menos tempo da equipe gasto procurando arquivo e refazendo o que já existe",
-        "Documento confidencial não sai da sua rede — você decide qual IA processa",
-        "Funciona sem comprar GPU nem montar time técnico",
+        "Sua equipe encontra qualquer informação na hora, sem caçar em pastas",
+        "O conhecimento deixa de depender de uma ou duas pessoas que sabem de tudo",
+        "Documentos sigilosos não saem da sua empresa",
+        "Pronto para usar, sem precisar de equipe técnica",
       ],
       useCases: [
-        "Atendimento que responde sobre manuais e políticas sem escalar para uma pessoa",
+        "Atendimento que responde sobre regras e manuais sem chamar um humano",
         "Consulta rápida a contratos e relatórios",
-        "Base de conhecimento que sobrevive à saída de funcionários",
+        "Conhecimento que continua na empresa mesmo quando alguém sai",
       ],
     },
     en: {
-      tagline:
-        "Turn company paperwork into answers. The team asks, the AI replies — no digging through folders.",
+      tagline: "The answers are already in your documents. Your team just has to ask.",
       description:
-        "Company knowledge usually sits trapped in PDFs, contracts and manuals nobody has time to read. AnythingLLM lets anyone ask in plain language and get the answer with its source, without depending on whoever 'knows where the file is.' It runs on your own infrastructure, so sensitive documents never leave the company.",
+        "A lot of important information gets lost in contracts, manuals and reports nobody has time to read — and when someone needs it, they depend on whoever 'knows where the file is.' Here anyone asks and gets the answer right away, with a note on where it came from. Everything stays inside your company: confidential documents don't go out.",
       benefits: [
-        "Knowledge that lives in a few people's heads becomes something anyone can look up",
-        "Less team time spent hunting for files and redoing what already exists",
-        "Confidential documents stay on your network — you decide which AI processes them",
-        "Works without buying a GPU or building a technical team",
+        "Your team finds any information instantly, with no folder hunting",
+        "Knowledge stops depending on the one or two people who know everything",
+        "Confidential documents never leave your company",
+        "Ready to use, with no technical team needed",
       ],
       useCases: [
-        "Support that answers from manuals and policies without escalating to a person",
+        "Support that answers questions about rules and manuals without a person",
         "Quick lookups across contracts and reports",
-        "A knowledge base that survives staff turnover",
+        "Knowledge that stays in the company even when someone leaves",
       ],
     },
   },
@@ -475,36 +453,34 @@ export const APP_CONTENT: Record<string, AppContent> = {
     repo_url: "https://github.com/metabase/metabase",
     logo: "https://www.metabase.com/images/logo-with-wordmark.svg",
     "pt-br": {
-      tagline:
-        "Os números do negócio em painéis que você mesmo consulta, sem depender da TI nem saber SQL.",
+      tagline: "Veja os números do seu negócio sozinho, sem pedir relatório e sem esperar dias.",
       description:
-        "Toda vez que a diretoria precisa de um número e tem que pedir para a TI, a decisão espera dias. O Metabase deixa qualquer gestor perguntar em português e montar painel sozinho, sem SQL. Conecta nos bancos que a empresa já usa e os dados ficam na sua infraestrutura.",
+        "Toda vez que a direção precisa de um número e tem que pedir para a equipe técnica, a decisão espera dias. Aqui qualquer gestor pergunta em português e monta o próprio painel, sem depender de ninguém. Usa as informações dos sistemas que a empresa já tem, e os dados ficam com você.",
       benefits: [
-        "Vê os números do negócio sem fila na TI nem espera por relatório",
-        "Pergunta em português, sem precisar saber SQL",
-        "Painel de diretoria sempre atualizado, no lugar de planilha que envelhece",
-        "Conecta nos bancos que a empresa já tem; os dados não saem dela",
+        "Veja os números do negócio sem pedir relatório nem esperar dias",
+        "Pergunte como se estivesse falando com uma pessoa, sem termos técnicos",
+        "Um painel sempre atualizado, no lugar de planilha que envelhece",
+        "Usa as informações dos sistemas que a empresa já tem",
       ],
       useCases: [
         "Painéis de vendas e operação para a gestão",
-        "Métricas de produto e retenção",
-        "Relatório de diretoria que se atualiza sozinho",
+        "Acompanhar resultados do dia a dia",
+        "Relatório para a direção que se atualiza sozinho",
       ],
     },
     en: {
-      tagline:
-        "Your business numbers in dashboards you check yourself, with no IT dependency and no SQL.",
+      tagline: "See your business numbers yourself, without asking for a report or waiting days.",
       description:
-        "Every time leadership needs a number and has to ask IT, the decision waits days. Metabase lets any manager ask in plain language and build a dashboard alone, no SQL. It connects to the databases the company already uses, and the data stays on your infrastructure.",
+        "Every time leadership needs a number and has to ask the technical team, the decision waits days. Here any manager asks in plain language and builds their own dashboard, with no one to depend on. It uses the information from the systems the company already has, and the data stays with you.",
       benefits: [
-        "See the business numbers with no IT queue and no waiting on a report",
-        "Ask in plain language, no SQL required",
-        "A leadership dashboard that's always current, instead of a spreadsheet going stale",
-        "Connects to the databases you already have; the data doesn't leave the company",
+        "See the business numbers without asking for a report or waiting days",
+        "Ask as if you were talking to a person, with no technical terms",
+        "A dashboard that's always current, instead of a spreadsheet going stale",
+        "Uses the information from the systems the company already has",
       ],
       useCases: [
         "Sales and operations dashboards for management",
-        "Product and retention metrics",
+        "Following day-to-day results",
         "A leadership report that updates itself",
       ],
     },
@@ -514,37 +490,35 @@ export const APP_CONTENT: Record<string, AppContent> = {
     repo_url: "https://github.com/khoj-ai/khoj",
     logo: "https://camo.githubusercontent.com/aceab34fe2adf75b48319e8893632fc4dcdace9cbb4e2910f7d4106f706f6b90/68747470733a2f2f6173736574732e6b686f6a2e6465762f6b686f6a2d6c6f676f2d73696465776179732d31323030783534302e706e67",
     "pt-br": {
-      tagline:
-        "Um assistente que responde com base nas suas notas, documentos e na web — com a fonte de cada resposta.",
+      tagline: "Um assistente que responde com base nos seus documentos e mostra de onde tirou.",
       description:
-        "Informação espalhada entre notas, PDFs e repositórios faz cada pesquisa começar do zero. O Khoj conecta esse material e responde com citação da fonte, então dá para confiar e conferir. Funciona com OpenAI, Anthropic, Gemini ou modelo local, e os dados ficam sob seu controle.",
+        "Quando a informação está espalhada em anotações e arquivos, cada busca começa do zero. Este assistente reúne esse material e responde sempre indicando de onde tirou cada coisa — dá para confiar e conferir. Suas informações ficam protegidas, sob seu controle.",
       benefits: [
-        "Respostas com a fonte indicada: dá para conferir, não é caixa-preta",
-        "Pesquisa sobre o acervo próprio em vez de recomeçar a cada vez",
-        "Funciona com os principais provedores e também offline, com modelo local",
-        "Seus dados ficam privados, sob seu controle",
+        "Toda resposta vem com a fonte: dá para conferir, não é no escuro",
+        "Pesquisa nos seus próprios documentos em vez de recomeçar toda vez",
+        "Funciona com as principais inteligências artificiais do mercado",
+        "Suas informações ficam protegidas e sob seu controle",
       ],
       useCases: [
-        "Pesquisa sobre o acervo da empresa com fontes",
-        "Resumos e respostas a partir de relatórios próprios",
-        "Apoio a desenvolvedores sobre o próprio código",
+        "Pesquisa nos documentos da empresa, com a fonte de cada resposta",
+        "Resumos e respostas a partir dos seus relatórios",
+        "Apoio à equipe técnica sobre o próprio trabalho",
       ],
     },
     en: {
-      tagline:
-        "An assistant that answers from your notes, documents and the web — with a source for every answer.",
+      tagline: "An assistant that answers from your documents and shows where it got it.",
       description:
-        "Information scattered across notes, PDFs and repositories makes every search start from zero. Khoj connects that material and answers with the source cited, so you can trust it and check it. It works with OpenAI, Anthropic, Gemini or a local model, and your data stays under your control.",
+        "When information is scattered across notes and files, every search starts from zero. This assistant gathers that material and always answers showing where it got each thing — you can trust it and check it. Your information stays protected, under your control.",
       benefits: [
-        "Answers with the source shown: you can check it, it's not a black box",
-        "Research over your own material instead of starting over each time",
-        "Works with the main providers and offline, with a local model",
-        "Your data stays private, under your control",
+        "Every answer comes with its source: you can check it, not work blind",
+        "Searches your own documents instead of starting over every time",
+        "Works with the main artificial intelligences on the market",
+        "Your information stays protected and under your control",
       ],
       useCases: [
-        "Research across the company's material, with sources",
-        "Summaries and answers from your own reports",
-        "Support for developers over their own code",
+        "Search across company documents, with a source for every answer",
+        "Summaries and answers from your reports",
+        "Support for the technical team on their own work",
       ],
     },
   },
@@ -553,37 +527,35 @@ export const APP_CONTENT: Record<string, AppContent> = {
     repo_url: "https://github.com/twentyhq/twenty",
     logo: "https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-website/public/images/core/logo.svg",
     "pt-br": {
-      tagline:
-        "CRM moderno sem a mensalidade do Salesforce — e com os dados de venda sob seu controle.",
+      tagline: "Organize seus clientes e vendas sem a mensalidade dos programas conhecidos.",
       description:
-        "Salesforce e HubSpot cobram caro por usuário e prendem os dados de venda na nuvem deles. O Twenty gerencia contatos, empresas e negócios com um modelo de dados que você molda ao seu processo, sem licença por assento. Self-hosted: a base de clientes é sua, não do fornecedor.",
+        "Os programas conhecidos de gestão de clientes cobram caro por usuário e guardam sua carteira de clientes fora da empresa. Aqui você organiza contatos, empresas e negócios do jeito que o seu processo funciona, sem mensalidade por pessoa — e a sua carteira de clientes é sua.",
       benefits: [
-        "Sem mensalidade por usuário como nos CRMs de mercado",
-        "Base de clientes e de vendas fica com você, não presa no fornecedor",
-        "Modelo de dados moldado ao seu processo, não ao contrário",
-        "Automações e integração com e-mail e calendário",
+        "Sem a mensalidade por usuário dos programas conhecidos",
+        "Sua carteira de clientes fica com você, não com o fornecedor",
+        "Organizado do jeito que o seu negócio funciona",
+        "Conecta com e-mail e agenda",
       ],
       useCases: [
-        "Funil de vendas e gestão de contatos",
-        "Relacionamento e pós-venda",
-        "Pipeline customizado ao processo da empresa",
+        "Acompanhar o funil de vendas e os contatos",
+        "Relacionamento com o cliente depois da venda",
+        "Organizar oportunidades do jeito da empresa",
       ],
     },
     en: {
-      tagline:
-        "A modern CRM without the Salesforce subscription — and with your sales data under your control.",
+      tagline: "Organize your customers and sales without the fee of the well-known programs.",
       description:
-        "Salesforce and HubSpot charge a lot per user and lock your sales data into their cloud. Twenty manages contacts, companies and deals with a data model you shape to your process, with no per-seat license. Self-hosted: the customer base is yours, not the vendor's.",
+        "The well-known customer-management programs charge a lot per user and keep your customer base outside the company. Here you organize contacts, companies and deals the way your process works, with no per-person fee — and your customer base is yours.",
       benefits: [
-        "No per-user subscription like the market CRMs",
-        "Your customer and sales base stays with you, not trapped at a vendor",
-        "A data model shaped to your process, not the other way around",
-        "Automations and email and calendar integration",
+        "No per-user fee like the well-known programs",
+        "Your customer base stays with you, not with the vendor",
+        "Organized the way your business works",
+        "Connects with email and calendar",
       ],
       useCases: [
-        "Sales funnel and contact management",
-        "Customer relationships and after-sales",
-        "A pipeline customized to the company's process",
+        "Following the sales funnel and contacts",
+        "Customer relationships after the sale",
+        "Organizing opportunities the company's way",
       ],
     },
   },
@@ -592,37 +564,35 @@ export const APP_CONTENT: Record<string, AppContent> = {
     repo_url: "https://github.com/chatwoot/chatwoot",
     logo: "https://www.chatwoot.com/brand/on_white.png",
     "pt-br": {
-      tagline:
-        "Todo o atendimento — WhatsApp, e-mail, redes — numa caixa só, sem perder cliente no caminho.",
+      tagline: "Todo o atendimento ao cliente num lugar só, sem deixar ninguém sem resposta.",
       description:
-        "Quando o cliente fala por WhatsApp, e-mail e Instagram ao mesmo tempo, mensagem se perde e ninguém sabe quem respondeu o quê. O Chatwoot junta todos os canais numa caixa de entrada compartilhada, com histórico por cliente e chatbots para o que é repetitivo. Self-hosted, sem pagar por agente como nas ferramentas de mercado.",
+        "Quando o cliente fala por WhatsApp, e-mail e redes sociais ao mesmo tempo, mensagem se perde e ninguém sabe quem já respondeu. Aqui tudo chega numa caixa só, com o histórico de cada cliente à mão, e um atendente automático cuida das perguntas repetidas. Sem pagar por atendente.",
       benefits: [
-        "Nenhuma mensagem de cliente cai no vácuo entre WhatsApp, e-mail e redes",
-        "A equipe vê o histórico de cada cliente, independente do canal",
-        "Chatbot resolve o repetitivo e libera a equipe para o que importa",
-        "Sem mensalidade por agente: o custo não pune o crescimento da equipe",
+        "Nenhuma mensagem de cliente fica sem resposta",
+        "A equipe vê toda a conversa com o cliente, não importa por onde ele falou",
+        "Um atendente automático resolve o que é repetitivo e libera a equipe",
+        "Sem mensalidade por atendente: crescer não custa mais caro",
       ],
       useCases: [
-        "Atendimento por WhatsApp em escala",
-        "Suporte com vários canais numa fila só",
-        "Helpdesk interno",
+        "Atendimento por WhatsApp em grande volume",
+        "Vários canais de contato numa fila só",
+        "Central de atendimento interno",
       ],
     },
     en: {
-      tagline:
-        "All your support — WhatsApp, email, social — in one inbox, with no customer lost along the way.",
+      tagline: "All customer support in one place, with no one left without an answer.",
       description:
-        "When a customer reaches out by WhatsApp, email and Instagram at once, messages slip through and nobody knows who replied to what. Chatwoot pulls every channel into one shared inbox, with per-customer history and chatbots for the repetitive parts. Self-hosted, with no per-agent fee like the market tools charge.",
+        "When a customer reaches out by WhatsApp, email and social media at once, messages slip through and nobody knows who already replied. Here everything lands in one inbox, with each customer's history on hand, and an automatic agent handles the repeated questions. No per-agent fee.",
       benefits: [
-        "No customer message falls through the cracks between WhatsApp, email and social",
-        "The team sees each customer's history, whatever the channel",
-        "A chatbot handles the repetitive work and frees the team for what matters",
-        "No per-agent fee: cost doesn't punish a growing team",
+        "No customer message goes unanswered",
+        "The team sees the whole conversation with a customer, whatever channel they used",
+        "An automatic agent handles the repetitive part and frees the team",
+        "No per-agent fee: growing doesn't cost more",
       ],
       useCases: [
-        "WhatsApp support at scale",
-        "Multi-channel support in a single queue",
-        "Internal helpdesk",
+        "High-volume WhatsApp support",
+        "Several contact channels in a single queue",
+        "Internal support desk",
       ],
     },
   },
@@ -631,37 +601,35 @@ export const APP_CONTENT: Record<string, AppContent> = {
     repo_url: "https://github.com/apache/superset",
     logo: "https://camo.githubusercontent.com/dc551298736c4cc5f9b23512ef7ca67e6a9304be4d2e06a0d3ff09b6491adb9b/68747470733a2f2f73757065727365742e6170616368652e6f72672f696d672f73757065727365742d6c6f676f2d686f72697a2d6170616368652e737667",
     "pt-br": {
-      tagline:
-        "BI de nível corporativo sem licença por usuário — e cada um só vê o dado que pode ver.",
+      tagline: "Os números da empresa em painéis claros, e cada um vê só o que pode ver.",
       description:
-        "Ferramentas de BI de mercado cobram por usuário e a conta cresce junto com a empresa. O Superset entrega painéis e exploração de dados no padrão corporativo, com controle de acesso por linha — cada pessoa enxerga só o que lhe cabe. Open-source, na sua infraestrutura, sem licença por assento.",
+        "As ferramentas de relatório mais robustas costumam cobrar por usuário, e a conta cresce junto com a empresa. Aqui você acompanha os números do negócio em painéis organizados e decide quem enxerga o quê — cada pessoa vê só os dados que lhe cabem. Sem mensalidade por usuário.",
       benefits: [
-        "BI corporativo sem licença por usuário que cresce com a empresa",
-        "Controle por linha: cada um vê só o dado que tem permissão",
-        "Analistas exploram à vontade; a gestão recebe o painel pronto",
-        "Conecta nos bancos que a empresa já usa, na sua infraestrutura",
+        "Acompanhe os números do negócio sem mensalidade por usuário",
+        "Cada pessoa vê só os dados que pode ver",
+        "A equipe de análise trabalha à vontade; a direção recebe o painel pronto",
+        "Usa as informações dos sistemas que a empresa já tem",
       ],
       useCases: [
-        "Painéis executivos e operacionais",
-        "Exploração de dados pela equipe de análise",
-        "BI com controle fino de quem vê o quê",
+        "Painéis para a direção e para a operação",
+        "Análises detalhadas pela equipe de dados",
+        "Relatórios com controle de quem acessa o quê",
       ],
     },
     en: {
-      tagline:
-        "Enterprise-grade BI without a per-user license — and each person sees only the data they're allowed to.",
+      tagline: "The company's numbers in clear dashboards, and each person sees only what they should.",
       description:
-        "Market BI tools charge per user and the bill grows with the company. Superset delivers enterprise-grade dashboards and data exploration, with row-level access control — each person sees only what's theirs to see. Open-source, on your infrastructure, with no per-seat license.",
+        "The more robust reporting tools usually charge per user, and the bill grows with the company. Here you follow the business numbers in organized dashboards and decide who sees what — each person sees only the data that's theirs. No per-user fee.",
       benefits: [
-        "Enterprise BI without a per-user license that grows with the company",
-        "Row-level control: each person sees only the data they're permitted",
-        "Analysts explore freely; management gets the finished dashboard",
-        "Connects to the databases you already use, on your infrastructure",
+        "Follow the business numbers with no per-user fee",
+        "Each person sees only the data they're allowed to",
+        "The analysis team works freely; leadership gets the finished dashboard",
+        "Uses the information from the systems the company already has",
       ],
       useCases: [
-        "Executive and operational dashboards",
-        "Data exploration by the analytics team",
-        "BI with fine-grained control over who sees what",
+        "Dashboards for leadership and operations",
+        "Detailed analysis by the data team",
+        "Reports with control over who sees what",
       ],
     },
   },
@@ -670,37 +638,35 @@ export const APP_CONTENT: Record<string, AppContent> = {
     repo_url: "https://github.com/onyx-dot-app/onyx",
     logo: "https://raw.githubusercontent.com/onyx-dot-app/onyx/logo/OnyxLogoCropped.jpg",
     "pt-br": {
-      tagline:
-        "Pergunte uma vez e a IA busca em Drive, Slack, Notion e wikis ao mesmo tempo, com a fonte.",
+      tagline: "Encontre qualquer informação espalhada pela empresa numa busca só.",
       description:
-        "Em empresa com Drive, Slack, Notion e Confluence, a informação existe mas ninguém acha. O Onyx conecta tudo e responde com citação da fonte, então a equipe para de garimpar e o novato encontra sozinho o que precisa. Roda na sua infraestrutura.",
+        "Numa empresa, a informação está em vários programas diferentes e quase ninguém acha o que precisa. Aqui uma única busca procura em todos eles de uma vez e mostra de onde veio a resposta. A equipe para de garimpar e quem entrou há pouco se vira sozinho.",
       benefits: [
-        "Uma busca cobre Drive, Slack, Notion e wikis de uma vez",
-        "Resposta com a fonte: dá para confiar e checar de onde veio",
-        "Novato se vira sozinho em vez de interromper o time o tempo todo",
-        "Roda na sua infraestrutura; o conhecimento não vaza para fora",
+        "Uma busca só procura em todos os programas da empresa",
+        "A resposta vem com a fonte: dá para confiar",
+        "Quem entrou há pouco encontra sozinho, sem interromper o time",
+        "As informações ficam protegidas dentro da empresa",
       ],
       useCases: [
-        "Busca unificada no que está espalhado pela empresa",
-        "Onboarding sem interromper o time toda hora",
-        "Assistente interno de conhecimento",
+        "Encontrar informação espalhada pela empresa",
+        "Ajudar quem acabou de entrar a se virar sozinho",
+        "Assistente interno que conhece a empresa",
       ],
     },
     en: {
-      tagline:
-        "Ask once and the AI searches Drive, Slack, Notion and wikis at the same time, with the source.",
+      tagline: "Find any information scattered across the company in a single search.",
       description:
-        "In a company with Drive, Slack, Notion and Confluence, the information exists but nobody can find it. Onyx connects all of it and answers with the source cited, so the team stops digging and new hires find what they need on their own. It runs on your infrastructure.",
+        "In a company, information sits in several different programs and almost nobody finds what they need. Here a single search looks through all of them at once and shows where the answer came from. The team stops digging, and new hires manage on their own.",
       benefits: [
-        "One search covers Drive, Slack, Notion and wikis at once",
-        "Answers with the source: you can trust it and see where it came from",
-        "New hires manage on their own instead of interrupting the team constantly",
-        "Runs on your infrastructure; the knowledge doesn't leak outside",
+        "A single search looks through all the company's programs",
+        "The answer comes with its source: you can trust it",
+        "New hires find things on their own, without interrupting the team",
+        "The information stays protected inside the company",
       ],
       useCases: [
-        "Unified search across what's scattered around the company",
-        "Onboarding without constant interruptions to the team",
-        "An internal knowledge assistant",
+        "Finding information scattered across the company",
+        "Helping new hires manage on their own",
+        "An internal assistant that knows the company",
       ],
     },
   },
@@ -709,37 +675,35 @@ export const APP_CONTENT: Record<string, AppContent> = {
     repo_url: "https://github.com/AppFlowy-IO/AppFlowy",
     logo: "https://pbs.twimg.com/profile_images/1455082143315496961/hZt2DeOJ.jpg",
     "pt-br": {
-      tagline:
-        "Wiki e documentação da equipe sem mensalidade por pessoa e sem seus dados na nuvem dos outros.",
+      tagline: "Os documentos e projetos da equipe num lugar só, sem pagar por pessoa.",
       description:
-        "Ferramentas como o Notion cobram por usuário e guardam suas anotações em servidor de terceiro. O AppFlowy entrega wiki, documentação e gestão de projetos rodando na sua própria infraestrutura: o custo não cresce a cada pessoa que entra, e a informação da empresa fica com a empresa.",
+        "As ferramentas conhecidas de anotação e organização cobram por usuário e guardam tudo fora da sua empresa. Aqui a equipe escreve, organiza projetos e compartilha documentos num lugar só, sem que a conta cresça a cada pessoa que entra — e a informação fica com você.",
       benefits: [
-        "Custo não escala por assento — o time pode crescer sem a conta acompanhar",
-        "Documentação e dados da equipe ficam na sua infraestrutura, fora da nuvem de terceiros",
-        "Substitui o Notion sem o risco de mudança de preço ou de política do fornecedor",
-        "Wiki, projetos e notas no mesmo lugar, com IA embutida",
+        "A conta não aumenta a cada pessoa nova na equipe",
+        "Documentos e anotações da equipe ficam com a empresa, não com terceiros",
+        "Tudo no mesmo lugar: textos, projetos e tarefas",
+        "Você não fica preso a um fornecedor que pode mudar o preço",
       ],
       useCases: [
-        "Wiki e base de conhecimento que a empresa controla",
-        "Gestão de projetos e notas compartilhadas",
-        "Documentação interna sem licença por usuário",
+        "Central de documentos e procedimentos da equipe",
+        "Organização de projetos e tarefas",
+        "Anotações compartilhadas entre o time",
       ],
     },
     en: {
-      tagline:
-        "Team wiki and docs without a per-seat fee and without your data on someone else's cloud.",
+      tagline: "The team's documents and projects in one place, without paying per person.",
       description:
-        "Tools like Notion charge per user and keep your notes on a third party's servers. AppFlowy delivers wiki, documentation and project management running on your own infrastructure: the bill doesn't grow with every new hire, and company information stays with the company.",
+        "The well-known note-taking and organizing tools charge per user and keep everything outside your company. Here the team writes, organizes projects and shares documents in one place, without the bill growing with every new hire — and the information stays with you.",
       benefits: [
-        "Cost doesn't scale per seat — the team can grow without the bill following",
-        "Team docs and data stay on your infrastructure, off third-party clouds",
-        "Replaces Notion without the risk of a vendor changing price or policy",
-        "Wiki, projects and notes in one place, with AI built in",
+        "The bill doesn't go up with every new person on the team",
+        "Team documents and notes stay with the company, not a third party",
+        "Everything in one place: text, projects and tasks",
+        "You're not locked to a vendor that can change the price",
       ],
       useCases: [
-        "A wiki and knowledge base the company controls",
-        "Project management and shared notes",
-        "Internal documentation without a per-user license",
+        "A central place for team documents and procedures",
+        "Organizing projects and tasks",
+        "Shared notes across the team",
       ],
     },
   },
@@ -748,37 +712,35 @@ export const APP_CONTENT: Record<string, AppContent> = {
     repo_url: "https://github.com/langgenius/dify",
     logo: "https://pbs.twimg.com/profile_images/1998264604145963008/v__dR1kD.jpg",
     "pt-br": {
-      tagline:
-        "Coloca ideias de IA pra rodar de verdade, sem depender de um time grande de desenvolvimento.",
+      tagline: "Coloque a IA pra trabalhar no seu negócio, sem precisar de equipe técnica.",
       description:
-        "A maior parte dos projetos de IA morre entre a ideia e algo que funciona em produção, quase sempre por falta de gente técnica. O Dify reduz essa distância: dá para montar assistentes, automações e chatbots sobre a base da empresa em uma plataforma só, trocando de modelo (OpenAI, Anthropic, modelo local) sem reescrever nada e sem ficar preso a um fornecedor.",
+        "A maior parte das ideias com inteligência artificial morre na gaveta por falta de gente técnica para tirar do papel. Aqui você cria assistentes e automações que usam as informações da sua empresa, num lugar só, e pode trocar a inteligência por trás quando quiser, sem ficar preso a um fornecedor.",
       benefits: [
-        "Ideia de IA vira ferramenta em uso sem precisar montar um time de engenharia",
-        "Troca o modelo por trás (OpenAI, Anthropic, local) sem ficar refém de um fornecedor",
-        "O que era protótipo vai para produção na mesma plataforma",
-        "Assistentes respondem com base na sua informação, não em achismo",
+        "Uma ideia com inteligência artificial vira algo em uso, sem montar equipe técnica",
+        "Não fica preso a um único fornecedor de inteligência artificial",
+        "O que começa como teste vira ferramenta de verdade",
+        "Os assistentes respondem com base nas informações da sua empresa",
       ],
       useCases: [
-        "Assistentes de atendimento sobre a base da empresa",
-        "Automações internas com IA",
-        "Chatbots que entram em produção, não só em demonstração",
+        "Assistentes de atendimento que conhecem a sua empresa",
+        "Automações internas com inteligência artificial",
+        "Tirar uma ideia do papel sem grande investimento técnico",
       ],
     },
     en: {
-      tagline:
-        "Gets AI ideas actually running, without needing a large development team.",
+      tagline: "Put AI to work in your business, with no technical team.",
       description:
-        "Most AI projects die between the idea and something that works in production, usually for lack of technical staff. Dify shortens that gap: you can build assistants, automations and chatbots over the company's data in one platform, switching models (OpenAI, Anthropic, a local model) without rewriting anything and without getting locked to one vendor.",
+        "Most artificial-intelligence ideas die in a drawer for lack of technical people to make them real. Here you build assistants and automations that use your company's information, in one place, and you can swap the intelligence behind them whenever you want, without getting locked to a vendor.",
       benefits: [
-        "An AI idea becomes a working tool without standing up an engineering team",
-        "Swap the model underneath (OpenAI, Anthropic, local) without depending on one vendor",
-        "What was a prototype goes to production on the same platform",
-        "Assistants answer from your information, not guesswork",
+        "An AI idea becomes something in use, without building a technical team",
+        "You're not locked to a single AI vendor",
+        "What starts as a test becomes a real tool",
+        "The assistants answer based on your company's information",
       ],
       useCases: [
-        "Support assistants over the company's knowledge",
-        "Internal automations with AI",
-        "Chatbots that reach production, not just a demo",
+        "Support assistants that know your company",
+        "Internal automations with artificial intelligence",
+        "Turning an idea into reality without a big technical investment",
       ],
     },
   },
