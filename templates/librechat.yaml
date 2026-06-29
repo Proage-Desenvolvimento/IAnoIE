@@ -1,0 +1,224 @@
+$schema: "ianoie-template/v1"
+
+metadata:
+  name: "LibreChat"
+  slug: "librechat"
+  version: "latest"
+  description: "Enhanced ChatGPT-clone — unified chat across OpenAI, Anthropic, Gemini and Ollama, with agents, presets and RAG file search."
+  long_description: |
+    LibreChat is an open-source, enhanced ChatGPT-style clone that brings
+    multiple AI providers — OpenAI, Anthropic, Google Gemini, Ollama, Azure and
+    any OpenAI-compatible endpoint — into a single conversation interface. The
+    team chats, switches models mid-thread, compares answers, and uses presets,
+    agents and multi-user workspaces. Stack: the LibreChat API container (which
+    also serves the web UI on port 3080) plus MongoDB (conversations/users),
+    Meilisearch (message search), and a pgvector + rag-api subsystem for RAG
+    file search. The default LLM provider chosen at install is injected
+    automatically; refine endpoints/models later in the app.
+  category: "chat"
+  icon: "MessagesSquare"
+  tags: ["llm", "chat", "agents", "rag", "multi-model"]
+
+gpu:
+  required: false
+  min_count: 0
+  max_count: 0
+  min_vram_gb: 0
+
+# O provider padrão da IAnoIE é injetado como as env vars correspondentes de
+# cada endpoint do LibreChat. (ENDPOINTS fica no default da imagem, que já inclui
+# openAI/anthropic/google/etc.; só a chave/liberação vem daqui.)
+llm:
+  supported_providers: ["openai", "anthropic", "gemini", "ollama"]
+  connection_env:
+    openai:
+      OPENAI_API_KEY: "{{llm.api_key}}"
+    anthropic:
+      ANTHROPIC_API_KEY: "{{llm.api_key}}"
+    gemini:
+      GOOGLE_KEY: "{{llm.api_key}}"
+    ollama:
+      # LibreChat fala com Ollama via endpoint compatível OpenAI; configure o
+      # modelo/base URL no painel do app se usar Ollama local.
+      OLLAMA_API_BASE: "{{llm.base_url}}"
+
+config:
+  - key: "jwt_secret"
+    label: "JWT Secret"
+    type: "string"
+    default: "16ae5c9f3b7d4e8a12f09c6b5d3a7e9f4c1b8a2d6e0f3c5a7b9d1e3f5a7c9b2d"
+    required: true
+    description: "Segredo do JWT do LibreChat (obrigatório no primeiro boot)."
+  - key: "creds_key"
+    label: "CREDS Key"
+    type: "string"
+    default: "e4d9a1f7c3b80625ad4f2e9c71b08d6a3f5e7c9b1d2a4f6e8c0a2b4d6e8f0a2"
+    required: true
+    description: "Chave de criptografia de credenciais do LibreChat (obrigatório)."
+  - key: "jwt_refresh_secret"
+    label: "JWT Refresh Secret"
+    type: "string"
+    default: "b2c4e6a801f3d5a7c9e1b3d5f7a9c1e3b5d7f9a1c3e5b7d9f1a3c5e7b9d1f3a"
+    required: true
+    description: "Segredo do refresh token do LibreChat (obrigatório)."
+  - key: "meili_master_key"
+    label: "Meili Master Key"
+    type: "string"
+    default: "IanoieLibreChatMeili2024"
+    required: true
+    description: "Chave master do Meilisearch (busca de mensagens)."
+
+services:
+  mongodb:
+    image: "mongo"
+    tag: "8.0.17"
+    internal: true
+
+    command:
+      - "mongod"
+      - "--noauth"
+
+    ports:
+      - container_port: 27017
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    volumes:
+      - name: "librechat-mongo"
+        mount_path: "/data/db"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' | grep -q 1"]
+      interval: 20
+      timeout: 10
+      retries: 20
+      start_period: 40
+
+    restart: "always"
+
+  meilisearch:
+    image: "getmeili/meilisearch"
+    tag: "v1.12.3"
+    internal: true
+
+    environment:
+      MEILI_NO_ANALYTICS: "true"
+      MEILI_MASTER_KEY: "{{config.meili_master_key}}"
+
+    ports:
+      - container_port: 7700
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    volumes:
+      - name: "librechat-meili"
+        mount_path: "/meili_data"
+        mode: "rw"
+
+    restart: "always"
+
+  vectordb:
+    image: "pgvector/pgvector"
+    tag: "0.8.0-pg15-trixie"
+    internal: true
+
+    environment:
+      POSTGRES_DB: "mydatabase"
+      POSTGRES_USER: "myuser"
+      POSTGRES_PASSWORD: "mypassword"
+
+    ports:
+      - container_port: 5432
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    volumes:
+      - name: "librechat-pgdata"
+        mount_path: "/var/lib/postgresql/data"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydatabase"]
+      interval: 15
+      timeout: 5
+      retries: 20
+      start_period: 30
+
+    restart: "always"
+
+  rag_api:
+    image: "ghcr.io/danny-avila/librechat-rag-api-dev-lite"
+    tag: "latest"
+    internal: true
+
+    environment:
+      DB_HOST: "{{services.vectordb}}"
+      RAG_PORT: "8000"
+
+    ports:
+      - container_port: 8000
+        host_port: null
+        protocol: "tcp"
+        expose: false
+
+    restart: "always"
+
+    depends_on:
+      - "vectordb"
+
+  api:
+    image: "ghcr.io/danny-avila/librechat-dev"
+    tag: "latest"
+    internal: false
+
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "3080"
+      # Mongo + Meili + RAG apontam para os serviços irmãos da instalação.
+      MONGO_URI: "mongodb://{{services.mongodb}}:27017/LibreChat"
+      MEILI_HOST: "http://{{services.meilisearch}}:7700"
+      MEILI_MASTER_KEY: "{{config.meili_master_key}}"
+      RAG_PORT: "8000"
+      RAG_API_URL: "http://{{services.rag_api}}:8000"
+      # Segredos obrigatórios no primeiro boot (sem eles o container sai).
+      CREDS_KEY: "{{config.creds_key}}"
+      JWT_SECRET: "{{config.jwt_secret}}"
+      JWT_REFRESH_SECRET: "{{config.jwt_refresh_secret}}"
+      # Domínio público da instalação (callbacks/links corretos por trás do Traefik).
+      DOMAIN_CLIENT: "{{public_url}}"
+      DOMAIN_SERVER: "{{public_url}}"
+
+    ports:
+      - container_port: 3080
+        host_port: null
+        protocol: "tcp"
+        expose: true
+
+    volumes:
+      - name: "librechat-images"
+        mount_path: "/app/client/public/images"
+        mode: "rw"
+      - name: "librechat-uploads"
+        mount_path: "/app/uploads"
+        mode: "rw"
+      - name: "librechat-logs"
+        mount_path: "/app/logs"
+        mode: "rw"
+
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/3080' || exit 1"]
+      interval: 30
+      timeout: 10
+      retries: 15
+      start_period: 120
+
+    restart: "always"
+
+    depends_on:
+      - "mongodb"
+      - "meilisearch"
+      - "rag_api"

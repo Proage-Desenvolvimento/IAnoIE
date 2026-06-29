@@ -210,6 +210,26 @@ APPS = [
         "version": "1.0.0",
         "gpu_requirements": '{"min_gpu_count": 0, "min_vram_gb": 0, "gpu_required": false}',
     },
+    {
+        "name": "RAGFlow",
+        "slug": "ragflow",
+        "description": "RAG engine with deep document understanding — chunk, embed and chat over complex documents (PDFs, tables, contracts) with grounded citations.",
+        "category": "inteligencia",
+        "template_path": "ragflow.yaml",
+        "icon_url": None,
+        "version": "latest",
+        "gpu_requirements": '{"min_gpu_count": 0, "min_vram_gb": 0, "gpu_required": false}',
+    },
+    {
+        "name": "LibreChat",
+        "slug": "librechat",
+        "description": "Enhanced ChatGPT-clone — unified chat across OpenAI, Anthropic, Gemini and Ollama, with agents, presets and RAG file search.",
+        "category": "inteligencia",
+        "template_path": "librechat.yaml",
+        "icon_url": None,
+        "version": "latest",
+        "gpu_requirements": '{"min_gpu_count": 0, "min_vram_gb": 0, "gpu_required": false}',
+    },
 ]
 
 

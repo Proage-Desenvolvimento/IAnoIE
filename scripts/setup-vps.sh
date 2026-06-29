@@ -168,6 +168,13 @@ echo ""
 info "Creating ianoie-proxy network..."
 docker network create ianoie-proxy 2>/dev/null && ok "Network created" || ok "Network already exists"
 
+# --- Elasticsearch kernel tuning (RAGFlow) ---
+# Elasticsearch requires vm.max_map_count >= 262144 or it crashes on boot.
+# Apply now and persist so it survives reboot (no-op on hosts without ES apps).
+sysctl -w vm.max_map_count=262144 >/dev/null 2>&1 || true
+echo 'vm.max_map_count=262144' > /etc/sysctl.d/99-ianoie-elasticsearch.conf
+info "vm.max_map_count set to 262144 (Elasticsearch/RAGFlow requirement)"
+
 # --- Done ---
 echo ""
 echo -e "${GREEN}=== Setup Complete ===${NC}"

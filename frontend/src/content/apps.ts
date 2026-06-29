@@ -771,6 +771,86 @@ export const APP_CONTENT: Record<string, AppContent> = {
       ],
     },
   },
+
+  ragflow: {
+    repo_url: "https://github.com/infiniflow/ragflow",
+    logo: "https://raw.githubusercontent.com/infiniflow/ragflow/main/web/src/assets/logo-with-text.svg",
+    hero: "https://raw.githubusercontent.com/infiniflow/ragflow-docs/refs/heads/image/image/agentic-dark.gif",
+    "pt-br": {
+      tagline:
+        "Pergunte sobre seus documentos mais complexos e receba respostas com a fonte.",
+      description:
+        "Contratos, manuais e relatórios cheios de tabelas e páginas difíceis de ler ficam parados. O RAGFlow entende esses documentos inteiros — inclusive tabelas e PDFs mal formatados — e responde indicando de onde tirou cada informação. Sua equipe pergunta e recebe a resposta na hora, sem depender de quem 'sabe onde está o arquivo'.",
+      benefits: [
+        "Lê documentos difíceis — PDFs longos, tabelas e formulários — que ferramentas comuns não conseguem",
+        "Cada resposta vem com a fonte exata: dá para conferir e confiar",
+        "O conhecimento da empresa para de ficar preso com uma ou duas pessoas",
+        "Documentos sigilosos continuam dentro da sua empresa, sob seu controle",
+      ],
+      useCases: [
+        "Consultar contratos, políticas e manuais técnicos sem ler tudo",
+        "Extrair respostas de relatórios e propostas complexas",
+        "Base de conhecimento interna com respostas sempre citadas",
+      ],
+    },
+    en: {
+      tagline:
+        "Ask about your most complex documents and get answers with the source.",
+      description:
+        "Contracts, manuals and reports full of tables and hard-to-read pages just sit there. RAGFlow understands these documents whole — including tables and messy PDFs — and answers with a note on exactly where each piece came from. Your team asks and gets the answer right away, without depending on whoever 'knows where the file is.'",
+      benefits: [
+        "Reads difficult documents — long PDFs, tables, forms — that ordinary tools can't",
+        "Every answer comes with its exact source: check it and trust it",
+        "Company knowledge stops being locked with one or two people",
+        "Confidential documents stay inside your company, under your control",
+      ],
+      useCases: [
+        "Search contracts, policies and technical manuals without reading everything",
+        "Pull answers from complex reports and proposals",
+        "An internal knowledge base with every answer cited",
+      ],
+    },
+  },
+
+  librechat: {
+    repo_url: "https://github.com/danny-avila/LibreChat",
+    logo: "https://raw.githubusercontent.com/danny-avila/LibreChat/main/client/public/assets/logo.svg",
+    hero: "https://www.librechat.ai/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fdemo_dark.50599d89.png&w=640&q=75",
+    "pt-br": {
+      tagline:
+        "Todos os seus modelos de IA numa só conversa — escolha o melhor a cada pergunta.",
+      description:
+        "Em vez de ficar abrindo várias abas e contas para usar diferentes inteligências artificiais, o LibreChat reúne OpenAI, Anthropic, Gemini e outros num só lugar. A equipe conversa, compara respostas e usa presets e agentes prontos para o dia a dia, sem precisar configurar cada ferramenta separadamente.",
+      benefits: [
+        "Use OpenAI, Anthropic, Gemini e mais num só chat, sem trocar de conta",
+        "Compare respostas lado a lado e escolha a melhor a cada tarefa",
+        "Presets e agentes prontos aceleram o trabalho repetitivo da equipe",
+        "Conversas e arquivos ficam hospedados na sua própria empresa",
+      ],
+      useCases: [
+        "Centralizar o uso de IA da equipe num único painel",
+        "Comparar modelos para escolher a melhor resposta",
+        "Assistentes com presets para tarefas recorrentes (e-mails, resumos, suporte)",
+      ],
+    },
+    en: {
+      tagline:
+        "All your AI models in one conversation — pick the best for each question.",
+      description:
+        "Instead of juggling multiple tabs and accounts to use different AIs, LibreChat brings OpenAI, Anthropic, Gemini and more into one place. The team chats, compares answers side by side, and uses ready-made presets and agents for daily work, without configuring each tool separately.",
+      benefits: [
+        "Use OpenAI, Anthropic, Gemini and more in one chat, no account switching",
+        "Compare answers side by side and pick the best for each task",
+        "Ready presets and agents speed up repetitive team work",
+        "Conversations and files stay hosted in your own company",
+      ],
+      useCases: [
+        "Centralize the team's AI use in a single panel",
+        "Compare models to choose the best answer",
+        "Assistants with presets for recurring tasks (emails, summaries, support)",
+      ],
+    },
+  },
 };
 
 /** Conteúdo rico de um app, ou undefined se não houver entrada para o slug. */

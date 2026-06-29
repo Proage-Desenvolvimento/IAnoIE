@@ -49,6 +49,12 @@ echo ""
 echo "Creating ianoie-proxy network..."
 docker network create ianoie-proxy 2>/dev/null || echo "Network already exists"
 
+# Elasticsearch (used by RAGFlow) requires vm.max_map_count >= 262144.
+# Apply now and persist so it survives reboot.
+sysctl -w vm.max_map_count=262144 >/dev/null 2>&1 || true
+echo 'vm.max_map_count=262144' > /etc/sysctl.d/99-ianoie-elasticsearch.conf
+echo "vm.max_map_count set to 262144 (Elasticsearch/RAGFlow requirement)"
+
 echo ""
 echo "=== Setup Complete ==="
 echo "Next steps:"
