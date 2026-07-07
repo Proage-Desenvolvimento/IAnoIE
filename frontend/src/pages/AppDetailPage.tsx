@@ -4,6 +4,8 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { LogViewer } from "@/components/logs/LogViewer";
+import { InstallLogs } from "@/components/logs/InstallLogs";
+import { useInstallLogs } from "@/hooks/useInstallLogs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import {
   ArrowLeft,
@@ -42,6 +44,7 @@ export function AppDetailPage() {
 
   const isRunning = inst.status === "running";
   const isStopped = inst.status === "stopped";
+  const isError = inst.status === "error";
   const dateStr = new Date(inst.created_at).toLocaleDateString(undefined, {
     weekday: "short",
     month: "short",
@@ -138,13 +141,30 @@ export function AppDetailPage() {
           <CardTitle>Application Logs</CardTitle>
         </CardHeader>
         <CardContent className="p-0 pb-0">
-          {(isRunning || isStopped) ? (
+          {isError ? (
+            <ErrorLogs installationId={inst.id} lastError={inst.last_error ?? null} />
+          ) : (isRunning || isStopped) ? (
             <LogViewer installationId={inst.id} className="rounded-none border-0" />
           ) : (
             <p className="text-sm text-zinc-500 p-4">Logs available when app is running or stopped.</p>
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function ErrorLogs({ installationId, lastError }: { installationId: number; lastError: string | null }) {
+  // A failed install has no live container, so we show the persisted error + the app_logs
+  // lifecycle events (GET /installations/{id}/logs) instead of the WebSocket stream.
+  const { logs } = useInstallLogs(installationId);
+  return (
+    <div className="space-y-3 p-4">
+      <p className="text-sm font-medium text-red-600">Installation failed</p>
+      {lastError && (
+        <p className="rounded-lg bg-red-50 p-2 text-xs text-red-600 break-all">{lastError}</p>
+      )}
+      <InstallLogs logs={logs} />
     </div>
   );
 }

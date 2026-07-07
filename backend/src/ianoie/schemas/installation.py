@@ -58,6 +58,7 @@ class InstallationResponse(BaseModel):
     llm_model: Optional[str] = None
     access: Optional[AccessInfo] = None
     active_job: Optional[JobSummary] = None
+    last_error: Optional[str] = None
     created_at: datetime.datetime
 
     model_config = {"from_attributes": True}

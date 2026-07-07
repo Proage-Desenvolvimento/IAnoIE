@@ -36,17 +36,29 @@ class InstallationService:
         installations = result.scalars().all()
 
         active_jobs = await self._active_jobs_map([i.id for i in installations])
+        last_errors = await self._last_errors_map([i.id for i in installations])
 
         items = []
         for inst in installations:
-            items.append(await self._to_response(inst, active_job=active_jobs.get(inst.id)))
+            items.append(
+                await self._to_response(
+                    inst,
+                    active_job=active_jobs.get(inst.id),
+                    last_error=last_errors.get(inst.id),
+                )
+            )
 
         return PaginatedResponse(items=items, total=total, page=page, per_page=per_page)
 
     async def get_installation(self, installation_id: int, user: User) -> InstallationResponse:
         inst = await self._get_owned(installation_id, user.id)
         active_jobs = await self._active_jobs_map([inst.id])
-        return await self._to_response(inst, active_job=active_jobs.get(inst.id))
+        last_errors = await self._last_errors_map([inst.id])
+        return await self._to_response(
+            inst,
+            active_job=active_jobs.get(inst.id),
+            last_error=last_errors.get(inst.id),
+        )
 
     async def create_installation(
         self,
@@ -256,6 +268,26 @@ class InstallationService:
         rows = (await self.db.execute(stmt)).scalars().all()
         return {j.installation_id: j for j in rows}
 
+    async def _last_errors_map(self, installation_ids: list[int]) -> dict[int, str]:
+        """Latest error-level lifecycle log (app_logs) per installation_id, in a single query.
+        Lets the UI show why a failed install failed without an extra round-trip — the
+        persisted error survives container rollback (unlike the live WebSocket stream)."""
+        if not installation_ids:
+            return {}
+        from ianoie.models.app_log import AppLog, LogLevel
+
+        stmt = (
+            select(AppLog.installation_id, AppLog.message)
+            .distinct(AppLog.installation_id)  # DISTINCT ON (installation_id) — Postgres
+            .where(
+                AppLog.installation_id.in_(installation_ids),
+                AppLog.level == LogLevel.error,
+            )
+            .order_by(AppLog.installation_id, AppLog.timestamp.desc())
+        )
+        rows = (await self.db.execute(stmt)).all()
+        return {row.installation_id: row.message for row in rows}
+
     @staticmethod
     def _job_summary(job: Optional[Job]) -> Optional[JobSummary]:
         if job is None:
@@ -269,7 +301,8 @@ class InstallationService:
         )
 
     async def _to_response(
-        self, inst: Installation, active_job: Optional[Job] = None
+        self, inst: Installation, active_job: Optional[Job] = None,
+        last_error: Optional[str] = None,
     ) -> InstallationResponse:
         app_result = await self.db.execute(select(App).where(App.id == inst.app_id))
         app = app_result.scalar_one()
@@ -314,6 +347,7 @@ class InstallationService:
             llm_model=inst.llm_model,
             access=access,
             active_job=self._job_summary(active_job),
+            last_error=last_error,
             created_at=inst.created_at,
         )
 

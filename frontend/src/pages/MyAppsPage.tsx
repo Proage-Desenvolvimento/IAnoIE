@@ -274,6 +274,7 @@ function InstallationRow({
 }: InstallationRowProps) {
   const isRunning = inst.status === "running";
   const isStopped = inst.status === "stopped";
+  const isError = inst.status === "error";
   const isTransitioning = inst.status === "installing" || inst.status === "uninstalling" || inst.status === "pending";
   // A non-terminal job (e.g. a long image pull during "update") keeps the row busy
   // — spinner + disabled actions — for the whole job, not just the POST ack.
@@ -390,6 +391,9 @@ function InstallationRow({
         {/* Live progress + install/uninstall logs while a job is running */}
         {isTransitioning && <InstallProgressPanel inst={inst} />}
 
+        {/* Persisted error + install logs for a failed install (no live container to stream) */}
+        {isError && <InstallErrorPanel inst={inst} />}
+
         {/* Access info (URL + credentials declared in the template) */}
         {inst.access && (inst.access.credentials.length > 0 || inst.access.note || inst.access.url) && (
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 border-t border-zinc-100 bg-zinc-50/60 px-5 py-2.5 text-xs">
@@ -467,6 +471,41 @@ function InstallProgressPanel({ inst }: { inst: Installation }) {
           <p className="rounded-lg bg-red-50 p-2 text-xs text-red-600">{job.error}</p>
         )}
       </div>
+
+      <div className="space-y-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowLogs((v) => !v)}
+          className="h-7 px-2 text-zinc-500 hover:text-zinc-700"
+        >
+          <Terminal className="h-3.5 w-3.5" />
+          {showLogs ? "Hide logs" : "View logs"}
+        </Button>
+        {showLogs && <InstallLogs logs={logs} />}
+      </div>
+    </div>
+  );
+}
+
+function InstallErrorPanel({ inst }: { inst: Installation }) {
+  // A failed install has no live container (rollback removed it), so the WebSocket
+  // LogViewer can't stream anything. Instead, show the persisted error + the app_logs
+  // lifecycle events (GET /installations/{id}/logs) — which survive the failure.
+  const { logs } = useInstallLogs(inst.id);
+  const [showLogs, setShowLogs] = useState(true);
+
+  return (
+    <div className="space-y-3 border-t border-zinc-200 px-5 py-4">
+      <div className="flex items-center gap-2 text-sm">
+        <XCircle className="h-4 w-4 text-red-500" />
+        <span className="font-medium text-red-600">Install failed</span>
+      </div>
+      {inst.last_error ? (
+        <p className="rounded-lg bg-red-50 p-2 text-xs text-red-600 break-all">{inst.last_error}</p>
+      ) : (
+        <p className="text-xs text-zinc-500">See the installation log for details.</p>
+      )}
 
       <div className="space-y-2">
         <Button

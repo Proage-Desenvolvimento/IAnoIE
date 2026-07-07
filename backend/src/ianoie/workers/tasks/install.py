@@ -173,7 +173,18 @@ def install_app(self, installation_id: int, job_id: int):
             if not image_mgr.exists(cfg.image):
                 log_event(installation_id, "info", f"Baixando imagem {cfg.image}…", container_name=cfg.name)
                 logger.info("pulling_image", image=cfg.image)
-                image_mgr.pull(img_name, img_tag)
+                try:
+                    image_mgr.pull(img_name, img_tag)
+                except Exception as pull_err:
+                    # Operator-built images (scrapling, omnivoice, voicebox) live only on
+                    # the host (built via scripts/build-apps.sh) — they are NOT in any registry.
+                    # A raw Docker pull 404 here is confusing, so surface an actionable message.
+                    raise RuntimeError(
+                        f"Imagem {cfg.image} não encontrada localmente nem no registry. "
+                        f"Se for uma imagem construída localmente (ex.: scrapling, omnivoice, "
+                        f"voicebox), builde-a no host com 'bash scripts/build-apps.sh' antes de "
+                        f"instalar. Detalhe do pull: {pull_err}"
+                    ) from pull_err
                 log_event(installation_id, "info", f"Imagem {cfg.image} pronta", container_name=cfg.name)
 
             log_event(installation_id, "info", f"Iniciando container {cfg.name}…")

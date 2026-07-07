@@ -43,6 +43,7 @@ export interface Installation {
     progress: number;
     error: string | null;
   } | null;
+  last_error?: string | null;
   created_at: string;
 }
 
