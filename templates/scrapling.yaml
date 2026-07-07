@@ -41,6 +41,12 @@ services:
     tag: "latest"
     internal: false
 
+    # Operator-built image — not in any registry. The worker builds it from this
+    # Dockerfile at install/update time (context is repo-root-relative).
+    build:
+      context: "docker/scrapling"
+      dockerfile: "Dockerfile"
+
     routes:
       # Web terminal (ttyd) → run `scrapling shell`, `scrapling extract`, or Python scripts.
       - path: ""

@@ -197,7 +197,11 @@ if [ -n "${PREV_COMMIT:-}" ] && [ "$PREV_COMMIT" != "$NEW_COMMIT" ]; then
   git --no-pager log --oneline "$PREV_COMMIT..$NEW_COMMIT" 2>/dev/null | sed 's/^/    /' || true
 fi
 
-# --- cleanup unreferenced images + build cache (keeps stopped containers and their images) ---
+# --- cleanup unreferenced images + build cache ---
+# Aggressive prune (-a) is intentional: operator-built app images
+# (ianoie/scrapling, omnivoice, voicebox) are rebuilt at install time when missing
+# (see install task), so pruning them while their app is uninstalled/stopped is fine
+# and keeps disk usage down. --remove-orphans above already drops stale containers.
 info "Pruning unreferenced images and build cache ..."
 docker image prune -a -f >/dev/null 2>&1 || true
 docker builder prune -f >/dev/null 2>&1 || true

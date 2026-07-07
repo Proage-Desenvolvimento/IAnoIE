@@ -62,11 +62,13 @@ def reconfigure_app(self, installation_id: int, job_id: int):
     """Reconfigure an installation by recreating containers with updated config."""
     from ianoie.docker_ops.container_manager import ContainerManager, wait_for_port
     from ianoie.docker_ops.gpu_detector import GPUDetector
+    from ianoie.docker_ops.image_manager import ImageManager
     from ianoie.models.app import App
     from ianoie.models.installation import Installation, InstallationStatus
     from ianoie.models.job import JobStatus
     from ianoie.templates.loader import TemplateLoader
     from ianoie.templates.renderer import TemplateRenderer
+    from ianoie.workers.tasks._images import ensure_image
 
     db = _get_sync_db()
     docker_client = _get_docker_client()
@@ -88,6 +90,7 @@ def reconfigure_app(self, installation_id: int, job_id: int):
             old_container_ids = [installation.container_id]
 
         container_mgr = ContainerManager(docker_client)
+        image_mgr = ImageManager(docker_client)
         for cid in old_container_ids:
             try:
                 container_mgr.stop(cid, timeout=30)
@@ -146,6 +149,10 @@ def reconfigure_app(self, installation_id: int, job_id: int):
         for i, cfg in enumerate(container_configs):
             progress = 0.3 + (0.5 * (i / max(len(container_configs), 1)))
             _update_job(db, job_id, JobStatus.running, progress)
+
+            # Reconfiguring only changes config, not the image — but the image may
+            # have been pruned while the app was stopped, so ensure it exists first.
+            ensure_image(image_mgr, cfg, installation_id)
 
             container = container_mgr.create(cfg)
             container_mgr.start(container.id)

@@ -51,6 +51,12 @@ services:
     tag: "latest"
     internal: false
 
+    # Operator-built image — not in any registry. The worker builds it from this
+    # Dockerfile at install/update time (context is repo-root-relative).
+    build:
+      context: "docker/omnivoice"
+      dockerfile: "Dockerfile"
+
     environment:
       OMNIVOICE_MODEL: "k2-fsa/OmniVoice"
       OMNIVOICE_DEVICE: "cuda"

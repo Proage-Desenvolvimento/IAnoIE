@@ -120,6 +120,9 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:z
       - ../templates:/app/templates:ro,z
+      # Repo root (read-only) so the worker can build operator-built app images
+      # (scrapling/omnivoice/voicebox) from their Dockerfiles at install time.
+      - ..:/app/repo:ro,z
     environment:
       - DATABASE_URL=postgresql+asyncpg://ianoie:ianoie@postgres:5432/ianoie
       - DATABASE_URL_SYNC=postgresql+psycopg2://ianoie:ianoie@postgres:5432/ianoie
@@ -128,6 +131,7 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/1
       - CELERY_RESULT_BACKEND=redis://redis:6379/2
       - TEMPLATES_DIR=/app/templates
+      - BUILD_CONTEXT_ROOT=/app/repo
     env_file:
       - ../.env
     networks:

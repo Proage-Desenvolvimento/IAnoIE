@@ -31,6 +31,12 @@ services:
     tag: "latest"
     internal: false
 
+    # Operator-built image — not in any registry. The worker builds it from this
+    # Dockerfile at install/update time (context is repo-root-relative).
+    build:
+      context: "docker/voicebox"
+      dockerfile: "Dockerfile"
+
     environment:
       LOG_LEVEL: "info"
       NUMBA_CACHE_DIR: "/tmp/numba_cache"

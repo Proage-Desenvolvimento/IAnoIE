@@ -48,6 +48,10 @@ class Settings(BaseSettings):
     # Templates
     templates_dir: str = "/app/templates"
 
+    # Build context root — the repo root mounted read-only into the worker, used to
+    # build operator-built app images (scrapling/omnivoice/voicebox) at install time.
+    build_context_root: str = "/app/repo"
+
     # Default admin
     default_admin_email: str = "admin@aimization.com"
     default_admin_password: str = "admin"

@@ -165,27 +165,9 @@ def install_app(self, installation_id: int, job_id: int):
             progress = 0.1 + (0.7 * (i / max(len(container_configs), 1)))
             _update_job(db, job_id, JobStatus.running, progress)
 
-            # Pull image if not present
-            image_parts = cfg.image.split(":")
-            img_name = image_parts[0]
-            img_tag = image_parts[1] if len(image_parts) > 1 else "latest"
-
-            if not image_mgr.exists(cfg.image):
-                log_event(installation_id, "info", f"Baixando imagem {cfg.image}…", container_name=cfg.name)
-                logger.info("pulling_image", image=cfg.image)
-                try:
-                    image_mgr.pull(img_name, img_tag)
-                except Exception as pull_err:
-                    # Operator-built images (scrapling, omnivoice, voicebox) live only on
-                    # the host (built via scripts/build-apps.sh) — they are NOT in any registry.
-                    # A raw Docker pull 404 here is confusing, so surface an actionable message.
-                    raise RuntimeError(
-                        f"Imagem {cfg.image} não encontrada localmente nem no registry. "
-                        f"Se for uma imagem construída localmente (ex.: scrapling, omnivoice, "
-                        f"voicebox), builde-a no host com 'bash scripts/build-apps.sh' antes de "
-                        f"instalar. Detalhe do pull: {pull_err}"
-                    ) from pull_err
-                log_event(installation_id, "info", f"Imagem {cfg.image} pronta", container_name=cfg.name)
+            # Ensure the image exists locally: reuse / pull / build (operator-built).
+            from ianoie.workers.tasks._images import ensure_image
+            ensure_image(image_mgr, cfg, installation_id)
 
             log_event(installation_id, "info", f"Iniciando container {cfg.name}…")
             container = container_mgr.create(cfg)

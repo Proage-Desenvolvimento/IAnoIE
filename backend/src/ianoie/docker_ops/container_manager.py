@@ -27,6 +27,10 @@ def wait_for_port(host: str, port: int, timeout: int = 180) -> bool:
 class ContainerConfig:
     name: str
     image: str
+    # Operator-built images declare a `build` block (context + dockerfile, repo-root
+    # relative). When set, the install/update task builds the image locally via the
+    # Docker SDK instead of trying to pull it from a registry.
+    build: dict | None = None
     environment: dict[str, str] = field(default_factory=dict)
     labels: dict[str, str] = field(default_factory=dict)
     network: str = "ianoie-proxy"

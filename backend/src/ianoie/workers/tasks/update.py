@@ -141,21 +141,16 @@ def update_app(self, installation_id: int, job_id: int):
         )
 
         # Pull ALL images FIRST — before touching the running containers,
-        # so a download failure leaves the app up on the old image. Unlike
-        # install, the pull here is unconditional (update always fetches latest).
+        # so a download/build failure leaves the app up on the old image. Unlike
+        # install, this forces a refresh: registry images are pulled (latest) and
+        # operator-built images are rebuilt from the current Dockerfile.
         image_mgr = ImageManager(docker_client)
+        from ianoie.workers.tasks._images import ensure_image
         for i, cfg in enumerate(container_configs):
-            image_parts = cfg.image.split(":")
-            img_name = image_parts[0]
-            img_tag = image_parts[1] if len(image_parts) > 1 else "latest"
-
             progress = 0.05 + (0.35 * (i / max(len(container_configs), 1)))
             _update_job(db, job_id, JobStatus.running, progress)
 
-            log_event(installation_id, "info", f"Baixando imagem {cfg.image}…", container_name=cfg.name)
-            logger.info("pulling_image", image=cfg.image)
-            image_mgr.pull(img_name, img_tag)
-            log_event(installation_id, "info", f"Imagem {cfg.image} atualizada", container_name=cfg.name)
+            ensure_image(image_mgr, cfg, installation_id, force_refresh=True)
 
         _update_job(db, job_id, JobStatus.running, 0.5)
 

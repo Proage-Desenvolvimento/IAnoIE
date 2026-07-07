@@ -91,6 +91,7 @@ class TemplateRenderer:
             config = ContainerConfig(
                 name=f"ianoie-{installation_id}-{svc_name}",
                 image=f"{svc['image']}:{svc.get('tag', 'latest')}",
+                build=svc.get("build"),
                 environment=self._render_env(
                     environment, user_config, llm_config, service_hosts, public_url,
                 ),
