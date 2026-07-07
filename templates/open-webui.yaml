@@ -40,6 +40,18 @@ config:
     default: "http://ollama:11434"
     required: false
     description: "URL of your Ollama instance (optional if using cloud provider)"
+  - key: "admin_email"
+    label: "Admin e-mail"
+    type: "string"
+    default: "admin@aimization.com"
+    required: true
+    description: "E-mail da conta admin criada automaticamente na 1ª inicialização (banco novo)."
+  - key: "admin_password"
+    label: "Admin password (seed)"
+    type: "string"
+    default: ""
+    required: true
+    description: "Senha inicial do admin (criada na 1ª inicialização). Mude dentro do Open WebUI após o 1º login. O valor fica visível neste formulário (limitação atual da plataforma)."
 
 services:
   open-webui:
@@ -49,7 +61,10 @@ services:
 
     environment:
       OLLAMA_BASE_URL: "{{config.ollama_base_url}}"
-      WEBUI_AUTH: "false"
+      WEBUI_AUTH: "true"
+      WEBUI_ADMIN_EMAIL: "{{config.admin_email}}"
+      WEBUI_ADMIN_PASSWORD: "{{config.admin_password}}"
+      WEBUI_ADMIN_NAME: "Admin"
       ENV: "prod"
 
     ports:
