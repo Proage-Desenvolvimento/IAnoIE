@@ -215,11 +215,17 @@ class TemplateRenderer:
             if path:
                 prefix = f"/{path}"
                 rule = f"{host} && PathPrefix(`{prefix}`)"
-                labels[f"traefik.http.middlewares.{router}-strip.stripprefix.prefixes"] = prefix
-                middlewares = f"{router}-strip"
+                middlewares = []
+                # Strip the prefix by default (backends that serve at "/"). A route whose
+                # backend serves AT the prefix (e.g. an MCP server mounted at /mcp) declares
+                # strip_prefix: false so the path reaches the backend unchanged.
+                if route.get("strip_prefix", True):
+                    labels[f"traefik.http.middlewares.{router}-strip.stripprefix.prefixes"] = prefix
+                    middlewares.append(f"{router}-strip")
                 if auth_mw:
-                    middlewares = f"{middlewares},{auth_mw}"
-                labels[f"traefik.http.routers.{router}.middlewares"] = middlewares
+                    middlewares.append(auth_mw)
+                if middlewares:
+                    labels[f"traefik.http.routers.{router}.middlewares"] = ",".join(middlewares)
             else:
                 exclusions = "".join(f" && !PathPrefix(`/{p}`)" for p in sibling_paths)
                 rule = f"{host}{exclusions}"

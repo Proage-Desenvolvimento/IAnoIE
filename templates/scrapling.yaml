@@ -52,8 +52,11 @@ services:
       - path: ""
         port: 7681
       # MCP Streamable HTTP (since Scrapling v0.3.6) → point Claude Desktop/Cursor/Claude Code here.
+      # strip_prefix: false — the Scrapling MCP server (FastMCP) serves AT /mcp, not /,
+      # so the prefix must reach the backend unchanged (stripping it caused a 404).
       - path: "mcp"
         port: 8000
+        strip_prefix: false
 
     auth:
       type: "basic"
@@ -86,6 +89,12 @@ access:
       value: "{{config.access_token}}"
   note: |
     Browser: open this app → a web terminal. Run `scrapling shell` (interactive) or
-    `scrapling extract get <url> out.md`. For Claude Desktop / Cursor / Claude Code: add an
-    MCP server with transport "Streamable HTTP", URL {{public_url}}/mcp and these
-    username:token credentials.
+    `scrapling extract get <url> out.md`.
+    MCP server (Streamable HTTP) at {{public_url}}/mcp — authenticate with the
+    username:token shown above:
+      • Claude Desktop / Cursor / Claude Code: add an MCP server, transport
+        "Streamable HTTP", URL {{public_url}}/mcp, basic-auth username:token.
+      • n8n: add an "MCP Client" node → Transport "Streamable HTTP", Server URL
+        {{public_url}}/mcp, Authentication "Header Auth", header "Authorization" =
+        "Basic <base64>" where base64 = `echo -n 'username:token' | base64`
+        (use single quotes so '!' in the token doesn't trigger bash history expansion).

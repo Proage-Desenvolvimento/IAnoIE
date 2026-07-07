@@ -415,7 +415,9 @@ function InstallationRow({
                 <code className="rounded bg-zinc-200/70 px-1.5 py-0.5 font-mono text-zinc-700">{c.value}</code>
               </span>
             ))}
-            {inst.access.note && <span className="text-zinc-400">{inst.access.note}</span>}
+            {inst.access.note && (
+              <span className="w-full whitespace-pre-wrap text-zinc-400">{inst.access.note}</span>
+            )}
           </div>
         )}
 
