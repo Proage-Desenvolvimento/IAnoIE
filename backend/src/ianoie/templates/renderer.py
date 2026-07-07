@@ -230,6 +230,10 @@ class TemplateRenderer:
                 f"traefik.http.routers.{router}.tls": "true",
                 f"traefik.http.routers.{router}.tls.certresolver": "le",
                 f"traefik.http.routers.{router}.priority": "100",
+                # Explicit router→service link: with >1 route each router would otherwise
+                # match multiple services and Traefik refuses to auto-link ("cannot be linked
+                # automatically with multiple Services"), leaving the routers dead (no cert).
+                f"traefik.http.routers.{router}.service": router,
                 f"traefik.http.services.{router}.loadbalancer.server.port": str(port),
             })
 
