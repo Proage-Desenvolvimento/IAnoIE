@@ -50,22 +50,16 @@ def uninstall_app(self, installation_id: int, job_id: int):
         db.commit()
         log_event(installation_id, "info", "Desinstalação iniciada")
 
-        container_ids = json.loads(installation.container_ids or "[]")
-        if not container_ids and installation.container_id:
-            container_ids = [installation.container_id]
+        stored_ids = json.loads(installation.container_ids or "[]")
+        if not stored_ids and installation.container_id:
+            stored_ids = [installation.container_id]
 
         container_mgr = ContainerManager(docker_client)
-        for cid in container_ids:
-            try:
-                container_mgr.stop(cid, timeout=30)
-                logger.info("container_stopped", container_id=cid[:12])
-            except Exception:
-                pass
-            try:
-                container_mgr.remove(cid)
-                logger.info("container_removed", container_id=cid[:12])
-            except Exception:
-                pass
+        # Primary: find containers by label so we catch any whose stored ID went
+        # stale (the orphan-container bug); stored IDs are a fallback for a
+        # container that somehow lost its ianoie.installation_id label.
+        removed = container_mgr.remove_installation_containers(installation_id, stored_ids)
+        logger.info("containers_removed", installation_id=installation_id, count=removed)
         _update_job(db, job_id, JobStatus.running, 0.6)
         log_event(installation_id, "info", "Containers removidos")
 

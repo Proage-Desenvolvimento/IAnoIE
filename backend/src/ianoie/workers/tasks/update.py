@@ -160,17 +160,9 @@ def update_app(self, installation_id: int, job_id: int):
             old_container_ids = [installation.container_id]
 
         container_mgr = ContainerManager(docker_client)
-        for cid in old_container_ids:
-            try:
-                container_mgr.stop(cid, timeout=30)
-                logger.info("container_stopped", container_id=cid[:12])
-            except Exception:
-                pass
-            try:
-                container_mgr.remove(cid)
-                logger.info("container_removed", container_id=cid[:12])
-            except Exception:
-                pass
+        # Remove existing containers by label (robust to stale stored IDs);
+        # old_container_ids is the fallback. Volumes are preserved by name.
+        container_mgr.remove_installation_containers(installation_id, old_container_ids)
 
         log_event(installation_id, "info", "Recriando containers com a nova imagem…")
 

@@ -13,6 +13,7 @@ celery_app = Celery(
         "ianoie.workers.tasks.uninstall",
         "ianoie.workers.tasks.reconfigure",
         "ianoie.workers.tasks.update",
+        "ianoie.workers.tasks.reaper",
     ],
 )
 
@@ -36,5 +37,9 @@ celery_app.conf.beat_schedule = {
     "collect-system-metrics": {
         "task": "ianoie.workers.tasks.system_monitor.collect_system_metrics",
         "schedule": 30,
+    },
+    "reap-orphan-containers": {
+        "task": "ianoie.workers.tasks.reaper.reap_orphan_containers",
+        "schedule": settings.orphan_reaper_interval_seconds,
     },
 }

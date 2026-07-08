@@ -146,8 +146,10 @@ IAnoIE/
 - [ ] Docker socket proxy (tecnativa/docker-socket-proxy) para produção
 - [x] Encriptação de secrets com Fernet — implementado em `core/crypto.py` para chaves de API dos LLM providers
 - [x] Health check endpoint do Celery worker — `GET /api/v1/worker/health` (auth de usuário) em `api/v1/worker.py` + `services/worker_service.py` (Celery `control.ping`/`inspect` via `asyncio.to_thread`); healthcheck do container `worker` no `docker-compose.yml` (`celery inspect ping | grep -q pong`); card de status no SystemMonitor (frontend)
-- [ ] Graceful shutdown do worker (cleanup containers órfãos)
+- [x] Cleanup de containers órfãos — uninstall/reconfigure/update localizam containers pelo label `ianoie.installation_id` em vez de confiar só no ID guardado (`ContainerManager.remove_installation_containers`); reaper periódico (`reap_orphan_containers`, beat `reap-orphan-containers`) remove containers `ianoie.managed=true` cuja `Installation` não existe mais no banco (junto aos seus volumes rotulados)
+- [ ] Graceful shutdown do worker
 - [x] Retry logic melhorada no install_app — rollback de containers criados parcialmente no `except` (install.py e reconfigure.py removem os containers parciais antes do retry, evitando a cascata de 409 name-conflict). Readiness gate por **check TCP** no worker (`wait_for_port`) em vez do healthcheck do Docker (as imagens não têm `curl`); o `container_manager` não injeta mais healthcheck curl
+- [x] Cleanup de containers órfãos — teardown (uninstall/reconfigure/update) acha containers pelo label `ianoie.installation_id` (não só pelo ID guardado) via `ContainerManager.remove_installation_containers`; reaper periódico `reap_orphan_containers` (beat `reap-orphan-containers`) remove qualquer container `ianoie.managed=true` cuja `Installation` sumiu do banco + seus volumes rotulados
 - [ ] Logs de instalação salvos no banco (AppLog) não apenas streamed
 
 ### Frontend — Melhorias
@@ -313,6 +315,7 @@ docker run --rm --gpus all ubuntu nvidia-smi -L
 | `GPU_POLL_INTERVAL_SECONDS` | `60` | Intervalo do beat de GPU metrics |
 | `GPU_METRICS_RETENTION_DAYS` | `7` | Dias de retenção de métricas GPU |
 | `SYSTEM_METRICS_RETENTION_DAYS` | `7` | Dias de retenção de métricas de sistema |
+| `ORPHAN_REAPER_INTERVAL_SECONDS` | `300` | Intervalo (s) do beat do reaper de containers órfãos (remove containers `ianoie.managed` sem `Installation` no banco) |
 | `PORT_RANGE_START` | `9000` | Início da faixa de portas alocadas p/ apps |
 | `PORT_RANGE_END` | `9999` | Fim da faixa de portas alocadas p/ apps |
 | `TEMPLATES_HOST_PATH` | `/opt/ianoie/templates` | Caminho dos templates no host (montado nos containers) |

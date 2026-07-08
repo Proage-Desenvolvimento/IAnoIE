@@ -41,6 +41,10 @@ class Settings(BaseSettings):
     # System Monitoring
     system_metrics_retention_days: int = 7
 
+    # Orphan reaper — periodic sweep that removes app containers whose
+    # Installation row no longer exists (uninstall that left containers behind).
+    orphan_reaper_interval_seconds: int = 300
+
     # Port Management
     port_range_start: int = 9000
     port_range_end: int = 9999

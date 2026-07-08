@@ -119,3 +119,45 @@ class ContainerManager:
         if installation_id is not None:
             labels.append(f"ianoie.installation_id={installation_id}")
         return self.client.containers.list(all=True, filters={"label": labels})
+
+    def remove_installation_containers(
+        self, installation_id: int, stored_ids: list[str] | None = None
+    ) -> int:
+        """Stop+remove every container labeled ``ianoie.installation_id=<installation_id>``,
+        plus any ``stored_ids`` the label lookup missed (defends against a container
+        that lost its label). Mirrors ``VolumeManager.remove_installation_volumes``.
+
+        Primary lookup is by label so teardown is robust to stale stored IDs — the
+        orphan-container bug where a reconfigure/update recreated a container under
+        a new ID but the success-path commit that refreshes the stored IDs never ran.
+        Returns the number of containers removed.
+        """
+        removed = 0
+        seen: set[str] = set()
+
+        for container in self.list_managed(installation_id):
+            try:
+                self.stop(container.id, timeout=30)
+            except Exception:
+                pass
+            try:
+                self.remove(container.id)
+                seen.add(container.id)
+                removed += 1
+            except Exception:
+                pass
+
+        for cid in stored_ids or []:
+            if cid in seen:
+                continue
+            try:
+                self.stop(cid, timeout=30)
+            except Exception:
+                pass
+            try:
+                self.remove(cid)
+                removed += 1
+            except Exception:
+                pass
+
+        return removed
