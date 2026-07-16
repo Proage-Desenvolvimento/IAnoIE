@@ -44,6 +44,9 @@ class ContainerConfig:
     memory_limit: str | None = None
     cpu_limit: float | None = None
     user: str | None = None
+    # Override de DNS por instalação (estilo /etc/hosts). Repassado ao Docker SDK
+    # como `extra_hosts` quando o template declara `extra_hosts_from_config`.
+    extra_hosts: dict[str, str] | None = None
 
 
 class ContainerManager:
@@ -74,6 +77,8 @@ class ContainerManager:
             kwargs["nano_cpus"] = int(config.cpu_limit * 1e9)
         if config.user:
             kwargs["user"] = config.user
+        if config.extra_hosts:
+            kwargs["extra_hosts"] = config.extra_hosts
 
         if config.gpu_device_ids:
             kwargs["device_requests"] = [

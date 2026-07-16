@@ -35,6 +35,12 @@ config:
     required: true
     description: "Secret token (password) protecting both endpoints. Pick something strong — anyone with it can use your scraper."
 
+  - key: "host_overrides"
+    label: "Host overrides (optional)"
+    type: "string"
+    required: false
+    description: "Force hostnames to resolve to specific IPs inside the container (like editing /etc/hosts). Format host:ip, comma-separated for multiple. Example: dominio.com.br:123.123.123.123, foo.com:1.2.3.4"
+
 services:
   scrapling:
     image: "ianoie/scrapling"
@@ -79,6 +85,10 @@ services:
       start_period: 60
 
     restart: "unless-stopped"
+
+    # Override de DNS por instalação: lê o config field ``host_overrides`` e injeta
+    # como extra_hosts (== /etc/hosts) no container. Ver renderer._build_extra_hosts.
+    extra_hosts_from_config: "host_overrides"
 
 access:
   url: "{{public_url}}/"

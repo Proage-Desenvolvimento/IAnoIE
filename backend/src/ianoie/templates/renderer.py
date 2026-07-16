@@ -103,6 +103,7 @@ class TemplateRenderer:
                 volumes=self._build_volumes(svc.get("volumes", []), installation_id),
                 gpu_device_ids=gpu_uuids if svc.get("gpu", {}).get("enabled") else [],
                 user=svc.get("user"),
+                extra_hosts=self._build_extra_hosts(svc, user_config),
             )
 
             if svc.get("command"):
@@ -302,6 +303,27 @@ class TemplateRenderer:
             full_name = f"ianoie-{installation_id}-{vol['name']}"
             result[full_name] = {"bind": vol["mount_path"], "mode": vol.get("mode", "rw")}
         return result
+
+    def _build_extra_hosts(self, svc: dict, user_config: dict) -> dict[str, str] | None:
+        """Parse do config field indicado por ``extra_hosts_from_config`` no serviço.
+
+        Valor esperado (string, single-line): pares ``host:ip`` separados por
+        vírgula/espaço (ex: ``dominio.com.br:123.123.123.123, foo.com:1.2.3.4``).
+        Tokens malformados (sem ``:``) são ignorados. IPv4 only.
+        """
+        field_key = svc.get("extra_hosts_from_config")
+        if not field_key:
+            return None
+        raw = str(user_config.get(field_key) or "").strip()
+        if not raw:
+            return None
+        out: dict[str, str] = {}
+        for tok in raw.replace(",", " ").replace(";", " ").split():
+            host, sep, ip = tok.partition(":")
+            host, ip = host.strip(), ip.strip()
+            if sep and host and ip:
+                out[host] = ip
+        return out or None
 
     def _resolve_dependency_order(self, services: dict) -> list[str]:
         visited = set()
