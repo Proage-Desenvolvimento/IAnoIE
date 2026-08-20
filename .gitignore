@@ -49,3 +49,4 @@ backend/alembic/versions/__pycache__/
 htmlcov/
 .coverage
 coverage.xml
+/.zcode

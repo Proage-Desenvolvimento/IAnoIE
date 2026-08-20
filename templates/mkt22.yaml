@@ -3,7 +3,7 @@ $schema: "ianoie-template/v1"
 metadata:
   name: "mkt22"
   slug: "mkt22"
-  version: "1.0.0"
+  version: "1.1.0"
   description: "AI marketing consultant — structures your marketing plan using external research to reduce uncertainty and sharpen the diagnosis."
   category: "consultores"
   icon: "Megaphone"
@@ -11,8 +11,10 @@ metadata:
   long_description: |
     mkt22 is an AI-powered marketing consultant. It structures your marketing
     planning using external research whenever it helps reduce uncertainty and
-    improve the diagnosis of your business. Placeholder: installing deploys a
-    lightweight redirect to https://mkt22.com.
+    improve the diagnosis of your business. Installing deploys a lightweight
+    page that embeds the consultant at
+    https://app.mkt22.com/consultor.php?c=consultor-de-marketing — the app
+    itself runs on mkt22 servers, so there is no local backend to manage.
 
 gpu:
   required: false
@@ -22,13 +24,45 @@ services:
     image: "nginx"
     tag: "alpine"
     internal: false
+    # Serve um index.html de tela cheia que embute o consultor num iframe. O
+    # server block default do nginx:alpine já serve /usr/share/nginx/html na
+    # porta 80, então basta sobrescrever o index antes de subir o nginx.
+    # Botão "Abrir em nova aba": bloqueio de iframe (X-Frame-Options) não é
+    # detectável cross-origin, então a rota de fuga fica sempre disponível.
     command:
       - "sh"
       - "-c"
-      - "printf 'server{listen 80 default_server;server_name _;return 301 https://mkt22.com;}' > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+      - |
+        cat > /usr/share/nginx/html/index.html <<'MKT22'
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>mkt22 — Consultor de Marketing</title>
+        <style>
+          html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#fff}
+          #frame{display:block;width:100%;height:100vh;border:0}
+          #open{position:fixed;right:14px;bottom:14px;z-index:1;padding:8px 14px;border-radius:9999px;background:rgba(24,24,27,.85);color:#fafafa;font:500 13px/1.2 system-ui,sans-serif;text-decoration:none;opacity:.25;transition:opacity .2s}
+          #open:hover{opacity:1}
+        </style>
+        </head>
+        <body>
+        <iframe id="frame" src="https://app.mkt22.com/consultor.php?c=consultor-de-marketing" title="mkt22 — Consultor de Marketing" allow="fullscreen"></iframe>
+        <a id="open" href="https://app.mkt22.com/consultor.php?c=consultor-de-marketing" target="_blank" rel="noopener">Abrir em nova aba &#8599;</a>
+        </body>
+        </html>
+        MKT22
+        exec nginx -g 'daemon off;'
     ports:
       - container_port: 80
         host_port: null
         protocol: "tcp"
         expose: true
     restart: "unless-stopped"
+
+access:
+  note: |
+    A aplicação abre o consultor mkt22 embutido na página. Alternativa: acesse
+    diretamente https://app.mkt22.com/consultor.php?c=consultor-de-marketing
+    (o botão "Abrir em nova aba" no canto da tela faz o mesmo).

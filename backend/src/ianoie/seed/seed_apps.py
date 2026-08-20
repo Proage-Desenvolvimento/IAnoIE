@@ -207,7 +207,7 @@ APPS = [
         "category": "consultores",
         "template_path": "mkt22.yaml",
         "icon_url": None,
-        "version": "1.0.0",
+        "version": "1.1.0",
         "gpu_requirements": '{"min_gpu_count": 0, "min_vram_gb": 0, "gpu_required": false}',
     },
     {
