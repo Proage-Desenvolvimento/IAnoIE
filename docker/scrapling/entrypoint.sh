@@ -15,7 +15,10 @@ echo "[scrapling] starting MCP server (Streamable HTTP) on :8000 …"
 (
     set +e
     while true; do
-        "$SCRAPLING_BIN" mcp --http --host 0.0.0.0 --port 8000
+        # --no-auth: newer Scrapling refuses to serve plain HTTP without it.
+        # Safe here — :8000 is reachable only inside the ianoie-proxy network
+        # and Traefik already enforces the installation's Basic Auth on /mcp.
+        "$SCRAPLING_BIN" mcp --http --host 0.0.0.0 --port 8000 --no-auth
         echo "[scrapling] MCP server exited (code $?) — restarting in 3s…" >&2
         sleep 3
     done
