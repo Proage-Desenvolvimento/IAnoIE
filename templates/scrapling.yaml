@@ -77,8 +77,9 @@ services:
 
     # NOTE: image-internal healthchecks are not injected by ContainerManager today;
     # readiness is gated by a worker TCP probe on the first route port (7681).
+    # Probes both endpoints: the web terminal (:7681) and the MCP server (:8000).
     healthcheck:
-      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost/7681' || exit 1"]
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost/7681 && exec 3<>/dev/tcp/localhost/8000'"]
       interval: 30
       timeout: 10
       retries: 5
